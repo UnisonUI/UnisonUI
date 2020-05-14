@@ -15,7 +15,7 @@ lazy val `service-discovery` = (project in file("service-discovery"))
 
 lazy val `rest-ui-server` = module("server", file("core/server"))
   .dependsOn(`rest-ui-core`, `rest-ui-service-discovery-docker`)
-  .settings(libraryDependencies ++= Akka.all ++ Circe.all)
+  .settings(libraryDependencies ++= Akka.all ++ Circe.all ++ Html.all)
   .settings(mainClass in Compile := Some("restui.server.Main"))
   .enablePlugins(JavaAppPackaging, DockerPlugin)
 

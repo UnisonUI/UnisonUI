@@ -3,7 +3,6 @@ import com.github.dockerjava.api.model.{ContainerNetwork, Event}
 import com.github.dockerjava.core.{DefaultDockerClientConfig, DockerClientBuilder}
 import com.github.dockerjava.core.command.EventsResultCallback
 import com.github.dockerjava.netty.NettyDockerCmdExecFactory
-import org.slf4j.LoggerFactory
 import restui.servicediscovery.ServiceDiscoveryProvider
 
 import scala.jdk.CollectionConverters._
@@ -12,7 +11,6 @@ import restui.servicediscovery.Models._
 
 class DockerClient(private val settings: Settings, private val callback: ServiceDiscoveryProvider.Callback) {
 
-  private val logger       = LoggerFactory.getLogger(classOf[DockerClient])
   private val dockerConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().withDockerHost(settings.dockerHost).build()
   private val client       = DockerClientBuilder.getInstance(dockerConfig).withDockerCmdExecFactory(new NettyDockerCmdExecFactory()).build()
 
@@ -67,4 +65,3 @@ class DockerClient(private val settings: Settings, private val callback: Service
       port        <- labels.get(settings.labels.port)
     } yield Labels(serviceName, port)
 }
-

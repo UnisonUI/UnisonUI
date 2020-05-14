@@ -8,7 +8,7 @@ object Aliases {
 
   private def scalafmtAliases =
     addCommandAlias("checkFmt", "; scalafmtCheckAll") ++
-      addCommandAlias("runFmt", "; scalafmtAll scalafmtSbt")
+      addCommandAlias("runFmt", "; scalafmtAll; scalafmtSbt")
 
   private def scalafixAliases =
     addCommandAlias("checkFix", "; scalafix --check; test:scalafix --check") ++

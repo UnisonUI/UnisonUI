@@ -28,6 +28,7 @@ object BaseSettings {
       "-Wunused:imports",
       "-language:implicitConversions",
       "-language:higherKinds",
+      "-language:postfixOps",
       "-target:jvm-1.8",
       "-feature"
     ),

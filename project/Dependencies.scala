@@ -19,6 +19,7 @@ object Dependencies {
     private val generic = "io.circe" %% "circe-generic" % version
     val all             = Seq(core, generic)
   }
+
   object Akka {
     private val akkaVersion     = "2.6.5"
     private val akkaHttpVersion = "10.1.12"
@@ -31,6 +32,12 @@ object Dependencies {
     val all                     = Seq(sl4j, http, cors, circe, httpTestKit, streamTestKit)
   }
 
+  object Html {
+    private val scalaTags    = "com.lihaoyi"                  %% "scalatags"     % "0.8.2"
+    private val scalaCss     = "com.github.japgolly.scalacss" %% "core"          % "0.6.1"
+    private val scalaCssTags = "com.github.japgolly.scalacss" %% "ext-scalatags" % "0.6.1"
+    val all                  = Seq(scalaTags, scalaCss, scalaCssTags)
+  }
   object Testing {
     private val scalaTest = "org.scalatest" %% "scalatest" % "3.1.2" % Test
     val all               = Seq(scalaTest)
