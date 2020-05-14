@@ -2,6 +2,7 @@ import org.scalafmt.sbt.ScalafmtPlugin.autoImport._
 import sbt.Keys._
 import sbt._
 import scalafix.sbt.ScalafixPlugin.autoImport._
+import sbtassembly.AssemblyPlugin.autoImport._
 import Dependencies._
 object BaseSettings {
 
@@ -17,6 +18,7 @@ object BaseSettings {
     cancelable in Global := true,
     addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.3.10" cross CrossVersion.full),
     scalacOptions += "-Yrangepos",
+    test in assembly := {},
     scalacOptions in Compile ++= Seq(
       "-encoding",
       "UTF-8",
@@ -28,13 +30,9 @@ object BaseSettings {
       "-Wunused:imports",
       "-language:implicitConversions",
       "-language:higherKinds",
-      "-language:postfixOps",
       "-target:jvm-1.8",
       "-feature"
     ),
-    run in Compile := Defaults
-      .runTask(fullClasspath in Compile, mainClass in (Compile, run), runner in (Compile, run))
-      .evaluated, // put provided dependencies back in scope for 'run'
     updateOptions := updateOptions.value.withGigahorse(false)
   )
 }
