@@ -42,4 +42,14 @@ object Dependencies {
     private val scalaTest = "org.scalatest" %% "scalatest" % "3.1.2" % Test
     val all               = Seq(scalaTest)
   }
+
+  private lazy val common = Testing.all ++ Logging.all ++ Config.all
+
+  lazy val restUi = libraryDependencies ++= common ++ Akka.all ++ Circe.all ++ Html.all
+
+  lazy val restUiCore = libraryDependencies ++= common
+
+  lazy val serviceDiscoveryDocker = libraryDependencies ++= common ++
+    Seq("com.github.docker-java" % "docker-java" % "3.2.1" exclude
+    ("com.github.docker-java", "docker-java-transport-jersey"))
 }
