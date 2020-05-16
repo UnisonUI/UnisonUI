@@ -54,7 +54,7 @@ class DockerClient(private val settings: Settings, private val callback: Service
     for {
       labels    <- findMatchingLabels(labels)
       ipAddress <- findFirstIpAddress(networks)
-    } yield Endpoint(labels.serviceName, s"http://$ipAddress:${labels.port.toInt}/swagger.yaml")
+    } yield Endpoint(labels.serviceName, s"http://$ipAddress:${labels.port.toInt}${labels.swaggerPath}")
 
   private def findFirstIpAddress(networks: mutable.Map[String, ContainerNetwork]): Option[String] =
     networks.toList.headOption.map(_._2.getIpAddress)
@@ -63,5 +63,6 @@ class DockerClient(private val settings: Settings, private val callback: Service
     for {
       serviceName <- labels.get(settings.labels.serviceName)
       port        <- labels.get(settings.labels.port)
-    } yield Labels(serviceName, port)
+      swaggerPath = labels.get(settings.labels.swaggerPath).getOrElse("/swagger.yaml")
+    } yield Labels(serviceName, port, swaggerPath)
 }
