@@ -11,30 +11,33 @@ export default class Endpoints extends Component {
 
   componentDidMount() {
     axios.get(`/endpoints`).then(res => {
-      const endpoints = res.data;
-      endpoints.sort();
+      const endpoints = res.data.map(event => {
+        return { serviceName: event.serviceName, source: event.source };
+      });
+      endpoints.sort((a, b) => b.serviceName.localeCompare(a.serviceName));
       this.setState({ endpoints });
     });
     this.eventSource.onmessage = e => {
       if (e.data) {
-        let data = JSON.parse(e.data);
-        let endpoints;
-        if (data.event == "up") {
-          endpoints = this.state.endpoints;
-          if (!endpoints.find(item => item == data.serviceName)) {
-            endpoints.push(data.serviceName);
-            endpoints.sort();
-          }
-        } else {
-          endpoints = this.state.endpoints.filter(
-            item => item != data.serviceName
-          );
-        }
-        this.setState({ endpoints });
+        this.handleEndpoint(JSON.parse(e.data));
       }
     };
   }
-
+  handleEndpoint(data) {
+    let endpoints;
+    if (data.event == "up") {
+      endpoints = this.state.endpoints;
+      if (!endpoints.find(item => item.serviceName == data.serviceName)) {
+        endpoints.push({ serviceName: data.serviceName, source: data.source });
+        endpoints.sort((a, b) => b.serviceName.localeCompare(a.serviceName));
+      }
+    } else {
+      endpoints = this.state.endpoints.filter(
+        item => item.serviceName != data.serviceName
+      );
+    }
+    this.setState({ endpoints });
+  }
   render() {
     if (this.state.endpoints.length) {
       return (
@@ -44,7 +47,7 @@ export default class Endpoints extends Component {
             {this.state.endpoints.map(endpoint => {
               return (
                 <li key={endpoint}>
-                  <Link to={`/?name=${endpoint}`}>{endpoint}</Link>
+                  <Link to={`/?name=${endpoint.serviceName}`}>{endpoint.serviceName} <i>({endpoint.source})</i></Link>
                 </li>
               );
             })}

@@ -5,8 +5,8 @@
       {
         "modules": false,
         "useBuiltIns": "entry",
-        "corejs": 2,
-        "targets": "> 0.5%, last 2 versions, Firefox ESR, not dead"
+        "corejs": 3,
+        "targets": "> 0.5%, last 2 versions"
       }
     ],
     "@babel/preset-react"
@@ -15,8 +15,8 @@
     "@babel/plugin-proposal-class-properties",
     [
       "@babel/plugin-transform-runtime",
-      {
-        "corejs": 2
+      {"regenerator": false, 
+        "corejs": 3
       }
     ]
   ]

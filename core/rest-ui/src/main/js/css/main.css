@@ -18,8 +18,13 @@ main {
 
 .menu {
   @apply w-1/6 h-full fixed;
+  color: #b8b7ad;
   background: #373a47;
-
+  padding: 2.5em 1.5em 0;
+  & h1 {
+    padding: 0.8em;
+    @apply text-4xl;
+  }
   & a {
     color: #b8b7ad;
 
@@ -30,7 +35,6 @@ main {
   }
 
   & .items {
-    padding: 2.5em 1.5em 0;
     & li {
       @apply text-xl;
       padding: 0.8em;

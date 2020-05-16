@@ -7,38 +7,15 @@ module.exports = {
   entry: {
     main: path.join(__dirname, "src", "main", "js", "index.js")
   },
-
   output: {
     path: path.join(__dirname, "src", "main", "resources", "web", "statics"),
     publicPath: "/statics"
-  },
-  stats: {
-    colors: true,
-    hash: true,
-    timings: true,
-    assets: true,
-    chunks: true,
-    chunkModules: true,
-    modules: true,
-    children: true
   },
   optimization: {
     splitChunks: {
       cacheGroups: {
         default: false,
         vendors: false,
-        react: {
-          chunks: "all",
-          name: "react",
-          test: /react/,
-          priority: 20
-        },
-        swagger: {
-          chunks: "all",
-          name: "swagger",
-          test: /swagger/,
-          priority: 20
-        },
         vendor: {
           name: "vendor",
           chunks: "all",

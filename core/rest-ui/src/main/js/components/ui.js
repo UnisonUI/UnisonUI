@@ -1,4 +1,4 @@
-import "swagger-ui-react/swagger-ui.css";
+require("swagger-ui-react/swagger-ui.css");
 
 import React, { Component } from "react";
 import ReactDOM from "react-dom";

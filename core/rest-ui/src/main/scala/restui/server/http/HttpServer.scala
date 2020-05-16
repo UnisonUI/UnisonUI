@@ -13,16 +13,15 @@ import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.pattern.ask
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe.generic.auto._
 import org.slf4j.LoggerFactory
+import restui.server.http.{Models => HttpModels}
 import restui.server.service.EndpointsActor._
 import restui.servicediscovery.Models._
 
 class HttpServer(private val endpointsActorRef: ActorRef, private val eventsSource: Source[ServerSentEvent, NotUsed])(implicit
     actorSystem: ActorSystem)
-    extends Directives
-    with FailFastCirceSupport {
+    extends Directives {
   import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling._
   private val logger                                              = LoggerFactory.getLogger(classOf[HttpServer])
   implicit val timeout: Timeout                                   = 5.seconds
@@ -45,10 +44,11 @@ class HttpServer(private val endpointsActorRef: ActorRef, private val eventsSour
         } ~
         path("endpoints") {
           get {
+            import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
             val response =
               (endpointsActorRef ? GetAll)
-                .mapTo[List[Endpoint]]
-                .map(_.map(_.serviceName))
+                .mapTo[List[(String, Endpoint)]]
+                .map(_.map { case (source, endpoint) => HttpModels.Up(endpoint.serviceName, source) })
             complete(response)
           }
         } ~ path("service" / Segment) { service =>

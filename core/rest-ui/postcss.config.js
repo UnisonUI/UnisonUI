@@ -9,7 +9,11 @@ let plugins = {
 };
 if (process.env.NODE_ENV === "production") {
   plugins["@fullhuman/postcss-purgecss"] = {
-    content: ["src/main/js/**/*.html", "src/main/js/**/*.js"],
+    content: [
+      "src/main/js/**/*.html",
+      "src/main/js/**/*.js",
+      "node_modules/swagger-ui-react/**/*.js"
+    ],
     defaultExtractor: content => content.match(/[A-Za-z0-9-_:/]+/g) || []
   };
 }
