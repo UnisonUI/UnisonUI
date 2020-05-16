@@ -1,25 +1,31 @@
 package restui.server.service
 
 import akka.actor.{Actor, ActorLogging, Props}
+import akka.stream.scaladsl.SourceQueueWithComplete
 import restui.servicediscovery.Models._
 
-class EndpointsActor extends Actor with ActorLogging {
+class EndpointsActor(queue: SourceQueueWithComplete[(String, String)]) extends Actor with ActorLogging {
   import EndpointsActor._
-  override def receive: Receive = handleReceive(List.empty)
+  override def receive: Receive = handleReceive(Map.empty)
 
-  private def handleReceive(endpoints: List[Endpoint]): Receive = {
+  private def handleReceive(endpoints: Map[String, Endpoint]): Receive = {
     case (provider, Up(endpoint)) =>
       log.info("{} got a new endpoint", provider)
-      context.become(handleReceive(endpoints :+ endpoint))
+      queue.offer("up" -> endpoint.serviceName)
+      context.become(handleReceive(endpoints + (endpoint.serviceName -> endpoint)))
     case (provider, Down(endpoint)) =>
+      queue.offer("down" -> endpoint.serviceName)
       log.info("{} removed an endpoint", provider)
-      context.become(handleReceive(endpoints.filterNot(_ == endpoint)))
-    case Get => sender() ! endpoints
+      context.become(handleReceive(endpoints - endpoint.serviceName))
+    case Get(serviceName) => sender() ! endpoints.get(serviceName)
+    case GetAll           => sender() ! endpoints.values.toList
+    case m                => log.warning("Unmatch {}", m)
   }
 
 }
 
 object EndpointsActor {
-  def props: Props = Props[EndpointsActor]
-  case object Get
+  def props(queue: SourceQueueWithComplete[(String, String)]): Props = Props(classOf[EndpointsActor], queue)
+  case class Get(serviceName: String)
+  case object GetAll
 }

@@ -7,6 +7,10 @@
       %cyan(%logger{36}) - %msg%n</pattern>
     </encoder>
   </appender>
+  <logger name="akka" level="WARN">
+    <appender-ref ref="STDOUT" />
+  </logger>
+
   <logger name="restui" level="DEBUG">
     <appender-ref ref="STDOUT" />
   </logger>

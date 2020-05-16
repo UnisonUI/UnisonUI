@@ -1,10 +1,12 @@
 package restui.servicediscovery
 
-import ServiceDiscoveryProvider.Callback
-import com.typesafe.config.Config
 import java.util.ServiceLoader
-import org.slf4j.LoggerFactory
+
 import scala.util.{Failure, Success}
+
+import com.typesafe.config.Config
+import org.slf4j.LoggerFactory
+import restui.servicediscovery.ServiceDiscoveryProvider.Callback
 
 object ProvidersLoader {
   private val logger        = LoggerFactory.getLogger(ProvidersLoader.getClass)

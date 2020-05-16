@@ -1,10 +1,10 @@
 package restui.servicediscovery.docker
 
-import restui.servicediscovery.ServiceDiscoveryProvider
+import scala.util.Try
+
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
-
-import scala.util.Try
+import restui.servicediscovery.ServiceDiscoveryProvider
 
 class DockerProvider extends ServiceDiscoveryProvider {
 
