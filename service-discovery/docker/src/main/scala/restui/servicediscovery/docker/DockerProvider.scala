@@ -10,8 +10,6 @@ class DockerProvider extends ServiceDiscoveryProvider {
 
   private val logger = LoggerFactory.getLogger(classOf[DockerProvider])
 
-  override val name: String = "docker"
-
   override def initialise(config: Config, callback: ServiceDiscoveryProvider.Callback): Try[Unit] =
     Try {
       val settings = Settings.from(config)

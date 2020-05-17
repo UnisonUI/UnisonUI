@@ -27,8 +27,8 @@ class HttpServer(private val endpointsActorRef: ActorRef, private val eventsSour
   implicit val timeout: Timeout                                   = 5.seconds
   implicit private val executionContext: ExecutionContextExecutor = actorSystem.dispatcher
 
-  def bind(port: Int): Future[Http.ServerBinding] =
-    Http().bindAndHandle(routes, "0.0.0.0", port)
+  def bind(interface: String, port: Int): Future[Http.ServerBinding] =
+    Http().bindAndHandle(routes, interface, port)
 
   private val routes =
     handleExceptions(ExceptionHandler {
@@ -47,8 +47,8 @@ class HttpServer(private val endpointsActorRef: ActorRef, private val eventsSour
             import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
             val response =
               (endpointsActorRef ? GetAll)
-                .mapTo[List[(String, Endpoint)]]
-                .map(_.map { case (source, endpoint) => HttpModels.Up(endpoint.serviceName, source) })
+                .mapTo[List[Endpoint]]
+                .map(_.map(endpoint => HttpModels.Up(endpoint.serviceName)))
             complete(response)
           }
         } ~ path("service" / Segment) { service =>

@@ -12,7 +12,7 @@ export default class Endpoints extends Component {
   componentDidMount() {
     axios.get(`/endpoints`).then(res => {
       const endpoints = res.data.map(event => {
-        return { serviceName: event.serviceName, source: event.source };
+        return { serviceName: event.serviceName };
       });
       endpoints.sort((a, b) => b.serviceName.localeCompare(a.serviceName));
       this.setState({ endpoints });
@@ -28,7 +28,7 @@ export default class Endpoints extends Component {
     if (data.event == "up") {
       endpoints = this.state.endpoints;
       if (!endpoints.find(item => item.serviceName == data.serviceName)) {
-        endpoints.push({ serviceName: data.serviceName, source: data.source });
+        endpoints.push({ serviceName: data.serviceName });
         endpoints.sort((a, b) => b.serviceName.localeCompare(a.serviceName));
       }
     } else {
@@ -47,7 +47,9 @@ export default class Endpoints extends Component {
             {this.state.endpoints.map(endpoint => {
               return (
                 <li key={endpoint}>
-                  <Link to={`/?name=${endpoint.serviceName}`}>{endpoint.serviceName} <i>({endpoint.source})</i></Link>
+                  <Link to={`/?name=${endpoint.serviceName}`}>
+                    {endpoint.serviceName}
+                  </Link>
                 </li>
               );
             })}

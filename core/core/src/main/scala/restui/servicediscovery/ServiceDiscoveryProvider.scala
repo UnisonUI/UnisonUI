@@ -6,7 +6,6 @@ import com.typesafe.config.Config
 import restui.servicediscovery.Models.Event
 
 trait ServiceDiscoveryProvider {
-  val name: String
   def initialise(config: Config, callback: ServiceDiscoveryProvider.Callback): Try[Unit]
 }
 

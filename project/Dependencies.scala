@@ -25,16 +25,18 @@ object Dependencies {
     private val akkaHttpVersion = "10.1.12"
     private val sl4j            = "com.typesafe.akka" %% "akka-slf4j"          % akkaVersion
     private val http            = "com.typesafe.akka" %% "akka-http"           % akkaHttpVersion
+    private val stream          = "com.typesafe.akka" %% "akka-stream"         % akkaVersion
     private val cors            = "ch.megard"         %% "akka-http-cors"      % "0.4.3"
     private val circe           = "de.heikoseeberger" %% "akka-http-circe"     % "1.31.0"
     private val httpTestKit     = "com.typesafe.akka" %% "akka-http-testkit"   % akkaHttpVersion % Test
     private val streamTestKit   = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion     % Test
-    val all                     = Seq(sl4j, http, cors, circe, httpTestKit, streamTestKit)
+    val all                     = Seq(sl4j, http, cors, stream, circe, httpTestKit, streamTestKit)
   }
 
   object Testing {
     private val scalaTest = "org.scalatest" %% "scalatest" % "3.1.2" % Test
-    val all               = Seq(scalaTest)
+    private val scalamock = "org.scalamock" %% "scalamock" % "4.4.0" % Test
+    val all               = Seq(scalaTest, scalamock)
   }
 
   private lazy val common = Testing.all ++ Logging.all ++ Config.all
@@ -47,4 +49,7 @@ object Dependencies {
     Seq(
       "com.github.docker-java" % "docker-java" % "3.2.1" exclude
         ("com.github.docker-java", "docker-java-transport-jersey"))
+
+  lazy val serviceDiscoveryKubernetes = libraryDependencies ++= common ++ Akka.all ++
+    Seq("io.skuber" %% "skuber" % "2.4.0")
 }

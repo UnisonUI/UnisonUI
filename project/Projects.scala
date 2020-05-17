@@ -24,5 +24,6 @@ object Projects {
 
   val restUi = createModule("rest-ui", "core/rest-ui")
 
-  val serviceDiscoveryDocker = createModule("service-discovery-docker", "service-discovery/docker")
+  val serviceDiscoveryDocker     = createModule("service-discovery-docker", "service-discovery/docker")
+  val serviceDiscoveryKubernetes = createModule("service-discovery-kubernetes", "service-discovery/kubernetes")
 }

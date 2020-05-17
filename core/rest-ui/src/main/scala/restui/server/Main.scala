@@ -14,6 +14,7 @@ import restui.servicediscovery.ProvidersLoader
 
 object Main extends App {
 
+  private val Namespace: String                   = "restui.http"
   private val config                              = Configuration.config
   private val logger                              = LoggerFactory.getLogger(Main.getClass)
   implicit val system                             = ActorSystem()
@@ -31,7 +32,10 @@ object Main extends App {
 
   ProvidersLoader.load(config, callback)
 
-  httpServer.bind(8080).onComplete {
+  val interface = config.getString(s"$Namespace.interface")
+  val port      = config.getInt(s"$Namespace.port")
+
+  httpServer.bind(interface, port).onComplete {
     case Success(binding) =>
       val address = binding.localAddress
       logger.info("Server online at http://{}:{}/", address.getHostName, address.getPort)
@@ -42,4 +46,5 @@ object Main extends App {
       logger.error("Failed to bind HTTP endpoint, terminating system", ex)
       system.terminate().onComplete(_ => sys.exit(1))
   }
+
 }
