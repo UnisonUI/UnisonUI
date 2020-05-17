@@ -23,8 +23,6 @@ object Main extends App {
   private val (queue, eventSource) = EventSource.createEventSource.run()
   private val actorRef             = system.actorOf(EndpointsActor.props(queue))
 
-  actorRef ! ("Default" -> Up(Endpoint("PetStore", "https://petstore.swagger.io/v2/swagger.json")))
-
   private val httpServer = new HttpServer(actorRef, eventSource)
 
   private def callback(provider: String)(event: Event): Unit =
