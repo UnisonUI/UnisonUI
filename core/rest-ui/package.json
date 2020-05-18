@@ -7,7 +7,7 @@
     "lint": "eslint src",
     "start": "webpack-dev-server --config webpack.dev.js --hot",
     "build": "webpack --config webpack.dev.js",
-    "prod": "cross-env NODE_ENV=production webpack --config webpack.prod.js"
+    "prod": "cross-env NODE_ENV=production webpack --config webpack.prod.js --mode production"
   },
   "author": "",
   "license": "MIT",

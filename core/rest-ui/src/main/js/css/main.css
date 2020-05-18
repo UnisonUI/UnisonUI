@@ -41,6 +41,11 @@ main {
       color: #4e4a46;
       text-decoration: none;
 
+      & a.active {
+        color: #c94e50;
+        pointer-events: none;
+      }
+
       &:hover,
       &:focus {
         color: #c94e50;

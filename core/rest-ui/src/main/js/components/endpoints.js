@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import ReactDOM from "react-dom";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import axios from "axios";
 
 export default class Endpoints extends Component {
@@ -14,7 +14,7 @@ export default class Endpoints extends Component {
       const endpoints = res.data.map(event => {
         return { serviceName: event.serviceName };
       });
-      endpoints.sort((a, b) => b.serviceName.localeCompare(a.serviceName));
+      endpoints.sort((a, b) => a.serviceName.localeCompare(b.serviceName));
       this.setState({ endpoints });
     });
     this.eventSource.onmessage = e => {
@@ -29,13 +29,13 @@ export default class Endpoints extends Component {
       endpoints = this.state.endpoints;
       if (!endpoints.find(item => item.serviceName == data.serviceName)) {
         endpoints.push({ serviceName: data.serviceName });
-        endpoints.sort((a, b) => b.serviceName.localeCompare(a.serviceName));
       }
     } else {
       endpoints = this.state.endpoints.filter(
         item => item.serviceName != data.serviceName
       );
     }
+    endpoints.sort((a, b) => a.serviceName.localeCompare(b.serviceName));
     this.setState({ endpoints });
   }
   render() {
@@ -46,10 +46,10 @@ export default class Endpoints extends Component {
           <ul className="items">
             {this.state.endpoints.map(endpoint => {
               return (
-                <li key={endpoint}>
-                  <Link to={`/?name=${endpoint.serviceName}`}>
+                <li key={endpoint.serviceName}>
+                  <NavLink to={`/${endpoint.serviceName}`} activeClassName="active" >
                     {endpoint.serviceName}
-                  </Link>
+                  </NavLink>
                 </li>
               );
             })}
