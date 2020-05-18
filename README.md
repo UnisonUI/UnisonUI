@@ -8,3 +8,7 @@ RestUI will discover automatically new services and expose the documentation
 under one unified website.
 
 Currently it can discover services through `Docker` and `Kubernetes` (inside the cluster)
+
+## Overview
+
+![overview](./docs/overview.png "Overview")
