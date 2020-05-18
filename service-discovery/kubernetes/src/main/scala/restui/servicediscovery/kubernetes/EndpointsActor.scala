@@ -7,7 +7,9 @@ import skuber.Service
 
 class EndpointsActor(settingsLabels: Labels, callback: ServiceDiscoveryProvider.Callback) extends Actor with ActorLogging {
   import EndpointsActor._
+
   override def receive: Actor.Receive = handleMessage(Map.empty)
+
   private def handleMessage(servicesByNamespaces: Map[String, List[Service]]): Receive = {
     case (namespace: String, newServices: List[Service]) =>
       servicesByNamespaces.get(namespace) match {
@@ -27,6 +29,16 @@ class EndpointsActor(settingsLabels: Labels, callback: ServiceDiscoveryProvider.
     case Init     => sender() ! Ack
     case Complete => sender() ! Ack
   }
+
+  private def createEndpoint(service: Service): Option[Endpoint] = {
+    val serviceName = s"${service.name} (${service.namespace})"
+    getLabels(service.metadata.labels).map {
+      case Labels(protocol, port, swaggerPath) =>
+        val address = s"$protocol://${service.copySpec.clusterIP}:$port$swaggerPath"
+        Endpoint(serviceName, address)
+    }
+  }
+
   private def getLabels(labels: Map[String, String]): Option[Labels] =
     for {
       port <- labels.get(settingsLabels.port)
@@ -34,14 +46,6 @@ class EndpointsActor(settingsLabels: Labels, callback: ServiceDiscoveryProvider.
       protocol    = labels.get(settingsLabels.protocol).getOrElse("http")
     } yield Labels(protocol, port, swaggerPath)
 
-  private def createEndpoint(service: Service): Option[Endpoint] = {
-    val serviceName = service.name
-    getLabels(service.metadata.labels).map {
-      case Labels(protocol, port, swaggerPath) =>
-        val address = s"$protocol://${service.copySpec.clusterIP}:$port$swaggerPath"
-        Endpoint(serviceName, address)
-    }
-  }
 }
 
 object EndpointsActor {
