@@ -1,7 +1,7 @@
 package restui.servicediscovery.docker
 
-import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
 class DockerClientSpec extends AnyWordSpec with Matchers {
   "A list" should {
