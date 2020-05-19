@@ -8,7 +8,7 @@ import sbtrelease.ReleaseStateTransformations._
 import Tasks._
 object Release {
   lazy val dockerReleaseSettings = Seq(
-    releaseTagComment := s"[skip ci] Releasing ${(version in ThisBuild).value}",
+    releaseTagComment := s"Releasing ${(version in ThisBuild).value}",
     releaseCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}",
     releaseNextCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}",
     releaseProcess := Seq(
@@ -17,11 +17,11 @@ object Release {
       inquireVersions,
       setReleaseVersion,
       ReleaseStep(releaseStepTask(webpackProdTask)),
-      ReleaseStep(releaseStepTask(publishLocal in docker)),
-      commitReleaseVersion,
+      ReleaseStep(releaseStepTask(publish in docker)),
       tagRelease,
       setNextVersion,
-      commitNextVersion
+      commitNextVersion,
+      pushChanges
     )
   )
 }
