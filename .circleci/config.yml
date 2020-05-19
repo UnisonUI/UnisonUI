@@ -20,8 +20,11 @@ jobs:
           key: v1-dependencies--{{ checksum "build.sbt" }}
       - run: sbt ";checkFix; checkFmt; test"
       - run: |
-            mkdir target/reports
-            cp core/target/test-reports/* rest-ui/target/test-reports/*  service-discovery/docker/target/test-reports/* service-discovery/docker/target/test-reports/* target/test-reports
+          mkdir target/test-reports
+          cp core/target/test-reports/* target/test-reports || true
+          cp rest-ui/target/test-reports/* target/test-reports || true
+          cp service-discovery/docker/target/test-reports/* target/test-reports || true
+          cp service-discovery/kubernetes/target/test-reports/* target/test-reports || true
       - store_test_results:
           path: target/test-reports
   release:
@@ -48,6 +51,15 @@ jobs:
           key: v1-dependencies--{{ checksum "build.sbt" }}
       - run: echo $GITHUB_TOKEN | docker login docker.pkg.github.com -u MaethorNaur --password-stdin
       - run: sbt ";project rest-ui; release with-defaults"
+      - run: |
+          mkdir target/test-reports
+          cp core/target/test-reports/* target/test-reports || true
+          cp rest-ui/target/test-reports/* target/test-reports || true
+          cp service-discovery/docker/target/test-reports/* target/test-reports || true
+          cp service-discovery/kubernetes/target/test-reports/* target/test-reports || true
+
+      - store_test_results:
+          path: target/test-reports
 
   install_node_modules:
     docker:
