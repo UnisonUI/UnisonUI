@@ -7,8 +7,7 @@ object DockerSettings {
   val settings = Seq(
     dockerBaseImage := "openjdk:11-jre-slim",
     dockerLabels := Map("maintener" -> "pedro.mangabeiralindekrantz@gmail.com"),
-    dockerRepository := Some("docker.pkg.github.com"),
-    dockerUsername := Some("maethornaur/restui"),
+    dockerUsername := Some("maethornaur"),
     dockerUpdateLatest := true,
     dockerExposedPorts := Seq(8080),
     dockerEntrypoint := Seq("/opt/docker/entrypoint.sh", executableScriptName.value)

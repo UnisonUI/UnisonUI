@@ -7,7 +7,6 @@ while IFS='=' read -r name value ; do
     name=${name//__/_}
     name=${name//_/.}
     name=$(echo "$name" | sed 's/./\L&/g')
-    echo $name
     opts="${opts} -D${name}=${value}"
   fi
 done < <(env)

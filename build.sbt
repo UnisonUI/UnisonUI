@@ -1,7 +1,7 @@
 import Aliases._
 
 scalafixDependencies in ThisBuild += "com.github.liancheng" %% "organize-imports" % "0.3.1-RC1"
-testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", (baseDirectory.value / "target" / "test-report").toString, "-o")
+testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", (baseDirectory.value / "target" / "test-reports").toString, "-o")
 
 lazy val root = Project("restUI", file("."))
   .aggregate(projects: _*)

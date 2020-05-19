@@ -18,9 +18,9 @@ Currently it can discover services through `Docker` and `Kubernetes` (inside the
 ### Docker
 
 ```sh
-docker pull docker.pkg.github.com/maethornaur/restui/restui
+docker pull maethornaur/rest-ui
 
-docker run -p 8080:8080 docker.pkg.github.com/maethornaur/restui/restui
+docker run -p 8080:8080 maethornaur/rest-ui
 
 ```
 
@@ -30,7 +30,7 @@ To override the default value for a configuration entry (found in the
 `reference.conf` files) just pass the `HOCON` path preceded by `-D`
 
 ```sh
-docker run -p 8081:8081 docker.pkg.github.com/maethornaur/restui/restui -Drestui.http.port=8081
+docker run -p 8081:8081 maethornaur/rest-ui -Drestui.http.port=8081
 ```
 
 There is a special case for configuration fields that are arrays.
@@ -41,5 +41,5 @@ If you prefere you can use environment variable instead.
 For that take the path, uppercase it and replace th `.` by `_`.
 
 ```sh
-docker run -p 8081:8081 -e RESTUI_HTTP_PORT=8081 docker.pkg.github.com/maethornaur/restui/restui
+docker run -p 8081:8081 -e RESTUI_HTTP_PORT=8081 maethornaur/rest-ui
 ```

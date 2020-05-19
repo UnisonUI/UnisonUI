@@ -36,12 +36,20 @@ jobs:
       TERM: dumb
     steps:
       - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "de:c0:97:65:ff:b0:7a:09:4b:8d:d5:ac:41:97:89:e4"
+      - run: |
+          git config user.email "pedro.mangabeiralindekrantz@gmail.com"
+          git config user.name "Pedro Mangabeira"
       - run: |
             curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
             sudo apt-get install -y nodejs
+            cd rest-ui/
+            npm install
+            cd ~/repo
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "rest-ui/package.json" }}
             - v1-dependencies-{{ checksum "build.sbt" }}
             - v1-dependencies-
       - run: sbt compile
@@ -49,8 +57,9 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies--{{ checksum "build.sbt" }}
-      - run: echo $GITHUB_TOKEN | docker login docker.pkg.github.com -u MaethorNaur --password-stdin
-      - run: sbt ";project rest-ui; release with-defaults"
+      - setup_remote_docker
+      - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+      - run: sbt ";test;project rest-ui; release with-defaults"
       - run: |
           mkdir target/test-reports
           cp core/target/test-reports/* target/test-reports || true
@@ -60,23 +69,6 @@ jobs:
 
       - store_test_results:
           path: target/test-reports
-
-  install_node_modules:
-    docker:
-      - image: 'circleci/node:latest'
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "rest-ui/package.json" }}
-      - run: |
-            cd rest-ui/
-            npm install
-      - save_cache:
-          paths:
-            - ~/repo/rest-ui/rest-ui/node_modules
-          key: v1-dependencies-{{ checksum "rest-ui/package.json" }}
 
 workflows:
   version: 2
@@ -89,17 +81,7 @@ workflows:
                 - master
   release_on_master:
     jobs:
-      - install_node_modules:
-          filters:
-            branches:
-              only:
-                - master
-            tags:
-              ignore:
-                - /v.+/
       - release:
-          requires:
-            - install_node_modules
           filters:
             branches:
               only:
