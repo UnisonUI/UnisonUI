@@ -1,8 +1,11 @@
-import BaseSettings.defaultSettings
 import sbt._
+import sbt.Keys._
+import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
 import sbtassembly.AssemblyPlugin
 import sbtassembly.AssemblyPlugin.autoImport._
 import sbtsonar.SonarPlugin.autoImport.sonarProperties
+
+import BaseSettings.defaultSettings
 
 object Projects {
 
@@ -20,9 +23,10 @@ object Projects {
         case x                                                             => MergeStrategy.last
       })
 
-  val restUiCore = createModule("rest-ui-core", "core/core")
+  val restUiCore = createModule("rest-ui-core", "core")
 
-  val restUi = createModule("rest-ui", "core/rest-ui")
+  val restUi = createModule("rest-ui", "rest-ui")
+    .settings(mappings in Universal += file(s"docker/entrypoint.sh") -> "entrypoint.sh")
 
   val serviceDiscoveryDocker     = createModule("service-discovery-docker", "service-discovery/docker")
   val serviceDiscoveryKubernetes = createModule("service-discovery-kubernetes", "service-discovery/kubernetes")

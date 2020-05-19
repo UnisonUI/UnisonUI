@@ -1,10 +1,9 @@
-version: 2
+version: 2.1
 jobs:
-  build:
+  test:
     docker:
       - image: circleci/openjdk:8-jdk
     working_directory: ~/repo
-
     environment:
       JVM_OPTS: -Xmx3200m
       TERM: dumb
@@ -14,9 +13,97 @@ jobs:
           keys:
             - v1-dependencies-{{ checksum "build.sbt" }}
             - v1-dependencies-
-      - run: cat /dev/null | sbt test:compile
+      - run: sbt test:compile
       - save_cache:
           paths:
             - ~/.m2
           key: v1-dependencies--{{ checksum "build.sbt" }}
-      - run: cat /dev/null | sbt ";checkFix;checkFmt;test:test"
+      - run: sbt ";checkFix; checkFmt; test"
+      - run: |
+          mkdir target/test-reports
+          cp core/target/test-reports/* target/test-reports || true
+          cp rest-ui/target/test-reports/* target/test-reports || true
+          cp service-discovery/docker/target/test-reports/* target/test-reports || true
+          cp service-discovery/kubernetes/target/test-reports/* target/test-reports || true
+      - store_test_results:
+          path: target/test-reports
+  release:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    working_directory: ~/repo
+    environment:
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout
+      - run: |
+            curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "rest-ui/package.json" }}
+            - v1-dependencies-{{ checksum "build.sbt" }}
+            - v1-dependencies-
+      - run: sbt compile
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies--{{ checksum "build.sbt" }}
+      - run: echo $GITHUB_TOKEN | docker login docker.pkg.github.com -u MaethorNaur --password-stdin
+      - run: sbt ";project rest-ui; release with-defaults"
+      - run: |
+          mkdir target/test-reports
+          cp core/target/test-reports/* target/test-reports || true
+          cp rest-ui/target/test-reports/* target/test-reports || true
+          cp service-discovery/docker/target/test-reports/* target/test-reports || true
+          cp service-discovery/kubernetes/target/test-reports/* target/test-reports || true
+
+      - store_test_results:
+          path: target/test-reports
+
+  install_node_modules:
+    docker:
+      - image: 'circleci/node:latest'
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "rest-ui/package.json" }}
+      - run: |
+            cd rest-ui/
+            npm install
+      - save_cache:
+          paths:
+            - ~/repo/rest-ui/rest-ui/node_modules
+          key: v1-dependencies-{{ checksum "rest-ui/package.json" }}
+
+workflows:
+  version: 2
+  test_on_branch:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore:
+                - master
+  release_on_master:
+    jobs:
+      - install_node_modules:
+          filters:
+            branches:
+              only:
+                - master
+            tags:
+              ignore:
+                - /v.+/
+      - release:
+          requires:
+            - install_node_modules
+          filters:
+            branches:
+              only:
+                - master
+            tags:
+              ignore:
+                - /v.+/

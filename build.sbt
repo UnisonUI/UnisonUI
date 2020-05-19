@@ -1,6 +1,7 @@
 import Aliases._
 
 scalafixDependencies in ThisBuild += "com.github.liancheng" %% "organize-imports" % "0.3.1-RC1"
+testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", (baseDirectory.value / "target" / "test-report").toString, "-o")
 
 lazy val root = Project("restUI", file("."))
   .aggregate(projects: _*)
@@ -8,13 +9,10 @@ lazy val root = Project("restUI", file("."))
   .settings(aliases)
   .disablePlugins(ReleasePlugin)
 
-lazy val core = (project in file("core"))
-  .aggregate(restUiCore, restUi)
-
 lazy val restUi = Projects.restUi
   .dependsOn(restUiCore, serviceDiscoveryDocker, serviceDiscoveryKubernetes)
   .settings(Dependencies.restUi)
-  .settings(dockerBaseImage := "openjdk:11-jre-slim")
+  .settings(DockerSettings.settings)
   .settings(mainClass in Compile := Some("restui.server.Main"))
   .settings(Tasks.tasks)
   .settings(Release.dockerReleaseSettings)
@@ -38,6 +36,7 @@ lazy val serviceDiscoveryDocker = Projects.serviceDiscoveryDocker
   .disablePlugins(ReleasePlugin)
 
 val projects: Seq[ProjectReference] = Seq(
-  core,
+  restUiCore,
+  restUi,
   serviceDiscovery
 )

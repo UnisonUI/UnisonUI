@@ -9,7 +9,7 @@ addSbtPlugin("net.virtual-void"  % "sbt-dependency-graph" % "0.10.0-RC1")
 addSbtPlugin("ch.epfl.scala"     % "sbt-scalafix"         % "0.9.15-1")
 addSbtPlugin("com.github.mwz"    % "sbt-sonar"            % "2.1.0")
 addSbtPlugin("org.scoverage"     % "sbt-scoverage"        % "1.6.1")
-addSbtPlugin("com.github.gseitz" % "sbt-release"          % "1.0.11")
+addSbtPlugin("com.github.gseitz" % "sbt-release"          % "1.0.13")
 // to prevent conflict with logback over slf4j
 excludeDependencies ++= Seq(
   ExclusionRule("org.slf4j", "slf4j-log4j12")
