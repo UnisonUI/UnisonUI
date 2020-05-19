@@ -57,4 +57,6 @@ project/metals.sbt
 *.metals
 .bloop/
 .metals/
+node_modules/
+/core/rest-ui/src/main/resources/web/
 # End of https://www.gitignore.io/api/sbt,scala,intellij

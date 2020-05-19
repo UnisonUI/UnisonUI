@@ -1,10 +1,11 @@
 package restui
 
-import com.typesafe.config.{Config, ConfigFactory}
-import org.slf4j.LoggerFactory
+import java.io.File
+
 import scala.util.Try
 
-import java.io.File
+import com.typesafe.config.{Config, ConfigFactory}
+import org.slf4j.LoggerFactory
 
 object Configuration {
   private val logger = LoggerFactory.getLogger(Configuration.getClass)

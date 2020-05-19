@@ -7,7 +7,12 @@
       %cyan(%logger{36}) - %msg%n</pattern>
     </encoder>
   </appender>
-  <logger name="restui" level="DEBUG">
+
+  <logger name="restui" level="DEBUG" additivity="false">
     <appender-ref ref="STDOUT" />
   </logger>
+
+  <root level="WARN">
+    <appender-ref ref="STDOUT" />
+  </root>
 </configuration>

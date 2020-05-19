@@ -1,13 +1,13 @@
 package restui.servicediscovery.docker
-import com.github.dockerjava.api.model.{ContainerNetwork, Event}
-import com.github.dockerjava.core.{DefaultDockerClientConfig, DockerClientBuilder}
-import com.github.dockerjava.core.command.EventsResultCallback
-import com.github.dockerjava.netty.NettyDockerCmdExecFactory
-import restui.servicediscovery.ServiceDiscoveryProvider
-
-import scala.jdk.CollectionConverters._
 import scala.collection.mutable
+import scala.jdk.CollectionConverters._
+
+import com.github.dockerjava.api.model.{ContainerNetwork, Event}
+import com.github.dockerjava.core.command.EventsResultCallback
+import com.github.dockerjava.core.{DefaultDockerClientConfig, DockerClientBuilder}
+import com.github.dockerjava.netty.NettyDockerCmdExecFactory
 import restui.servicediscovery.Models._
+import restui.servicediscovery.ServiceDiscoveryProvider
 
 class DockerClient(private val settings: Settings, private val callback: ServiceDiscoveryProvider.Callback) {
 
@@ -54,7 +54,7 @@ class DockerClient(private val settings: Settings, private val callback: Service
     for {
       labels    <- findMatchingLabels(labels)
       ipAddress <- findFirstIpAddress(networks)
-    } yield Endpoint(labels.serviceName, ipAddress, labels.port)
+    } yield Endpoint(labels.serviceName, s"http://$ipAddress:${labels.port.toInt}${labels.swaggerPath}")
 
   private def findFirstIpAddress(networks: mutable.Map[String, ContainerNetwork]): Option[String] =
     networks.toList.headOption.map(_._2.getIpAddress)
@@ -63,5 +63,6 @@ class DockerClient(private val settings: Settings, private val callback: Service
     for {
       serviceName <- labels.get(settings.labels.serviceName)
       port        <- labels.get(settings.labels.port)
-    } yield Labels(serviceName, port)
+      swaggerPath = labels.get(settings.labels.swaggerPath).getOrElse("/swagger.yaml")
+    } yield Labels(serviceName, port, swaggerPath)
 }

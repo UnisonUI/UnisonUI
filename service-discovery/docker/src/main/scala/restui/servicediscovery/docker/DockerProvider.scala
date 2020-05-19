@@ -1,16 +1,14 @@
 package restui.servicediscovery.docker
 
-import restui.servicediscovery.ServiceDiscoveryProvider
+import scala.util.Try
+
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
-
-import scala.util.Try
+import restui.servicediscovery.ServiceDiscoveryProvider
 
 class DockerProvider extends ServiceDiscoveryProvider {
 
   private val logger = LoggerFactory.getLogger(classOf[DockerProvider])
-
-  override val name: String = "docker"
 
   override def initialise(config: Config, callback: ServiceDiscoveryProvider.Callback): Try[Unit] =
     Try {

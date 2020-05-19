@@ -1,11 +1,11 @@
 package restui.servicediscovery
 
-import Models.Event
-import com.typesafe.config.Config
 import scala.util.Try
 
+import com.typesafe.config.Config
+import restui.servicediscovery.Models.Event
+
 trait ServiceDiscoveryProvider {
-  val name: String
   def initialise(config: Config, callback: ServiceDiscoveryProvider.Callback): Try[Unit]
 }
 

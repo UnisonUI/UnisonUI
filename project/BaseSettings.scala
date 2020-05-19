@@ -19,20 +19,7 @@ object BaseSettings {
     addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.3.10" cross CrossVersion.full),
     scalacOptions += "-Yrangepos",
     test in assembly := {},
-    scalacOptions in Compile ++= Seq(
-      "-encoding",
-      "UTF-8",
-      "-deprecation",
-      "-unchecked",
-      "-Yrangepos",
-      "-Ywarn-dead-code",
-      "-Ywarn-unused",
-      "-Wunused:imports",
-      "-language:implicitConversions",
-      "-language:higherKinds",
-      "-target:jvm-1.8",
-      "-feature"
-    ),
+    scalacOptions in Compile ++= ScalacOptions.options,
     updateOptions := updateOptions.value.withGigahorse(false)
   )
 }

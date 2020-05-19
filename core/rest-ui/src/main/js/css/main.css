@@ -1,0 +1,55 @@
+@tailwind base;
+
+body {
+  @apply font-body w-full h-full text-gray-800;
+  margin: inherit;
+  background-color: #fafafa;
+}
+
+#app {
+  @apply h-full;
+}
+
+main {
+  padding: 3em 2em;
+  overflow: auto;
+  margin-left: 16.666667%;
+}
+
+.menu {
+  @apply w-1/6 h-full fixed;
+  color: #b8b7ad;
+  background: #373a47;
+  padding: 2.5em 1.5em 0;
+  & h1 {
+    padding: 0.8em;
+    @apply text-4xl;
+  }
+  & a {
+    color: #b8b7ad;
+
+    &:hover,
+    &:focus {
+      color: #c94e50;
+    }
+  }
+
+  & .items {
+    & li {
+      @apply text-xl;
+      padding: 0.8em;
+      color: #4e4a46;
+      text-decoration: none;
+
+      & a.active {
+        color: #c94e50;
+        pointer-events: none;
+      }
+
+      &:hover,
+      &:focus {
+        color: #c94e50;
+      }
+    }
+  }
+}
