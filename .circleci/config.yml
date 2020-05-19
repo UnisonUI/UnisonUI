@@ -1,9 +1,6 @@
-version: 2
+version: 2.1
 jobs:
   test:
-    branches:
-      ignore:
-        - master
     docker:
       - image: circleci/openjdk:8-jdk
     working_directory: ~/repo
@@ -24,13 +21,9 @@ jobs:
           key: v1-dependencies--{{ checksum "build.sbt" }}
       - run: cat /dev/null | sbt ";checkFix; checkFmt; test"
   release:
-    branches:
-      only:
-        - master
     docker:
       - image: circleci/openjdk:8-jdk
     working_directory: ~/repo
-    context: github_token
     environment:
       JVM_OPTS: -Xmx3200m
       TERM: dumb
@@ -54,6 +47,22 @@ jobs:
           key: v1-dependencies--{{ checksum "build.sbt" }}
       - run: echo $GITHUB_TOKEN | docker login docker.pkg.github.com -u MaethorNaur --password-stdin
       - run: cat /dev/null | sbt ";project rest-ui; release with-defaults"
-
-
-
+workflows:
+  version: 2
+  test_on_branch:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore:
+                - master
+  release_on_master:
+    jobs:
+      - release:
+          filters:
+            branches:
+              only:
+                - master
+            tags:
+              ignore:
+                - /v.+/
