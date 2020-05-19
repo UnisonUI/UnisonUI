@@ -11,16 +11,18 @@ class EndpointsActor(queue: SourceQueueWithComplete[HttpModels.Event]) extends A
 
   private def handleReceive(endpoints: Map[String, Endpoint]): Receive = {
     case (provider: String, Up(endpoint)) =>
-      log.info("{} got a new endpoint", provider)
+      log.debug("{} got a new endpoint", provider)
       queue.offer(HttpModels.Up(endpoint.serviceName))
       context.become(handleReceive(endpoints + (endpoint.serviceName -> endpoint)))
+
     case (provider: String, Down(endpoint)) =>
       queue.offer(HttpModels.Down(endpoint.serviceName))
-      log.info("{} removed an endpoint", provider)
+      log.debug("{} removed an endpoint", provider)
       context.become(handleReceive(endpoints - endpoint.serviceName))
+
     case Get(serviceName) => sender() ! endpoints.get(serviceName)
     case GetAll           => sender() ! endpoints.values.toList
-    case m                => log.warning("Unmatch {}", m)
+    case message          => log.warning("Unmatch {}", message)
   }
 
 }

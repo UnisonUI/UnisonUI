@@ -22,6 +22,7 @@ import restui.servicediscovery.Models._
 object Endpoints {
   implicit val timeout: Timeout = 5.seconds
   import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling._
+
   def route(endpointsActorRef: ActorRef, eventsSource: Source[ServerSentEvent, NotUsed])(implicit
       executionContext: ExecutionContext,
       actorSystem: ActorSystem): Route =

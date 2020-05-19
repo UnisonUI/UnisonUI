@@ -1,6 +1,9 @@
 version: 2
 jobs:
-  build:
+  test:
+    branches:
+      ignore:
+        - master
     docker:
       - image: circleci/openjdk:8-jdk
     working_directory: ~/repo
@@ -19,4 +22,38 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies--{{ checksum "build.sbt" }}
-      - run: cat /dev/null | sbt ";checkFix;checkFmt;test:test"
+      - run: cat /dev/null | sbt ";checkFix; checkFmt; test"
+  release:
+    branches:
+      only:
+        - master
+    docker:
+      - image: circleci/openjdk:8-jdk
+    working_directory: ~/repo
+    context: github_token
+    environment:
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+    steps:
+      - checkout
+      - run: |
+            curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "build.sbt" }}
+            - v1-dependencies-
+      - run: |
+            cat /dev/null | sbt compile
+            cd rest-ui/
+            npm install
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/repo/rest-ui/rest-ui/node_modules
+          key: v1-dependencies--{{ checksum "build.sbt" }}
+      - run: echo $GITHUB_TOKEN | docker login docker.pkg.github.com -u MaethorNaur --password-stdin
+      - run: cat /dev/null | sbt ";project rest-ui; release with-defaults"
+
+
+

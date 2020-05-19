@@ -20,9 +20,9 @@ object Projects {
         case x                                                             => MergeStrategy.last
       })
 
-  val restUiCore = createModule("rest-ui-core", "core/core")
+  val restUiCore = createModule("rest-ui-core", "core")
 
-  val restUi = createModule("rest-ui", "core/rest-ui")
+  val restUi = createModule("rest-ui", "rest-ui")
 
   val serviceDiscoveryDocker     = createModule("service-discovery-docker", "service-discovery/docker")
   val serviceDiscoveryKubernetes = createModule("service-discovery-kubernetes", "service-discovery/kubernetes")
