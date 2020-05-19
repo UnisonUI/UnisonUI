@@ -20,6 +20,11 @@ jobs:
             - ~/.m2
           key: v1-dependencies--{{ checksum "build.sbt" }}
       - run: cat /dev/null | sbt ";checkFix; checkFmt; test"
+      - run: |
+            mkdir target/reports
+            cp core/target/test-reports/* rest-ui/target/test-reports/*  service-discovery/docker/target/test-reports/* service-discovery/docker/target/test-reports/* target/test-reports
+      - store_test_results:
+          path: target/test-reports
   release:
     docker:
       - image: circleci/openjdk:8-jdk
