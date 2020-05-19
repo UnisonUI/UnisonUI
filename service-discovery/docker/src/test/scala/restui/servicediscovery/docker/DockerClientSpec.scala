@@ -10,4 +10,3 @@ class DockerClientSpec extends AnyWordSpec with Matchers {
     }
   }
 }
-

@@ -4,7 +4,6 @@ jobs:
     docker:
       - image: circleci/openjdk:8-jdk
     working_directory: ~/repo
-
     environment:
       JVM_OPTS: -Xmx3200m
       TERM: dumb
@@ -39,19 +38,33 @@ jobs:
             sudo apt-get install -y nodejs
       - restore_cache:
           keys:
+            - v1-dependencies-{{ checksum "rest-ui/package.json" }}
             - v1-dependencies-{{ checksum "build.sbt" }}
             - v1-dependencies-
       - run: sbt compile
-      - run: |
-            cd rest-ui/
-            npm install
       - save_cache:
           paths:
             - ~/.m2
-            - ~/repo/rest-ui/rest-ui/node_modules
           key: v1-dependencies--{{ checksum "build.sbt" }}
       - run: echo $GITHUB_TOKEN | docker login docker.pkg.github.com -u MaethorNaur --password-stdin
       - run: sbt ";project rest-ui; release with-defaults"
+    install_node_modules:
+      docker:
+        - image: 'circleci/node:latest'
+      steps:
+        - checkout
+        - restore_cache:
+            keys:
+              - v1-dependencies-{{ checksum "rest-ui/package.json" }}
+        - run: |
+              cd rest-ui/
+              npm install
+        - save_cache:
+            paths:
+              - ~/repo/rest-ui/rest-ui/node_modules
+            keys:
+              - v1-dependencies-{{ checksum "rest-ui/package.json" }}
+
 workflows:
   version: 2
   test_on_branch:
@@ -63,7 +76,17 @@ workflows:
                 - master
   release_on_master:
     jobs:
+      - install_node_modules:
+          filters:
+            branches:
+              only:
+                - master
+            tags:
+              ignore:
+                - /v.+/
       - release:
+          requires:
+            - install_node_modules
           filters:
             branches:
               only:
