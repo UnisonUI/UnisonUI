@@ -10,8 +10,7 @@ import org.slf4j.LoggerFactory
 object Configuration {
   private val logger = LoggerFactory.getLogger(Configuration.getClass)
 
-  private val referenceConfig: Config = ConfigFactory.defaultReference()
-
+  private val referenceConfig: Config = ConfigFactory.load()
   val config: Config = Try {
     val file = new File("application.conf")
     ConfigFactory.parseFile(file).withFallback(referenceConfig)

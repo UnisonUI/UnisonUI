@@ -12,3 +12,34 @@ Currently it can discover services through `Docker` and `Kubernetes` (inside the
 ## Overview
 
 ![overview](./docs/overview.png "Overview")
+
+## Usage
+
+### Docker
+
+```sh
+docker pull docker.pkg.github.com/maethornaur/restui/restui
+
+docker run -p 8080:8080 docker.pkg.github.com/maethornaur/restui/restui
+
+```
+
+Options can either be passed as an environment variable or as parameter.
+
+To override the default value for a configuration entry (found in the
+`reference.conf` files) just pass the `HOCON` path preceded by `-D`
+
+```sh
+docker run -p 8081:8081 docker.pkg.github.com/maethornaur/restui/restui -Drestui.http.port=8081
+```
+
+There is a special case for configuration fields that are arrays.
+You need to append the path by the index:
+`restui.providers.0=restui.servicediscovery.docker.DockerProvider`
+
+If you prefere you can use environment variable instead.
+For that take the path, uppercase it and replace th `.` by `_`.
+
+```sh
+docker run -p 8081:8081 -e RESTUI_HTTP_PORT=8081 docker.pkg.github.com/maethornaur/restui/restui
+```

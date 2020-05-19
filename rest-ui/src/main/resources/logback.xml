@@ -8,7 +8,7 @@
     </encoder>
   </appender>
 
-  <logger name="restui" level="DEBUG" additivity="false">
+  <logger name="restui" level="INFO" additivity="false">
     <appender-ref ref="STDOUT" />
   </logger>
 
