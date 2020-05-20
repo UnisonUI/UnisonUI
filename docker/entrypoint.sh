@@ -4,7 +4,7 @@ opts=""
 while IFS='=' read -r name value ; do
   if [[ $name == 'RESTUI_'* ]]; then
     value=${!name}
-    name=${name//__/_}
+    name=${name//__/-}
     name=${name//_/.}
     name=$(echo "$name" | sed 's/./\L&/g')
     opts="${opts} -D${name}=${value}"

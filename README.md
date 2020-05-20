@@ -38,7 +38,7 @@ You need to append the path by the index:
 `restui.providers.0=restui.servicediscovery.docker.DockerProvider`
 
 If you prefere you can use environment variable instead.
-For that take the path, uppercase it and replace th `.` by `_`.
+For that take the path, uppercase it and replace th `.` by `_` and `-` by `__`.
 
 ```sh
 docker run -p 8081:8081 -e RESTUI_HTTP_PORT=8081 maethornaur/rest-ui
