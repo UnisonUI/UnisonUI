@@ -10,17 +10,19 @@ import restui.servicediscovery.ServiceDiscoveryProvider
 import skuber._
 import skuber.api.Configuration
 import skuber.json.format._
-class KubernetesClient(private val settings: Settings, private val callback: ServiceDiscoveryProvider.Callback) {
+
+class KubernetesClient(private val settings: Settings, private val callback: ServiceDiscoveryProvider.Callback)(implicit
+    system: ActorSystem) {
   private val logger                              = LoggerFactory.getLogger(classOf[KubernetesClient])
-  implicit val system: ActorSystem                = ActorSystem("KubernetesClient")
   implicit val executionContent: ExecutionContext = system.dispatcher
-  private val endpointsActorRef                   = system.actorOf(Props(classOf[EndpointsActor], settings.labels, callback))
-  def listCurrentAndFutureEndpoints: Unit =
+  private val serviceActorRef                     = system.actorOf(Props(classOf[ServiceActor], settings.labels, callback))
+
+  def listCurrentAndFutureServices: Unit =
     Configuration.inClusterConfig match {
       case Failure(e) => logger.warn("Couldn't connect to the Kubernetes cluster", e)
       case Success(configuration) =>
         val k8s = k8sInit(configuration)
-        val source = Source
+        Source
           .tick(1.second, settings.pollingInterval, ())
           .flatMapConcat { _ =>
             Source.futureSource {
@@ -33,13 +35,12 @@ class KubernetesClient(private val settings: Settings, private val callback: Ser
                 Source.empty[List[Service]]
             }
           }
-
-        source.runWith(
-          Sink
-            .actorRefWithBackpressure(endpointsActorRef,
-                                      EndpointsActor.Init,
-                                      EndpointsActor.Ack,
-                                      EndpointsActor.Complete,
-                                      e => logger.warn("Stream error", e)))
+          .runWith(
+            Sink
+              .actorRefWithBackpressure(serviceActorRef,
+                                        ServiceActor.Init,
+                                        ServiceActor.Ack,
+                                        ServiceActor.Complete,
+                                        e => logger.warn("Streaming error", e)))
     }
 }

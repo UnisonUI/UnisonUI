@@ -3,12 +3,13 @@ package restui.servicediscovery
 import scala.util.Try
 
 import com.typesafe.config.Config
-import restui.servicediscovery.Models.Event
+import restui.servicediscovery.models.ServiceEvent
+import akka.actor.ActorSystem
 
 trait ServiceDiscoveryProvider {
-  def initialise(config: Config, callback: ServiceDiscoveryProvider.Callback): Try[Unit]
+  def start(actorSystem: ActorSystem, config: Config, callback: ServiceDiscoveryProvider.Callback): Try[Unit]
 }
 
 object ServiceDiscoveryProvider {
-  type Callback = Event => Unit
+  type Callback = ServiceEvent => Unit
 }
