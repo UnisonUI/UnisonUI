@@ -21,12 +21,13 @@ class HttpServer(private val endpointsActorRef: ActorRef, private val eventsSour
   def bind(interface: String, port: Int): Future[Http.ServerBinding] =
     Http().bindAndHandle(routes, interface, port)
 
+  private val exceptionHandler = ExceptionHandler {
+    case exception =>
+      logger.error("Something bad happened", exception)
+      complete(StatusCodes.InternalServerError -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Something bas happened"))
+  }
   private val routes =
-    handleExceptions(ExceptionHandler {
-      case e =>
-        logger.error("Exception", e)
-        complete(StatusCodes.InternalServerError -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Something bas happened"))
-    }) {
-      Statics.route ~ Endpoints.route(endpointsActorRef, eventsSource)
+    handleExceptions(exceptionHandler) {
+      Statics.route ~ Realtime.route(eventsSource) ~ Services.route(endpointsActorRef)
     }
 }

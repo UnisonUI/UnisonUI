@@ -26,11 +26,12 @@ object Dependencies {
     private val sl4j            = "com.typesafe.akka" %% "akka-slf4j"          % akkaVersion
     private val http            = "com.typesafe.akka" %% "akka-http"           % akkaHttpVersion
     private val stream          = "com.typesafe.akka" %% "akka-stream"         % akkaVersion
-    private val cors            = "ch.megard"         %% "akka-http-cors"      % "0.4.3"
-    private val circe           = "de.heikoseeberger" %% "akka-http-circe"     % "1.31.0"
+    private val circe           = "de.heikoseeberger" %% "akka-http-circe"     % "1.32.0"
     private val httpTestKit     = "com.typesafe.akka" %% "akka-http-testkit"   % akkaHttpVersion % Test
     private val streamTestKit   = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion     % Test
-    val all                     = Seq(sl4j, http, cors, stream, circe, httpTestKit, streamTestKit)
+    val akka                    = Seq(sl4j, stream, streamTestKit)
+    val akkaHttp                = Seq(http, circe, httpTestKit)
+    val all                     = akka ++ akkaHttp
   }
 
   object Testing {
@@ -43,9 +44,9 @@ object Dependencies {
 
   lazy val restUi = libraryDependencies ++= common ++ Akka.all ++ Circe.all
 
-  lazy val restUiCore = libraryDependencies ++= common
+  lazy val restUiCore = libraryDependencies ++= common ++ Akka.akka
 
-  lazy val serviceDiscoveryDocker = libraryDependencies ++= common ++
+  lazy val serviceDiscoveryDocker = libraryDependencies ++= common ++ Akka.all ++
     Seq(
       "com.github.docker-java" % "docker-java" % "3.2.1" exclude
         ("com.github.docker-java", "docker-java-transport-jersey"))

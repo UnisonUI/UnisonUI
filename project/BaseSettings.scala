@@ -13,7 +13,7 @@ object BaseSettings {
     organization := "restui",
     scalaVersion := ScalaVersion,
     parallelExecution in Test := false,
-    javaOptions in Test += "-Xmx4G",
+    javacOptions ++= Seq("-source", "11"),
     fork in Test := true,
     cancelable in Global := true,
     addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.3.10" cross CrossVersion.full),

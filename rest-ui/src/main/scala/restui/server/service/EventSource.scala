@@ -6,7 +6,6 @@ import akka.NotUsed
 import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.stream.scaladsl.{BroadcastHub, Keep, RunnableGraph, Source, SourceQueueWithComplete}
 import akka.stream.{DelayOverflowStrategy, OverflowStrategy}
-import io.circe.generic.auto._
 import io.circe.syntax._
 import restui.server.http.Models._
 

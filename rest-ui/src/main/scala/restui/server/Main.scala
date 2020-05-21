@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory
 import restui.Configuration
 import restui.server.http.HttpServer
 import restui.server.service._
-import restui.servicediscovery.Models._
 import restui.servicediscovery.ProvidersLoader
+import restui.servicediscovery.models._
 
 object Main extends App {
 
@@ -21,11 +21,11 @@ object Main extends App {
   implicit val executionContext: ExecutionContext = system.dispatcher
 
   private val (queue, eventSource) = EventSource.createEventSource.run()
-  private val actorRef             = system.actorOf(EndpointsActor.props(queue))
+  private val actorRef             = system.actorOf(ServiceActor.props(queue))
 
   private val httpServer = new HttpServer(actorRef, eventSource)
 
-  private def callback(provider: String)(event: Event): Unit =
+  private def callback(provider: String)(event: ServiceEvent): Unit =
     actorRef ! (provider -> event)
 
   ProvidersLoader.load(config, callback)

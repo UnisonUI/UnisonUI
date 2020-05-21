@@ -10,7 +10,7 @@ object ScalacOptions {
     "-Wunused:imports",
     "-language:implicitConversions",
     "-language:higherKinds",
-    "-target:jvm-1.8",
+    "-target:11",
     "-feature"
   )
 }
