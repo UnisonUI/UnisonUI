@@ -15,6 +15,8 @@ Currently it can discover services through `Docker` and `Kubernetes` (inside the
 
 ## Usage
 
+This project is targeted for Java 11+ in order
+
 ### Docker
 
 ```sh
