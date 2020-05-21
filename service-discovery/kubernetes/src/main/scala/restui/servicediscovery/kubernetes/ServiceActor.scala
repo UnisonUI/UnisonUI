@@ -1,15 +1,14 @@
 package restui.servicediscovery.kubernetes
 
-import akka.actor.{Actor, ActorLogging}
-import restui.servicediscovery.models._
-import restui.servicediscovery.ServiceDiscoveryProvider
+import scala.concurrent.{ExecutionContext, Future}
+
+import akka.actor.{Actor, ActorLogging, ActorSystem}
 import akka.http.scaladsl.Http
-import skuber.{Service => KubernetesService}
-import akka.actor.ActorSystem
-import scala.concurrent.Future
-import scala.concurrent.ExecutionContext
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.unmarshalling.Unmarshaller
+import restui.servicediscovery.ServiceDiscoveryProvider
+import restui.servicediscovery.models._
+import skuber.{Service => KubernetesService}
 
 class ServiceActor(settingsLabels: Labels, callback: ServiceDiscoveryProvider.Callback) extends Actor with ActorLogging {
   import ServiceActor._

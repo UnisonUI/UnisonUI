@@ -5,10 +5,10 @@ import java.util.ServiceLoader
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success}
 
+import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import restui.servicediscovery.ServiceDiscoveryProvider.Callback
-import akka.actor.ActorSystem
 
 object ProvidersLoader {
   private val logger        = LoggerFactory.getLogger(ProvidersLoader.getClass)

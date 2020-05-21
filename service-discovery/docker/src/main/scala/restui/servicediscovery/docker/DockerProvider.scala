@@ -2,12 +2,12 @@ package restui.servicediscovery.docker
 
 import scala.util.Try
 
-import com.typesafe.config.Config
-import org.slf4j.LoggerFactory
-import restui.servicediscovery.ServiceDiscoveryProvider
 import akka.actor.ActorSystem
 import com.github.dockerjava.core.{DefaultDockerClientConfig, DockerClientBuilder}
 import com.github.dockerjava.netty.NettyDockerCmdExecFactory
+import com.typesafe.config.Config
+import org.slf4j.LoggerFactory
+import restui.servicediscovery.ServiceDiscoveryProvider
 
 class DockerProvider extends ServiceDiscoveryProvider {
 

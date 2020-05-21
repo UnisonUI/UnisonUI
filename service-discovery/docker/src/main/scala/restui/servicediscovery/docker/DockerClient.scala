@@ -1,22 +1,21 @@
 package restui.servicediscovery.docker
 import scala.collection.mutable
+import scala.concurrent.ExecutionContext
 import scala.jdk.CollectionConverters._
 
-import com.github.dockerjava.api.model.{ContainerNetwork, Event}
-import com.github.dockerjava.core.command.EventsResultCallback
-import com.github.dockerjava.api.{DockerClient => JDockerClient}
-import restui.servicediscovery.models._
-import akka.http.scaladsl.unmarshalling.Unmarshaller
-import akka.http.scaladsl.model.HttpRequest
-import restui.servicediscovery.ServiceDiscoveryProvider
-import akka.actor.ActorSystem
-import scala.concurrent.ExecutionContext
-import akka.stream.scaladsl.Source
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl._
-import akka.http.scaladsl.Http
-import org.slf4j.LoggerFactory
 import akka.NotUsed
+import akka.actor.ActorSystem
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.unmarshalling.Unmarshaller
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.{Source, _}
+import com.github.dockerjava.api.model.{ContainerNetwork, Event}
+import com.github.dockerjava.api.{DockerClient => JDockerClient}
+import com.github.dockerjava.core.command.EventsResultCallback
+import org.slf4j.LoggerFactory
+import restui.servicediscovery.ServiceDiscoveryProvider
+import restui.servicediscovery.models._
 
 class DockerClient(private val client: JDockerClient,
                    private val settings: Settings,

@@ -2,10 +2,10 @@ package restui.servicediscovery.kubernetes
 
 import scala.util.Try
 
+import akka.actor.ActorSystem
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 import restui.servicediscovery.ServiceDiscoveryProvider
-import akka.actor.ActorSystem
 
 class KubernetesProvider extends ServiceDiscoveryProvider {
 
