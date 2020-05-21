@@ -30,4 +30,5 @@ object Projects {
 
   val serviceDiscoveryDocker     = createModule("service-discovery-docker", "service-discovery/docker")
   val serviceDiscoveryKubernetes = createModule("service-discovery-kubernetes", "service-discovery/kubernetes")
+  val serviceDiscoveryGit        = createModule("service-discovery-git", "service-discovery/git")
 }

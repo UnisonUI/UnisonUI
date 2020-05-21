@@ -53,4 +53,6 @@ object Dependencies {
 
   lazy val serviceDiscoveryKubernetes = libraryDependencies ++= common ++ Akka.all ++
     Seq("io.skuber" %% "skuber" % "2.4.0")
+
+  lazy val serviceDiscoveryGit = libraryDependencies ++= common ++ Akka.all
 }
