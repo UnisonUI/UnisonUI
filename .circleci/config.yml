@@ -43,6 +43,8 @@ jobs:
           git config user.email "pedro.mangabeiralindekrantz@gmail.com"
           git config user.name "Pedro Mangabeira"
       - run: |
+            sudo rm -rf /var/lib/apt/lists/*
+            sudo apt update
             curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
             sudo apt-get install -y nodejs
             cd rest-ui/
