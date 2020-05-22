@@ -1,11 +1,13 @@
 package restui.servicediscovery.git.settings
 
-import com.typesafe.config.Config
-import scala.jdk.CollectionConverters._
 import java.{util => ju}
-import com.typesafe.config.ConfigFactory
+
+import scala.jdk.CollectionConverters._
+
+import com.typesafe.config.{Config, ConfigFactory}
 
 final case class Repo(location: Location, swaggerPaths: List[String] = Nil)
+
 object Repo {
 
   def getListOfRepos(config: Config, path: String): List[Repo] =
@@ -39,5 +41,3 @@ object Location {
 }
 final case class Uri(uri: String)     extends Location
 final case class Regex(regex: String) extends Location
-
-

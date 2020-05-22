@@ -21,4 +21,5 @@ object Configuration {
     },
     identity(_)
   )
+
 }

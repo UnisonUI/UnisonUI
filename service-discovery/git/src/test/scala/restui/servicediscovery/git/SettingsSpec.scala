@@ -1,9 +1,10 @@
 package restui.servicediscovery.git
 
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.matchers.should.Matchers
-import com.typesafe.config.ConfigFactory
 import scala.concurrent.duration._
+
+import com.typesafe.config.ConfigFactory
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 import restui.servicediscovery.git.settings._
 
 class SettingsSpec extends AnyWordSpec with Matchers {
@@ -36,10 +37,11 @@ class SettingsSpec extends AnyWordSpec with Matchers {
 |  vcs {
 |    github {
 |     api-token = "test" 
+|     polling-interval = "10 minutes"
 |    }
 |  }
 |}""".stripMargin)
-        Settings.from(config) shouldBe Settings(2.hours, List(GitHub("test", "https://api.github.com", Nil)))
+        Settings.from(config) shouldBe Settings(2.hours, List(GitHub("test", "https://api.github.com", 10.minutes, Nil)))
       }
 
       "there is repos" in {
@@ -66,10 +68,37 @@ class SettingsSpec extends AnyWordSpec with Matchers {
           List(
             GitHub("test",
                    "https://api.github.com",
+                   1.hours,
                    Repo(Uri("myOrg/Test"), List("test/")) :: Repo(Regex("myOrg/.+"), Nil) :: Repo(Uri("restui"), Nil) :: Nil)
           )
         )
       }
+    }
+
+    "load git" in {
+      val config = ConfigFactory.parseString("""restui.service-discovery.git {
+|  cache-duration =  "2 hours"
+|  vcs {
+|    git {
+|     repos = [
+|       {
+|         location = "myOrg/Test"
+|         swagger-paths = ["test/"]
+|       },
+|       {
+|         location = "/myOrg\/.+/"
+|       },
+|       "restui"
+|     ]
+|    }
+|  }
+|}""".stripMargin)
+      Settings.from(config) shouldBe Settings(
+        2.hours,
+        List(
+          Git(Repo(Uri("myOrg/Test"), List("test/")) :: Repo(Regex("myOrg/.+"), Nil) :: Repo(Uri("restui"), Nil) :: Nil)
+        )
+      )
     }
   }
 

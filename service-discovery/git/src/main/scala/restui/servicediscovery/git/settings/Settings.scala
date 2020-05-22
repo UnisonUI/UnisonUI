@@ -1,8 +1,9 @@
 package restui.servicediscovery.git.settings
 
-import com.typesafe.config.Config
 import scala.concurrent.duration.FiniteDuration
 import scala.jdk.DurationConverters._
+
+import com.typesafe.config.Config
 
 final case class Settings(cacheDuration: FiniteDuration, vcs: List[VCS])
 object Settings {
@@ -13,7 +14,8 @@ object Settings {
     val vcs = if (namespaceConfig.hasPath("vcs")) {
       val vcsConfig = namespaceConfig.getConfig("vcs")
       List(
-        GitHub.fromConfig(vcsConfig)
+        GitHub.fromConfig(vcsConfig),
+        Git.fromConfig(vcsConfig)
       ).flatten
     } else Nil
     Settings(cacheDuration, vcs)

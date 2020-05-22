@@ -18,15 +18,23 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies--{{ checksum "build.sbt" }}
-      - run: sbt ";checkFix; checkFmt; test"
-      - run: |
-          mkdir target/test-reports
-          cp core/target/test-reports/* target/test-reports || true
-          cp rest-ui/target/test-reports/* target/test-reports || true
-          cp service-discovery/docker/target/test-reports/* target/test-reports || true
-          cp service-discovery/kubernetes/target/test-reports/* target/test-reports || true
+      - run: sbt ";checkFix; checkFmt; clean; coverage; test; coverageReport"
+      - run: sbt coverageAggregate
+      - run: 
+          name: Copy test reports
+          command: |
+            mkdir target/test-reports
+            cp core/target/test-reports/* target/test-reports || true
+            cp rest-ui/target/test-reports/* target/test-reports || true
+            cp service-discovery/docker/target/test-reports/* target/test-reports || true
+            cp service-discovery/kubernetes/target/test-reports/* target/test-reports || true
+          when: always
       - store_test_results:
           path: target/test-reports
+      - run:
+          name: Send coverage report
+          command: bash <(curl -s https://codecov.io/bash)
+          when: always
   release:
     docker:
       - image: circleci/openjdk:11-jdk
@@ -39,10 +47,14 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "de:c0:97:65:ff:b0:7a:09:4b:8d:d5:ac:41:97:89:e4"
-      - run: |
-          git config user.email "pedro.mangabeiralindekrantz@gmail.com"
-          git config user.name "Pedro Mangabeira"
-      - run: |
+      - run: 
+          name: Setup git
+          command: |
+            git config user.email "pedro.mangabeiralindekrantz@gmail.com"
+            git config user.name "Pedro Mangabeira"
+      - run:
+          name: Install node modules
+          command: |
             sudo rm -rf /var/lib/apt/lists/*
             sudo apt update
             curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
