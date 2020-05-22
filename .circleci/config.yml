@@ -4,9 +4,6 @@ jobs:
     docker:
       - image: circleci/openjdk:11-jdk
     working_directory: ~/repo
-    environment:
-      JVM_OPTS: -Xmx3200m
-      TERM: dumb
     steps:
       - checkout
       - restore_cache:
@@ -18,7 +15,7 @@ jobs:
           paths:
             - ~/.m2
           key: v1-dependencies--{{ checksum "build.sbt" }}
-      - run: sbt ";checkFix; checkFmt; clean; coverage; test; coverageReport"
+      - run: sbt ";checkFix; checkFmt; coverage; test; coverageReport"
       - run: sbt coverageAggregate
       - run: 
           name: Copy test reports
@@ -39,9 +36,6 @@ jobs:
     docker:
       - image: circleci/openjdk:11-jdk
     working_directory: ~/repo
-    environment:
-      JVM_OPTS: -Xmx3200m
-      TERM: dumb
     steps:
       - checkout
       - add_ssh_keys:
