@@ -15,14 +15,14 @@ jobs:
             git config user.name "Pedro Mangabeira"
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "build.sbt" }}
-            - v1-dependencies-
+            - v2-dependencies-{{ checksum "build.sbt" }}
+            - v2-dependencies-
       - run: sbt test:compile
       - save_cache:
           paths:
             - ~/.m2
             - ~/.cache/coursier/v1
-          key: v1-dependencies--{{ checksum "build.sbt" }}
+          key: v2-dependencies--{{ checksum "build.sbt" }}
       - run: sbt ";checkFix; checkFmt; coverage; test; coverageReport"
       - run: sbt coverageAggregate
       - run: 
@@ -68,14 +68,14 @@ jobs:
             cd ~/repo
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "build.sbt" }}
-            - v1-dependencies-
+            - v2-dependencies-{{ checksum "build.sbt" }}
+            - v2-dependencies-
       - run: sbt compile
       - save_cache:
           paths:
             - ~/.m2
             - ~/.cache/coursier/v1
-          key: v1-dependencies--{{ checksum "build.sbt" }}
+          key: v2-dependencies--{{ checksum "build.sbt" }}
       - setup_remote_docker
       - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
       - run: sbt ";project rest-ui; release with-defaults"
