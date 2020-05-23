@@ -23,7 +23,7 @@ package object models {
   }
 
   final case class Repository(repositories: Seq[Node], cursor: Option[String]) extends GrahpQL
-  final case class Node(name: String, url: String)
+  final case class Node(name: String, url: String, branch: String)
 
   object Repository {
 
@@ -36,12 +36,14 @@ package object models {
                 "hasNextPage" -> Json.fromBoolean(repository.cursor.isDefined),
                 "endCursor"   -> Json.fromString(repository.cursor.getOrElse(""))
               ),
-              "nodes" -> Json.arr(
-                repository.repositories.map(node =>
-                  Json.obj(
-                    "nameWithOwner" -> Json.fromString(node.name),
-                    "projectsUrl"   -> Json.fromString(node.url)
-                  )): _*)
+              "nodes" -> Json.arr(repository.repositories.map(node =>
+                Json.obj(
+                  "nameWithOwner" -> Json.fromString(node.name),
+                  "projectsUrl"   -> Json.fromString(node.url),
+                  "defaultBranchRef" -> Json.obj(
+                    "name" -> Json.fromString(node.branch)
+                  )
+                )): _*)
             )
           )
         )
@@ -59,9 +61,10 @@ package object models {
           val nodes = jsonNodes.flatMap { json =>
             val cursor = json.hcursor
             for {
-              name <- cursor.get[String]("nameWithOwner").toOption
-              url  <- cursor.get[String]("projectsUrl").toOption
-            } yield Node(name, url)
+              name   <- cursor.get[String]("nameWithOwner").toOption
+              url    <- cursor.get[String]("projectsUrl").toOption
+              branch <- cursor.downField("defaultBranchRef").get[String]("name").toOption
+            } yield Node(name, url, branch)
           }
           Repository(nodes, maybeCursor)
         }

@@ -18,10 +18,10 @@ final case class GithubClient(settings: GitHub, requestExecutor: RequestExecutor
 
 object GithubClient {
 
-  private val logger              = LoggerFactory.getLogger(GithubClient.getClass)
-  private val QueryWithPagination = """query($cursor: String!){
+  private val logger                               = LoggerFactory.getLogger(GithubClient.getClass)
+  private def graphqlQuery(cursor: Option[String]) = s"""${cursor.map(_ => "query($cursor: String!)").getOrElse("")}{
   viewer {
-    repositories(after: $cursor, first: 100) {
+    repositories(${cursor.map(_ => "after: $cursor, ").getOrElse("")}first: 100) {
       pageInfo {
         endCursor
         hasNextPage
@@ -29,28 +29,9 @@ object GithubClient {
       nodes {
         nameWithOwner
         projectsUrl
-      }
-    }
-  }
-  rateLimit {
-    cost
-    remaining
-    resetAt
-    limit
-  }
-}
-"""
-
-  private val QueryWithoutPagination = """{
-  viewer {
-    repositories(first: 100) {
-      pageInfo {
-        endCursor
-        hasNextPage
-      }
-      nodes {
-        nameWithOwner
-        projectsUrl
+        defaultBranchRef {
+          name
+        }
       }
     }
   }
@@ -93,10 +74,12 @@ object GithubClient {
     )
 
   private def createGraphqlBody(maybeCursor: Option[String]): RequestEntity = {
-    val json = maybeCursor match {
-      case None => Json.obj("query" -> Json.fromString(QueryWithoutPagination))
-      case Some(cursor) =>
-        Json.obj("query" -> Json.fromString(QueryWithPagination), "variables" -> Json.obj("cursor" -> Json.fromString(cursor)))
+    val query = Json.fromString(graphqlQuery(maybeCursor))
+    val json = maybeCursor.fold(Json.obj("query" -> query)) { cursor =>
+      Json.obj(
+        "query"     -> query,
+        "variables" -> Json.obj("cursor" -> Json.fromString(cursor))
+      )
     }
     HttpEntity(ContentTypes.`application/json`, json.noSpaces)
   }

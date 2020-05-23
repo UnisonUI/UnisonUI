@@ -26,18 +26,26 @@ object Repo {
     Repo(location, swaggerPaths)
   }
 }
-sealed trait Location
+sealed trait Location {
+  def isMatching(input: String): Boolean
+}
 
 object Location {
   private val RegexPattern = "^/(.+?)/$".r
+  private val DefaultRegex = ".+"
 
   def fromConfig(config: Config): Location =
     if (config.hasPath("location")) {
       val location = config.getString("location").trim
-      if (location.isEmpty) Regex(".+")
+      if (location.isEmpty) Regex(DefaultRegex)
       else RegexPattern.findFirstMatchIn(location).fold[Location](Uri(location))(m => Regex(m.group(1)))
-    } else Regex(".+")
+    } else Regex(DefaultRegex)
 
 }
-final case class Uri(uri: String)     extends Location
-final case class Regex(regex: String) extends Location
+final case class Uri(uri: String) extends Location {
+  override def isMatching(input: String): Boolean = uri == input
+}
+final case class Regex(regex: String) extends Location {
+  private val pattern                             = regex.r
+  override def isMatching(input: String): Boolean = pattern.matches(input)
+}

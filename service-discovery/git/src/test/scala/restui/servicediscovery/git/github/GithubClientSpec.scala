@@ -15,7 +15,7 @@ class GithubClientSpec extends TestBase with EitherValues {
   "Executing an existing command" in {
     println(Concurrency.AvailableCore)
     val github = GitHub("MyAwesomeUser", "MyAwesomeUser")
-    val nodes  = Seq(Node("MyAwesomeUser/MyAwesomeRepo", "https://github.com/MyAwesomeUser/MyAwesomeRepo"))
+    val nodes  = Seq(Node("MyAwesomeUser/MyAwesomeRepo", "https://github.com/MyAwesomeUser/MyAwesomeRepo", "master"))
     val client = GithubClient(
       github,
       _ => Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`, Repository(nodes, None).asJson.noSpaces)))
