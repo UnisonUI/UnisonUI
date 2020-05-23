@@ -11,8 +11,8 @@ jobs:
       - run: 
           name: Setup git
           command: |
-            git config user.email "pedro.mangabeiralindekrantz@gmail.com"
-            git config user.name "Pedro Mangabeira"
+            git config --global user.email "pedro.mangabeiralindekrantz@gmail.com"
+            git config --global user.name "Pedro Mangabeira"
       - restore_cache:
           keys:
             - v2-dependencies-{{ checksum "build.sbt" }}
@@ -54,8 +54,8 @@ jobs:
       - run: 
           name: Setup git
           command: |
-            git config user.email "pedro.mangabeiralindekrantz@gmail.com"
-            git config user.name "Pedro Mangabeira"
+            git config --global user.email "pedro.mangabeiralindekrantz@gmail.com"
+            git config --global user.name "Pedro Mangabeira"
       - run:
           name: Install node modules
           command: |
