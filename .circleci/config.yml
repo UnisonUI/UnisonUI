@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  slack: circleci/slack@3.4.2
 jobs:
   test:
     docker:
@@ -79,25 +81,24 @@ jobs:
       - setup_remote_docker
       - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
       - run: sbt ";project rest-ui; release with-defaults"
+      - slack/status:
+          channel: "github"
+          fail_only: true
+          webhook: webhook
 workflows:
   version: 2
-  test_on_branch:
+  build_and_release:
     jobs:
-      - test:
-          filters:
-            branches:
-              ignore:
-                - master
-  release_on_master:
-    jobs:
-      - test:
-          filters:
-            branches:
-              only:
-                - master
+      - slack/approval-notification:
+          channel: github
+          mentions: "U014C8CJQFN"
+          message: Pending approval
+          webhook: webhook
+      - test
       - release:
           requires:
             - test
+          type: approval
           filters:
             branches:
               only:
