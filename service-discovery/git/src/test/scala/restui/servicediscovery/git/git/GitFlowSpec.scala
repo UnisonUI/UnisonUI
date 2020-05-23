@@ -11,20 +11,20 @@ class GitFlowSpec extends TestBase with OptionValues {
 
   trait StubRepo {
     import sys.process._
-    val repo               = Files.createTempDirectory("restui-git-test")
-    private val hideStdOut = ProcessLogger(_ => ())
+    val repo = Files.createTempDirectory("restui-git-test")
+    ProcessLogger(_ => ())
 
-    Process(Seq("git", "init"), repo.toFile()).!(hideStdOut) shouldBe 0
+    Process(Seq("git", "init"), repo.toFile()).! shouldBe 0
     commit("init", "init")
 
     def commit(path: String, text: String): Unit = {
       val file = Files.write(repo.resolve(path), text.getBytes())
-      Process(Seq("git", "add", file.toAbsolutePath.toString), repo.toFile()).!(hideStdOut)
-      Process(Seq("git", "commit", "-m", "new file"), repo.toFile()).!(hideStdOut)
+      Process(Seq("git", "add", file.toAbsolutePath.toString), repo.toFile()).!
+      Process(Seq("git", "commit", "-m", "new file"), repo.toFile()).!
     }
 
     def sha1(branch: String): String =
-      Process(Seq("git", "rev-parse", "--verify", branch), repo.toFile()).!!(hideStdOut).trim
+      Process(Seq("git", "rev-parse", "--verify", branch), repo.toFile()).!!.trim
 
   }
 
