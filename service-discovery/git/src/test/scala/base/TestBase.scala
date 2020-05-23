@@ -1,4 +1,4 @@
-package restui.servicediscovery.git
+package base
 
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
@@ -6,7 +6,7 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 
-abstract class BaseTestSpec
+abstract class TestBase
     extends TestKit(ActorSystem("test"))
     with ImplicitSender
     with AsyncWordSpecLike

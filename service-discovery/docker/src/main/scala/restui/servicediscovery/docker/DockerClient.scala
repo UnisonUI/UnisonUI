@@ -68,7 +68,7 @@ class DockerClient(private val client: JDockerClient,
           val networks  = container.getNetworkSettings.getNetworks.asScala
           findEndpoint(labels, networks).map {
             case (serviceName, address) =>
-              if (event.getStatus == StartFilter) ServiceUp(Service(serviceName, OpenApiFile(getContentType(address), address)))
+              if (event.getStatus == StartFilter) ServiceUp(Service(serviceName, OpenApiFile(ContentType.fromString(address), address)))
               else ServiceDown(serviceName)
           }.foreach(queue.offer)
           super.onNext(event)
@@ -86,7 +86,7 @@ class DockerClient(private val client: JDockerClient,
         val labels   = container.getLabels.asScala
         val networks = container.getNetworkSettings.getNetworks.asScala
         findEndpoint(labels, networks).map {
-          case (serviceName, address) => ServiceUp(Service(serviceName, OpenApiFile(getContentType(address), address)))
+          case (serviceName, address) => ServiceUp(Service(serviceName, OpenApiFile(ContentType.fromString(address), address)))
         }
       }
       .foreach(queue.offer)
@@ -97,11 +97,6 @@ class DockerClient(private val client: JDockerClient,
       labels    <- findMatchingLabels(labels)
       ipAddress <- findFirstIpAddress(networks)
     } yield (labels.serviceName, s"http://$ipAddress:${labels.port.toInt}${labels.swaggerPath}")
-
-  private def getContentType(address: String): ContentType =
-    if (address.endsWith("yaml") || address.endsWith("yml")) ContentTypes.Yaml
-    else if (address.endsWith("json")) ContentTypes.Json
-    else ContentTypes.Plain
 
   private def findFirstIpAddress(networks: mutable.Map[String, ContainerNetwork]): Option[String] =
     networks.toList.headOption.map(_._2.getIpAddress)

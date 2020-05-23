@@ -63,13 +63,8 @@ class ServiceActor(settingsLabels: Labels, callback: ServiceDiscoveryProvider.Ca
     getLabels(service.metadata.labels).map {
       case Labels(protocol, port, swaggerPath) =>
         val address = s"$protocol://${service.copySpec.clusterIP}:$port$swaggerPath"
-        (service.name, OpenApiFile(getContentType(address), address))
+        (service.name, OpenApiFile(ContentType.fromString(address), address))
     }
-
-  private def getContentType(address: String): ContentType =
-    if (address.endsWith("yaml") || address.endsWith("yml")) ContentTypes.Yaml
-    else if (address.endsWith("json")) ContentTypes.Json
-    else ContentTypes.Plain
 
   private def getLabels(labels: Map[String, String]): Option[Labels] =
     for {

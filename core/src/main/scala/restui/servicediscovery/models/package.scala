@@ -5,7 +5,12 @@ package object models {
   final case class OpenApiFile(contentType: ContentType, content: String)
 
   sealed trait ContentType
-
+  object ContentType {
+    def fromString(string: String): ContentType =
+      if (string.endsWith("yaml") || string.endsWith("yml")) ContentTypes.Yaml
+      else if (string.endsWith("json")) ContentTypes.Json
+      else ContentTypes.Plain
+  }
   object ContentTypes {
     case object Plain extends ContentType
     case object Json  extends ContentType

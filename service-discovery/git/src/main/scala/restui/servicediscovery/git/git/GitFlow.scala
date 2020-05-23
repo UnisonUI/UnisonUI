@@ -7,91 +7,95 @@ import java.nio.file.{Files, Path}
 import scala.jdk.CollectionConverters._
 import scala.util._
 
-import akka.NotUsed
 import akka.stream.scaladsl.{Flow, Source}
 import org.slf4j.LoggerFactory
+import restui.Concurrency
+import restui.servicediscovery.git._
 import restui.servicediscovery.git.process.{ProcessArgs, ProcessFlow}
-import restui.servicediscovery.models.{ContentTypes, OpenApiFile}
+import restui.servicediscovery.models.{ContentType, OpenApiFile}
 
 object GitFlow {
-  private val logger      = LoggerFactory.getLogger(GitFlow.getClass)
-  private val GitCmd      = "git"
-  private val Parallelism = 2
-  def flow: Flow[Repo, (Repo, OpenApiFile), NotUsed] =
+  private val logger = LoggerFactory.getLogger(GitFlow.getClass)
+  private val GitCmd = "git"
+
+  val flow: F[Repo, (Repo, Seq[OpenApiFile])] =
     Flow[Repo]
-      .flatMapMerge(Parallelism, cloneRepo(_).async)
-      .flatMapMerge(Parallelism, findModifiedFiles(_).async)
-      .flatMapMerge(Parallelism, { case (repo, files) => latestRef(repo).map(newRepo => newRepo -> files).async })
-      .flatMapMerge(Parallelism, { case (repo, files) => filterSwaggerFiles(repo, files).async })
-      .flatMapMerge(Parallelism, { case (repo, path) => loadFile(repo, path).async })
+      .flatMapMerge(Concurrency.AvailableCore, cloneRepo(_).async)
+      .flatMapMerge(Concurrency.AvailableCore, findFreshSwaggerFiles(_).async)
+      .flatMapMerge(Concurrency.AvailableCore, retrieveSwaggerFilesAndGetLatestRef(_).async)
       .async
 
-  def cloneRepo(repo: Repo): Source[Repo, NotUsed] =
+  private def cloneRepo(repo: Repo): S[Repo] =
     exec("clone" :: "--branch" :: repo.branch :: "--single-branch" :: repo.uri :: repo.directory.getAbsolutePath :: Nil).flatMapConcat {
-      case Success(_) => Source.single(repo)
-      case Failure(exception) =>
-        logger.warn("Error during cloning", exception)
+      case Right(_) => Source.single(repo)
+      case Left(exception) =>
+        logger.warn("Error during cloning: {}", exception)
         Source.empty[Repo]
     }
 
-  def latestRef(repo: Repo): Source[Repo, NotUsed] =
-    exec("rev-parse" :: "--verify" :: repo.branch :: Nil, Some(repo.directory)).flatMapConcat {
-      case Success(result) => Source.single(repo.copy(cachedRef = Some(result.mkString.trim)))
-      case Failure(exception) =>
-        logger.warn("Error while getting latest ref", exception)
-        Source.empty[Repo]
-    }
-
-  def findModifiedFiles(repo: Repo): Source[(Repo, List[Path]), NotUsed] =
+  private def findFreshSwaggerFiles(repo: Repo): S[(Repo, List[Path])] =
     repo.cachedRef match {
       case None =>
-        Source.single(
-          repo -> Files
-            .walk(repo.directory.toPath)
-            .iterator
-            .asScala
-            .filter(Files.isRegularFile(_))
-            .map(_.normalize)
-            .toList)
+        val localFiles = Files
+          .walk(repo.directory.toPath)
+          .iterator
+          .asScala
+          .to(LazyList)
+          .filter(Files.isRegularFile(_))
+          .map(_.normalize)
+
+        Source.single(repo -> filterSwaggerFiles(repo, localFiles))
 
       case Some(ref) =>
         val repoPath = repo.directory.toPath
         exec("diff" :: "--name-only" :: ref :: "HEAD" :: Nil, Some(repo.directory)).flatMapConcat {
-          case Success(files) =>
-            Source.single(repo -> files.map(repoPath.resolve(_).normalize))
-          case Failure(exception) =>
-            logger.warn("Error during cloning", exception)
+          case Right(files) =>
+            val normalisedFiles = files.to(LazyList).map(repoPath.resolve(_).normalize)
+            Source.single(repo -> filterSwaggerFiles(repo, normalisedFiles))
+          case Left(exception) =>
+            logger.warn("Error during cloning: {}", exception)
             Source.empty[(Repo, List[Path])]
         }
     }
 
-  def filterSwaggerFiles(repo: Repo, files: List[Path]): Source[(Repo, Path), NotUsed] = {
+  private def filterSwaggerFiles(repo: Repo, files: LazyList[Path]): List[Path] = {
     val repoPath     = repo.directory.toPath
     val swaggerPaths = repo.swaggerPaths.map(repoPath.resolve(_).normalize)
-    val filteredFiles = files.filter { file =>
+    files.filter { file =>
       swaggerPaths.exists { swaggerPath =>
         file.startsWith(swaggerPath)
       }
-    }.map { path =>
-      repo -> path
-    }
-    Source(filteredFiles)
+    }.toList
   }
+  private def retrieveSwaggerFilesAndGetLatestRef(repoWithFiles: (Repo, List[Path])): S[(Repo, Seq[OpenApiFile])] = {
+    val (repo, files) = repoWithFiles
+    val foundFilesSource = Source(files)
+      .flatMapMerge(Concurrency.AvailableCore, loadFile(_).async)
+      .fold(Seq.empty[OpenApiFile])(_ :+ _)
+      .async
+    latestRef(repo).zip(foundFilesSource)
 
-  def loadFile(repo: Repo, path: Path): Source[(Repo, OpenApiFile), NotUsed] =
+  }
+  private def latestRef(repo: Repo): S[Repo] =
+    exec("rev-parse" :: "--verify" :: repo.branch :: Nil, Some(repo.directory)).flatMapConcat {
+      case Right(result) => Source.single(repo.copy(cachedRef = Some(result.mkString.trim)))
+      case Left(exception) =>
+        logger.warn("Error while getting latest ref {}", exception)
+        Source.empty[Repo]
+    }
+
+  private def loadFile(path: Path): S[OpenApiFile] =
     Try(new String(Files.readAllBytes(path), StandardCharsets.UTF_8)) match {
       case Success(content) =>
-        val contentType =
-          if (path.endsWith("yaml") || path.endsWith("yml")) ContentTypes.Yaml
-          else if (path.endsWith("json")) ContentTypes.Json
-          else ContentTypes.Plain
+        val contentType = ContentType.fromString(path.toString)
+
         val openApiFile = OpenApiFile(contentType, content)
-        Source.single(repo -> openApiFile)
+        Source.single(openApiFile)
       case Failure(exception) =>
-        logger.warn("Error during cloning", exception)
-        Source.empty[(Repo, OpenApiFile)]
+        logger.warn(s"Error while reading $path", exception)
+        Source.empty[OpenApiFile]
     }
 
-  def exec(args: List[String], cwd: Option[File] = None): Source[Try[List[String]], NotUsed] =
+  private def exec(args: List[String], cwd: Option[File] = None): S[Either[String, List[String]]] =
     Source.single(ProcessArgs(GitCmd :: args, cwd)).via(ProcessFlow.flow)
 }
