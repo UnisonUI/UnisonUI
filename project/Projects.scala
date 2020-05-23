@@ -26,7 +26,7 @@ object Projects {
   val restUiCore = createModule("rest-ui-core", "core")
 
   val restUi = createModule("rest-ui", "rest-ui")
-    .settings(mappings in Universal += file(s"docker/entrypoint.sh") -> "entrypoint.sh")
+    .settings(mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh")
 
   val serviceDiscoveryDocker     = createModule("service-discovery-docker", "service-discovery/docker")
   val serviceDiscoveryKubernetes = createModule("service-discovery-kubernetes", "service-discovery/kubernetes")

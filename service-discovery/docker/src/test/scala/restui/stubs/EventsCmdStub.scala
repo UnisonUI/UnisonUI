@@ -1,4 +1,4 @@
-package restui.mocks
+package restui.stubs
 
 import java.{util => ju}
 
@@ -6,7 +6,7 @@ import com.github.dockerjava.api.async.ResultCallback
 import com.github.dockerjava.api.command.EventsCmd
 import com.github.dockerjava.api.model.Event
 
-class EventsCmdMock(maybeEvent: Option[Event] = None) extends EventsCmd {
+class EventsCmdStub(maybeEvent: Option[Event] = None) extends EventsCmd {
   def close(): Unit = ???
 
   def exec[T <: ResultCallback[Event]](x: T): T = {

@@ -36,8 +36,8 @@ class SettingsSpec extends AnyWordSpec with Matchers {
 |  cache-duration =  "2 hours"
 |  vcs {
 |    github {
-|     username = "test" 
-|     api-token = "test" 
+|     username = "test"
+|     api-token = "test"
 |     polling-interval = "10 minutes"
 |    }
 |  }

@@ -8,7 +8,7 @@ jobs:
       JAVA_OPTS: -Xmx3200M
     steps:
       - checkout
-      - run: 
+      - run:
           name: Setup git
           command: |
             git config --global user.email "pedro.mangabeiralindekrantz@gmail.com"
@@ -25,7 +25,7 @@ jobs:
           key: v2-dependencies--{{ checksum "build.sbt" }}
       - run: sbt ";checkFix; checkFmt; coverage; test; coverageReport"
       - run: sbt coverageAggregate
-      - run: 
+      - run:
           name: Copy test reports
           command: |
             mkdir target/test-reports
@@ -51,7 +51,7 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "de:c0:97:65:ff:b0:7a:09:4b:8d:d5:ac:41:97:89:e4"
-      - run: 
+      - run:
           name: Setup git
           command: |
             git config --global user.email "pedro.mangabeiralindekrantz@gmail.com"
