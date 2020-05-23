@@ -42,6 +42,10 @@ jobs:
           name: Send coverage report
           command: bash <(curl -s https://codecov.io/bash)
           when: always
+      - slack/status:
+          channel: "github"
+          fail_only: true
+          webhook: webhook
   release:
     docker:
       - image: circleci/openjdk:11-jdk
