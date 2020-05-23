@@ -8,6 +8,11 @@ jobs:
       JAVA_OPTS: -Xmx3200M
     steps:
       - checkout
+      - run: 
+          name: Setup git
+          command: |
+            git config user.email "pedro.mangabeiralindekrantz@gmail.com"
+            git config user.name "Pedro Mangabeira"
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "build.sbt" }}
