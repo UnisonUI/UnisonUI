@@ -84,18 +84,17 @@ jobs:
       - setup_remote_docker
       - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
       - run: sbt ";project rest-ui; release with-defaults"
+      - slack/approval:
+          channel: github
+          mentions: "U014C8CJQFN"
+          message: Pending approval
       - slack/status:
-          channel: "github"
+          channel: github
           fail_only: true
-          webhook: webhook
 workflows:
   version: 2
   build_and_release:
     jobs:
-      - slack/approval-notification:
-          channel: github
-          mentions: "U014C8CJQFN"
-          message: Pending approval
       - test
       - release:
           requires:
@@ -108,3 +107,4 @@ workflows:
             tags:
               ignore:
                 - /v.+/
+ 
