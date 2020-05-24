@@ -36,13 +36,12 @@ class SettingsSpec extends AnyWordSpec with Matchers {
 |  cache-duration =  "2 hours"
 |  vcs {
 |    github {
-|     username = "test"
 |     api-token = "test"
 |     polling-interval = "10 minutes"
 |    }
 |  }
 |}""".stripMargin)
-        Settings.from(config) shouldBe Settings(2.hours, List(GitHub("test", "test", "https://api.github.com/graphql", 10.minutes, Nil)))
+        Settings.from(config) shouldBe Settings(2.hours, List(GitHub("test", "https://api.github.com/graphql", 10.minutes, Nil)))
       }
 
       "there is repos" in {
@@ -50,7 +49,6 @@ class SettingsSpec extends AnyWordSpec with Matchers {
 |  cache-duration =  "2 hours"
 |  vcs {
 |    github {
-|     username = "test"
 |     api-token = "test"
 |     repos = [
 |       {
@@ -70,10 +68,9 @@ class SettingsSpec extends AnyWordSpec with Matchers {
           List(
             GitHub(
               "test",
-              "test",
               "https://api.github.com/graphql",
               1.hours,
-              Repo(Uri("myOrg/Test"), List("test/")) :: Repo(Regex("myOrg/.+"), Nil) :: Repo(Uri("restui"), Nil) :: Nil
+              Repository(Uri("myOrg/Test"), List("test/")) :: Repository(Regex("myOrg/.+"), Nil) :: Repository(Uri("restui"), Nil) :: Nil
             )
           )
         )
@@ -101,7 +98,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
       Settings.from(config) shouldBe Settings(
         2.hours,
         List(
-          Git(Repo(Uri("myOrg/Test"), List("test/")) :: Repo(Regex("myOrg/.+"), Nil) :: Repo(Uri("restui"), Nil) :: Nil)
+          Git(Repository(Uri("myOrg/Test"), List("test/")) :: Repository(Regex("myOrg/.+"), Nil) :: Repository(Uri("restui"), Nil) :: Nil)
         )
       )
     }

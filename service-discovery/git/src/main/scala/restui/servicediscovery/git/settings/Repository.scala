@@ -6,24 +6,24 @@ import scala.jdk.CollectionConverters._
 
 import com.typesafe.config.{Config, ConfigFactory}
 
-final case class Repo(location: Location, swaggerPaths: List[String] = Nil)
+final case class Repository(location: Location, swaggerPaths: List[String] = Nil)
 
-object Repo {
+object Repository {
 
-  def getListOfRepos(config: Config, path: String): List[Repo] =
+  def getListOfRepositories(config: Config, path: String): List[Repository] =
     if (config.hasPath(path))
       config.getAnyRefList(path).asScala.toList.map {
-        case location: String          => Repo(Uri(location))
+        case location: String          => Repository(Uri(location))
         case config: ju.Map[String, _] => fromConfig(ConfigFactory.parseMap(config))
       }
     else Nil
 
-  def fromConfig(config: Config): Repo = {
+  def fromConfig(config: Config): Repository = {
     val location = Location.fromConfig(config)
     val swaggerPaths =
       if (config.hasPath("swagger-paths")) config.getStringList("swagger-paths").asScala.toList
       else Nil
-    Repo(location, swaggerPaths)
+    Repository(location, swaggerPaths)
   }
 }
 sealed trait Location {

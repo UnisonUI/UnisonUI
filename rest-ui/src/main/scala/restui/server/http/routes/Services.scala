@@ -27,7 +27,7 @@ object Services {
             .map(_.map { case Service(name, _, metadata) => Models.ServiceUp(name, metadata) })
         complete(response)
       }
-    } ~ path("services" / Segment) { service =>
+    } ~ path("services" / Remaining) { service =>
       get {
         val response = (serviceActorRef ? Get(service))
           .mapTo[Option[Service]]

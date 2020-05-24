@@ -13,15 +13,15 @@ import akka.stream.scaladsl.{Source, _}
 import com.github.dockerjava.api.model.{ContainerNetwork, Event}
 import com.github.dockerjava.api.{DockerClient => JDockerClient}
 import com.github.dockerjava.core.command.EventsResultCallback
-import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.LazyLogging
 import restui.servicediscovery.ServiceDiscoveryProvider
 import restui.servicediscovery.models._
 
 class DockerClient(private val client: JDockerClient,
                    private val settings: Settings,
-                   private val callback: ServiceDiscoveryProvider.Callback)(implicit val system: ActorSystem) {
+                   private val callback: ServiceDiscoveryProvider.Callback)(implicit val system: ActorSystem)
+    extends LazyLogging {
   import DockerClient._
-  private val logger                              = LoggerFactory.getLogger(classOf[DockerClient])
   implicit val executionContent: ExecutionContext = system.dispatcher
 
   private def createQueue: SourceQueueWithComplete[ServiceEvent] =

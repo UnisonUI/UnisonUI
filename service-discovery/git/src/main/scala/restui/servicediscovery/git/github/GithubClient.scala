@@ -7,18 +7,17 @@ import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpMethods, HttpRequest, RequestEntity}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.{Merge, Source => AkkaSource}
+import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.Json
-import org.slf4j.LoggerFactory
-import restui.servicediscovery.git.github.models._
+import restui.servicediscovery.git._
+import restui.servicediscovery.git.github.data._
 import restui.servicediscovery.git.settings.GitHub
-import restui.servicediscovery.git.{RequestExecutor, _}
 
 final case class GithubClient(settings: GitHub, requestExecutor: RequestExecutor)
 
-object GithubClient {
+object GithubClient extends LazyLogging {
 
-  private val logger                               = LoggerFactory.getLogger(GithubClient.getClass)
   private def graphqlQuery(cursor: Option[String]) = s"""${cursor.map(_ => "query($cursor: String!)").getOrElse("")}{
   viewer {
     repositories(${cursor.map(_ => "after: $cursor, ").getOrElse("")}first: 100) {
@@ -28,7 +27,7 @@ object GithubClient {
       }
       nodes {
         nameWithOwner
-        projectsUrl
+        url
         defaultBranchRef {
           name
         }
@@ -46,7 +45,7 @@ object GithubClient {
       executionContext: ExecutionContext): Source[Node] =
     AkkaSource.future(executeRequest(githubClient, cursor)).flatMapConcat {
       case Error(error) =>
-        logger.warn("Error while contacting github api: {}", error)
+        logger.warn("Error while contacting github api", error)
         AkkaSource.empty[Node]
       case Repository(nodes, maybeCursor) =>
         val nodesSource = AkkaSource(nodes)

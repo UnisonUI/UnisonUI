@@ -6,12 +6,10 @@ import akka.actor.ActorSystem
 import com.github.dockerjava.core.{DefaultDockerClientConfig, DockerClientBuilder}
 import com.github.dockerjava.netty.NettyDockerCmdExecFactory
 import com.typesafe.config.Config
-import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.LazyLogging
 import restui.servicediscovery.ServiceDiscoveryProvider
 
-class DockerProvider extends ServiceDiscoveryProvider {
-
-  private val logger = LoggerFactory.getLogger(classOf[DockerProvider])
+class DockerProvider extends ServiceDiscoveryProvider with LazyLogging {
 
   override def start(actorSystem: ActorSystem, config: Config, callback: ServiceDiscoveryProvider.Callback): Try[Unit] =
     Try {
@@ -20,7 +18,9 @@ class DockerProvider extends ServiceDiscoveryProvider {
 
       val dockerConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().withDockerHost(settings.dockerHost).build()
       val client       = DockerClientBuilder.getInstance(dockerConfig).withDockerCmdExecFactory(new NettyDockerCmdExecFactory()).build()
-      logger.debug("Initialising docker provider with {}", settings)
+
+      logger.debug("Initialising docker provider")
+
       new DockerClient(client, settings, callback).listCurrentAndFutureEndpoints
     }
 

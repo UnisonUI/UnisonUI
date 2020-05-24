@@ -5,18 +5,17 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 import akka.actor.ActorSystem
-import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.LazyLogging
 import restui.Configuration
 import restui.server.http.HttpServer
 import restui.server.service._
 import restui.servicediscovery.ProvidersLoader
 import restui.servicediscovery.models._
 
-object Main extends App {
+object Main extends App with LazyLogging {
 
   private val Namespace: String                   = "restui.http"
-  private val config                              = Configuration.config
-  private val logger                              = LoggerFactory.getLogger(Main.getClass)
+  private val config                              = Configuration.config(args.headOption)
   implicit val system                             = ActorSystem()
   implicit val executionContext: ExecutionContext = system.dispatcher
 
@@ -36,7 +35,7 @@ object Main extends App {
   httpServer.bind(interface, port).onComplete {
     case Success(binding) =>
       val address = binding.localAddress
-      logger.info("Server online at http://{}:{}/", address.getHostName, address.getPort)
+      logger.info(s"Server online at http://${address.getHostName}:${address.getPort}/")
       sys.addShutdownHook {
         binding.terminate(hardDeadline = 3.seconds).flatMap(_ => system.terminate())
       }

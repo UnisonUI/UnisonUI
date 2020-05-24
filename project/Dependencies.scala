@@ -9,15 +9,17 @@ object Dependencies {
 
   }
   object Logging {
-    private val logback = "ch.qos.logback" % "logback-classic" % "1.2.3"
-    val all             = Seq(logback)
+    private val logback      = "ch.qos.logback"              % "logback-classic" % "1.2.3"
+    private val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging"   % "3.9.2"
+    val all                  = Seq(logback, scalaLogging)
 
   }
   object Circe {
-    private val version = "0.12.3"
+    private val version = "0.13.0"
     private val core    = "io.circe" %% "circe-core"    % version
     private val generic = "io.circe" %% "circe-generic" % version
-    val all             = Seq(core, generic)
+    private val yaml    = "io.circe" %% "circe-yaml"    % version
+    val all             = Seq(core, generic, yaml)
   }
 
   object Akka {
@@ -54,5 +56,5 @@ object Dependencies {
   lazy val serviceDiscoveryKubernetes = libraryDependencies ++= common ++ Akka.all ++
     Seq("io.skuber" %% "skuber" % "2.4.0")
 
-  lazy val serviceDiscoveryGit = libraryDependencies ++= common ++ Akka.all
+  lazy val serviceDiscoveryGit = libraryDependencies ++= common ++ Akka.all ++ Circe.all
 }

@@ -3,7 +3,7 @@ package restui.servicediscovery.git.github
 import cats.syntax.functor._
 import io.circe.{Decoder, Encoder, HCursor, Json}
 
-package object models {
+package object data {
   sealed trait GrahpQL
   final case class Error(messages: List[String]) extends GrahpQL
 
@@ -36,14 +36,15 @@ package object models {
                 "hasNextPage" -> Json.fromBoolean(repository.cursor.isDefined),
                 "endCursor"   -> Json.fromString(repository.cursor.getOrElse(""))
               ),
-              "nodes" -> Json.arr(repository.repositories.map(node =>
-                Json.obj(
-                  "nameWithOwner" -> Json.fromString(node.name),
-                  "projectsUrl"   -> Json.fromString(node.url),
-                  "defaultBranchRef" -> Json.obj(
-                    "name" -> Json.fromString(node.branch)
-                  )
-                )): _*)
+              "nodes" -> Json.arr(
+                repository.repositories.map(node =>
+                  Json.obj(
+                    "nameWithOwner" -> Json.fromString(node.name),
+                    "url"           -> Json.fromString(node.url),
+                    "defaultBranchRef" -> Json.obj(
+                      "name" -> Json.fromString(node.branch)
+                    )
+                  )): _*)
             )
           )
         )
@@ -62,7 +63,7 @@ package object models {
             val cursor = json.hcursor
             for {
               name   <- cursor.get[String]("nameWithOwner").toOption
-              url    <- cursor.get[String]("projectsUrl").toOption
+              url    <- cursor.get[String]("url").toOption
               branch <- cursor.downField("defaultBranchRef").get[String]("name").toOption
             } yield Node(name, url, branch)
           }

@@ -5,15 +5,15 @@ import scala.util.{Failure, Success}
 
 import akka.actor.{ActorSystem, Props}
 import akka.stream.scaladsl.{Sink, Source}
-import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.LazyLogging
 import restui.servicediscovery.ServiceDiscoveryProvider
 import skuber._
 import skuber.api.Configuration
 import skuber.json.format._
 
 class KubernetesClient(private val settings: Settings, private val callback: ServiceDiscoveryProvider.Callback)(implicit
-    system: ActorSystem) {
-  private val logger                              = LoggerFactory.getLogger(classOf[KubernetesClient])
+    system: ActorSystem)
+    extends LazyLogging {
   implicit val executionContent: ExecutionContext = system.dispatcher
   private val serviceActorRef                     = system.actorOf(Props(classOf[ServiceActor], settings.labels, callback))
 

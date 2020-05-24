@@ -6,7 +6,7 @@ import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.stream.scaladsl.Sink
 import base.TestBase
 import io.circe.syntax._
-import restui.servicediscovery.git.github.models.{Error, Node, Repository}
+import restui.servicediscovery.git.github.data.{Error, Node, Repository}
 import restui.servicediscovery.git.settings.GitHub
 
 class GithubClientSpec extends TestBase {
