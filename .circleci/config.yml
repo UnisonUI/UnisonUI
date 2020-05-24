@@ -45,7 +45,6 @@ jobs:
       - slack/status:
           channel: "github"
           fail_only: true
-          webhook: webhook
   release:
     docker:
       - image: circleci/openjdk:11-jdk
@@ -97,7 +96,6 @@ workflows:
           channel: github
           mentions: "U014C8CJQFN"
           message: Pending approval
-          webhook: webhook
       - test
       - release:
           requires:
