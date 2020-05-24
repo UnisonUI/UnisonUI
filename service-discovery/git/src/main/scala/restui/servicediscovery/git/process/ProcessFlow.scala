@@ -3,13 +3,13 @@ package restui.servicediscovery.git.process
 import scala.sys.process._
 import scala.util.Try
 
-import akka.NotUsed
-import akka.stream.scaladsl.Flow
+import akka.stream.scaladsl.{Flow => AkkaFlow}
+import restui.servicediscovery.git.Flow
 
 object ProcessFlow {
 
-  val flow: Flow[ProcessArgs, Either[String, List[String]], NotUsed] =
-    Flow[ProcessArgs].map { processArgs =>
+  val flow: Flow[ProcessArgs, Either[String, List[String]]] =
+    AkkaFlow[ProcessArgs].map { processArgs =>
       val buffer = new StringBuffer()
       val logger = ProcessLogger(buffer append _)
       Try {

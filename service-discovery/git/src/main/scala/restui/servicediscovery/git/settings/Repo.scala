@@ -34,12 +34,14 @@ object Location {
   private val RegexPattern = "^/(.+?)/$".r
   private val DefaultRegex = ".+"
 
-  def fromConfig(config: Config): Location =
-    if (config.hasPath("location")) {
-      val location = config.getString("location").trim
-      if (location.isEmpty) Regex(DefaultRegex)
-      else RegexPattern.findFirstMatchIn(location).fold[Location](Uri(location))(m => Regex(m.group(1)))
-    } else Regex(DefaultRegex)
+  def fromConfig(config: Config): Location = {
+    val location =
+      if (config.hasPath("location")) config.getString("location").trim
+      else ""
+
+    if (location.isEmpty) Regex(DefaultRegex)
+    else RegexPattern.findFirstMatchIn(location).fold[Location](Uri(location))(m => Regex(m.group(1)))
+  }
 
 }
 final case class Uri(uri: String) extends Location {

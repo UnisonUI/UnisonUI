@@ -4,10 +4,10 @@ import scala.concurrent.Future
 
 import akka.NotUsed
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
-import akka.stream.scaladsl.{Flow, Source}
+import akka.stream.scaladsl.{Flow => AkkaFlow, Source => AkkaSource}
 
 package object git {
-  type F[I, O]         = Flow[I, O, NotUsed]
-  type S[T]            = Source[T, NotUsed]
+  type Flow[I, O]      = AkkaFlow[I, O, NotUsed]
+  type Source[T]       = AkkaSource[T, _]
   type RequestExecutor = HttpRequest => Future[HttpResponse]
 }

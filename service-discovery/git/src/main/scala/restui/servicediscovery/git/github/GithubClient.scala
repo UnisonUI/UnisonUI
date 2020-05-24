@@ -6,7 +6,7 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpMethods, HttpRequest, RequestEntity}
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.scaladsl.{Merge, Source}
+import akka.stream.scaladsl.{Merge, Source => AkkaSource}
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.Json
 import org.slf4j.LoggerFactory
@@ -38,21 +38,21 @@ object GithubClient {
 }
 """
 
-  def listRepositories(githubClient: GithubClient)(implicit system: ActorSystem, executionContext: ExecutionContext): S[Node] =
+  def listRepositories(githubClient: GithubClient)(implicit system: ActorSystem, executionContext: ExecutionContext): Source[Node] =
     graphqlRecursiveSource(githubClient)
 
   private def graphqlRecursiveSource(githubClient: GithubClient, cursor: Option[String] = None)(implicit
       system: ActorSystem,
-      executionContext: ExecutionContext): S[Node] =
-    Source.future(executeRequest(githubClient, cursor)).flatMapConcat {
+      executionContext: ExecutionContext): Source[Node] =
+    AkkaSource.future(executeRequest(githubClient, cursor)).flatMapConcat {
       case Error(error) =>
         logger.warn("Error while contacting github api: {}", error)
-        Source.empty[Node]
+        AkkaSource.empty[Node]
       case Repository(nodes, maybeCursor) =>
-        val nodesSource = Source(nodes)
+        val nodesSource = AkkaSource(nodes)
         maybeCursor match {
           case None   => nodesSource
-          case cursor => Source.combine(nodesSource, graphqlRecursiveSource(githubClient, cursor))(Merge(_))
+          case cursor => AkkaSource.combine(nodesSource, graphqlRecursiveSource(githubClient, cursor))(Merge(_))
         }
     }
 

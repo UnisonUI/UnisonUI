@@ -15,6 +15,7 @@ final case class GitHub(username: String,
                         pollingInterval: FiniteDuration = 2.hours,
                         override val repos: Seq[Repo] = Nil)
     extends VCS
+
 final case class Git(override val repos: Seq[Repo]) extends VCS
 
 object GitHub {
