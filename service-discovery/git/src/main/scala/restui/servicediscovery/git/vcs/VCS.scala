@@ -10,12 +10,12 @@ import restui.servicediscovery.git.git.Git
 import restui.servicediscovery.git.git.data.Repository
 import restui.servicediscovery.git.github.{Github, GithubClient}
 import restui.servicediscovery.git.settings.{Git => GitSetting, GitHub => GithubSetting, Settings}
-import restui.servicediscovery.models.OpenApiFile
+import restui.servicediscovery.models.Service
 
 object VCS {
   def source(settings: Settings, requestExecutor: RequestExecutor)(implicit
       actorSystem: ActorSystem,
-      executionContext: ExecutionContext): Source[(Repository, OpenApiFile)] = {
+      executionContext: ExecutionContext): Source[Service] = {
     val vcsSources = settings.vcs.map {
       case settings: GithubSetting =>
         Github.retrieveRepositoriesRegularly(GithubClient(settings, requestExecutor))

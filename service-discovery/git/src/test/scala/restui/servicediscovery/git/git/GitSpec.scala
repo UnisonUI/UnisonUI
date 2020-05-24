@@ -4,11 +4,11 @@ import java.nio.file.Files
 
 import akka.stream.scaladsl.{Sink, Source}
 import base.TestBase
-import org.scalatest.OptionValues
+import org.scalatest.Inside
 import restui.servicediscovery.git.git.data.Repository
-import restui.servicediscovery.models.{ContentTypes, OpenApiFile}
+import restui.servicediscovery.models.{ContentTypes, OpenApiFile, Service}
 
-class GitSpec extends TestBase with OptionValues {
+class GitSpec extends TestBase with Inside {
 
   trait StubRepository {
     import sys.process._
@@ -40,7 +40,7 @@ class GitSpec extends TestBase with OptionValues {
       }
     }
 
-    "the repo has been initialised for the time" should {
+    "retrieving files from git" should {
 
       "not find files" when {
 
@@ -63,24 +63,10 @@ class GitSpec extends TestBase with OptionValues {
 
         Source.single(repo).via(Git.flow).runWith(Sink.seq).map { result =>
           result should have length 1
-          val (repo, files) = result(0)
-          repo.cachedRef should be('defined)
-          files shouldBe OpenApiFile(ContentTypes.Plain, "test")
-        }
-      }
-    }
-
-    "the repo has already been initialised" should {
-
-      "not find files" in {
-        val fixture = new StubRepository {}
-        val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
-        fixture.commit("test", "test")
-        val ref  = fixture.sha1("master")
-        val repo = Repository(fixture.repo.toAbsolutePath.toString, "master", List("test"), Some(tempDir), Some(ref))
-        fixture.commit("test2", "test")
-        Source.single(repo).via(Git.flow).runWith(Sink.seq).map { result =>
-          result shouldBe empty
+          inside(result.head) {
+            case Service(_, file, _) =>
+              file shouldBe OpenApiFile(ContentTypes.Plain, "test")
+          }
         }
       }
     }

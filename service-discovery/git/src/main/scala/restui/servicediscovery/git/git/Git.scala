@@ -17,7 +17,7 @@ import restui.servicediscovery.git._
 import restui.servicediscovery.git.git.data.{Repository, RestUI}
 import restui.servicediscovery.git.process.{Process, ProcessArgs}
 import restui.servicediscovery.git.settings.{Repository => RepositorySetting, Uri}
-import restui.servicediscovery.models.{ContentType, OpenApiFile}
+import restui.servicediscovery.models.{ContentType, OpenApiFile, Service}
 
 object Git extends LazyLogging {
   private val GitCmd = "git"
@@ -26,7 +26,7 @@ object Git extends LazyLogging {
       case RepositorySetting(Uri(uri), swaggerPaths) =>
         Repository(uri, "master", swaggerPaths)
     })
-  val flow: Flow[Repository, (Repository, OpenApiFile)] =
+  val flow: Flow[Repository, Service] =
     AkkaFlow[Repository]
       .flatMapMerge(Concurrency.AvailableCore, cloneRepository(_).async)
       .flatMapMerge(Concurrency.AvailableCore, findFreshSwaggerFiles(_).async)
@@ -46,31 +46,17 @@ object Git extends LazyLogging {
 
   private def findFreshSwaggerFiles(repo: Repository): Source[(Repository, List[Path])] = {
     val repoWithNewPath = findRestUIConfig(repo.directory.get.toPath).fold(repo) {
-      case RestUI(swaggerPaths) => repo.copy(swaggerPaths = swaggerPaths)
+      case RestUI(serviceName, swaggerPaths) => repo.copy(swaggerPaths = swaggerPaths, serviceName = serviceName)
     }
-    repoWithNewPath.cachedRef match {
-      case None =>
-        val localFiles = Files
-          .walk(repo.directory.get.toPath)
-          .iterator
-          .asScala
-          .to(LazyList)
-          .filter(Files.isRegularFile(_))
-          .map(_.normalize)
+    val localFiles = Files
+      .walk(repo.directory.get.toPath)
+      .iterator
+      .asScala
+      .to(LazyList)
+      .filter(Files.isRegularFile(_))
+      .map(_.normalize)
 
-        AkkaSource.single(repoWithNewPath -> filterSwaggerFiles(repoWithNewPath, localFiles))
-
-      case Some(ref) =>
-        val repoPath = repoWithNewPath.directory.get.toPath
-        execute("diff" :: "--name-only" :: ref :: "HEAD" :: Nil, repo.directory).flatMapConcat {
-          case Right(files) =>
-            val normalisedFiles = files.to(LazyList).map(repoPath.resolve(_).normalize)
-            AkkaSource.single(repoWithNewPath -> filterSwaggerFiles(repoWithNewPath, normalisedFiles))
-          case Left(exception) =>
-            logger.warn("Error during diff", exception)
-            AkkaSource.empty[(Repository, List[Path])]
-        }
-    }
+    AkkaSource.single(repoWithNewPath -> filterSwaggerFiles(repoWithNewPath, localFiles))
   }
   private def findRestUIConfig(path: Path): Option[RestUI] =
     Try {
@@ -96,28 +82,23 @@ object Git extends LazyLogging {
       }
     }.toList
   }
-  private def retrieveSwaggerFilesAndGetLatestRef(repoWithFiles: (Repository, List[Path])): Source[(Repository, OpenApiFile)] = {
+
+  private def retrieveSwaggerFilesAndGetLatestRef(repoWithFiles: (Repository, List[Path])): Source[Service] = {
     val (repo, files) = repoWithFiles
-    latestRef(repo).flatMapMerge(
-      Concurrency.AvailableCore,
-      repo =>
-        AkkaSource(files)
-          .flatMapMerge(Concurrency.AvailableCore, loadFile(_).async)
-          .map { file =>
-            repo.directory.get.delete()
-            repo -> file
-          }
-          .async
-    )
+
+    AkkaSource(files)
+      .flatMapMerge(Concurrency.AvailableCore, loadFile(_).async)
+      .map { file =>
+        repo.directory.get.delete()
+        val uri         = akka.http.scaladsl.model.Uri(repo.uri)
+        val nameFromUri = uri.path.toString.substring(1)
+        val serviceName = repo.serviceName.getOrElse(nameFromUri)
+        val metadata    = Map("provider" -> uri.authority.host.address.split('.').head)
+        Service(serviceName, file, metadata)
+      }
+      .async
 
   }
-  private def latestRef(repo: Repository): Source[Repository] =
-    execute("rev-parse" :: "--verify" :: repo.branch :: Nil, repo.directory).flatMapConcat {
-      case Right(result) => AkkaSource.single(repo.copy(cachedRef = Some(result.mkString.trim)))
-      case Left(exception) =>
-        logger.warn("Error while getting latest ref", exception)
-        AkkaSource.empty[Repository]
-    }
 
   private def loadFile(path: Path): Source[OpenApiFile] =
     Try(new String(Files.readAllBytes(path), StandardCharsets.UTF_8)) match {

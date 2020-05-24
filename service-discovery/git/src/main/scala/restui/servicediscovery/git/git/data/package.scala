@@ -7,6 +7,6 @@ package object data {
                               branch: String,
                               swaggerPaths: List[String],
                               directory: Option[File] = None,
-                              cachedRef: Option[String] = None)
-  final case class RestUI(swaggers: List[String])
+                              serviceName: Option[String] = None)
+  final case class RestUI(name: Option[String], swaggers: List[String])
 }

@@ -15,7 +15,7 @@ class ProcessSpec extends TestBase with EitherValues {
         |2""".stripMargin :: Nil)
       Source.single(args).via(Process.execute).runWith(Sink.seq).map { result =>
         result should have length 1
-        result(0).right.value shouldBe List("1", "2")
+        result.head.right.value shouldBe List("1", "2")
       }
     }
 
@@ -26,7 +26,7 @@ class ProcessSpec extends TestBase with EitherValues {
         result should have length 1
         val path = tempDir.getCanonicalPath()
         tempDir.delete()
-        result(0).right.value shouldBe List(path)
+        result.head.right.value shouldBe List(path)
       }
     }
   }
@@ -34,7 +34,7 @@ class ProcessSpec extends TestBase with EitherValues {
     val args = ProcessArgs("i_do_not_exists" :: Nil)
     Source.single(args).via(Process.execute).runWith(Sink.seq).map { result =>
       result should have length 1
-      result(0).left.value shouldBe ""
+      result.head.left.value shouldBe ""
     }
   }
 }
