@@ -13,7 +13,6 @@ import restui.servicediscovery.git.git.Repo
 import restui.servicediscovery.git.github.models.Node
 import restui.servicediscovery.git.settings.GitHub
 import restui.servicediscovery.git.{Flow, Source}
-import org.slf4j.LoggerFactory
 
 object GithubFlow {
   def retrieveRepositoriesRegularly(

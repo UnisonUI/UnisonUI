@@ -60,9 +60,12 @@ object GithubClient {
       system: ActorSystem,
       executionContext: ExecutionContext) = {
     val request = createRequest(githubClient.settings, cursor)
-    githubClient.requestExecutor(request).flatMap { response =>
-      Unmarshal(response.entity).to[GrahpQL]
-    }
+    githubClient
+      .requestExecutor(request)
+      .flatMap { response =>
+        Unmarshal(response.entity).to[GrahpQL]
+      }
+      .recover(exception => Error(List(exception.getMessage)))
   }
 
   private def createRequest(github: GitHub, cursor: Option[String]): HttpRequest =

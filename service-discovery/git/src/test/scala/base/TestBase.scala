@@ -1,11 +1,12 @@
 package base
 
+import scala.concurrent.ExecutionContext
+
 import akka.actor.ActorSystem
 import akka.testkit.{ImplicitSender, TestKit}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
-import scala.concurrent.ExecutionContext
 
 abstract class TestBase
     extends TestKit(ActorSystem("test"))

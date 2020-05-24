@@ -1,19 +1,18 @@
 package restui.servicediscovery.git.github
 
+import scala.collection.mutable
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest, HttpResponse}
 import akka.stream.scaladsl.Sink
 import akka.testkit.TestProbe
 import base.TestBase
 import io.circe.syntax._
-import org.scalatest.Inside
+import org.scalatest.{Inside, Inspectors}
 import restui.servicediscovery.git.git.{Repo => GitRepo}
 import restui.servicediscovery.git.github.models.{Node, Repository}
 import restui.servicediscovery.git.settings.{GitHub, Repo, Uri}
-import scala.concurrent.duration._
-import scala.collection.mutable
-import org.scalatest.Inspectors
 
 class GithubFlowSpec extends TestBase with Inside with Inspectors {
   private val nodes = Seq(Node("MyAwesomeUser/MyAwesomeRepo", "https://github.com/MyAwesomeUser/MyAwesomeRepo", "master"))
