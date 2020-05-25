@@ -1,7 +1,5 @@
 package restui.servicediscovery
 
-import java.util.ServiceLoader
-
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
@@ -11,8 +9,6 @@ import com.typesafe.scalalogging.LazyLogging
 import restui.servicediscovery.ServiceDiscoveryProvider.Callback
 
 object ProvidersLoader extends LazyLogging {
-  ServiceLoader.load(classOf[ServiceDiscoveryProvider])
-
   def load(configuration: Config, callback: String => Callback)(implicit system: ActorSystem): Unit = {
     val providers = configuration.getStringList("restui.providers").asScala.toList
 
