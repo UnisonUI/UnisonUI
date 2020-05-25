@@ -45,7 +45,8 @@ object GithubClient extends LazyLogging {
       executionContext: ExecutionContext): Source[Node] =
     AkkaSource.future(executeRequest(githubClient, cursor)).flatMapConcat {
       case Error(error) =>
-        logger.warn("Error while contacting github api", error)
+        val errorMessage = error.mkString(", ")
+        logger.warn(s"Error while contacting github api: $errorMessage")
         AkkaSource.empty[Node]
       case Repository(nodes, maybeCursor) =>
         val nodesSource = AkkaSource(nodes)

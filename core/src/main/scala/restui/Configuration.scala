@@ -14,7 +14,7 @@ object Configuration extends LazyLogging {
       case filename =>
         Try {
           val file = new File(filename)
-          ConfigFactory.parseFile(file).withFallback(defaultConfig)
+          ConfigFactory.systemProperties.withFallback(ConfigFactory.parseFile(file)).withFallback(defaultConfig)
         }.recover {
           case throwable =>
             logger.warn("Failed to load the default configuration, attempting to load the reference configuration", throwable)

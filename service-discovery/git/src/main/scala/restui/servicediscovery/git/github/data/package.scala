@@ -1,5 +1,6 @@
 package restui.servicediscovery.git.github
 
+import cats.syntax.either._
 import cats.syntax.functor._
 import io.circe.{Decoder, Encoder, HCursor, Json}
 
@@ -17,8 +18,12 @@ package object data {
 
     implicit val decoder: Decoder[Error] = (cursor: HCursor) =>
       cursor
-        .get[List[Json]]("errors")
-        .map(_.flatMap(_.hcursor.get[String]("message").toOption))
+        .get[String]("message")
+        .map(List(_))
+        .leftFlatMap(_ =>
+          cursor
+            .get[List[Json]]("errors")
+            .map(_.flatMap(_.hcursor.get[String]("message").toOption)))
         .map(Error(_))
   }
 
