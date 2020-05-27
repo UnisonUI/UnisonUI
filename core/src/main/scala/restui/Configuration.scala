@@ -5,20 +5,20 @@ import java.io.File
 import scala.util.Try
 
 import com.typesafe.config.{Config, ConfigFactory}
-import org.slf4j.LoggerFactory
+import com.typesafe.scalalogging.LazyLogging
 
-object Configuration {
-  private val logger = LoggerFactory.getLogger(Configuration.getClass)
-
-  private val referenceConfig: Config = ConfigFactory.load()
-  val config: Config = Try {
-    val file = new File("application.conf")
-    ConfigFactory.parseFile(file).withFallback(referenceConfig)
-  }.fold(
-    throwable => {
-      logger.warn("Failed to load the default configuration, attempting to load the reference configuration", throwable)
-      referenceConfig
-    },
-    identity(_)
-  )
+object Configuration extends LazyLogging {
+  private val defaultConfig: Config = ConfigFactory.load()
+  def config(maybeFile: Option[String] = None): Config =
+    maybeFile.flatMap {
+      case filename =>
+        Try {
+          val file = new File(filename)
+          ConfigFactory.systemProperties.withFallback(ConfigFactory.parseFile(file)).withFallback(defaultConfig)
+        }.recover {
+          case throwable =>
+            logger.warn("Failed to load the default configuration, attempting to load the reference configuration", throwable)
+            defaultConfig
+        }.toOption
+    }.getOrElse(defaultConfig)
 }

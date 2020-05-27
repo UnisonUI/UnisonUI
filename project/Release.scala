@@ -20,8 +20,7 @@ object Release {
       ReleaseStep(releaseStepTask(publish in docker)),
       tagRelease,
       setNextVersion,
-      commitNextVersion,
-      pushChanges
+      commitNextVersion
     )
   )
 }

@@ -1,8 +1,8 @@
-const webpack = require("webpack");
 const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -55,6 +55,11 @@ module.exports = {
 
   plugins: [
     new CleanWebpackPlugin(),
+    new CopyPlugin({
+      patterns: [
+        { from: './src/main/js/images', to: 'images' },
+      ],
+    }),
     new HtmlWebPackPlugin({
       template: "./src/main/js/index.html",
       filename: "../index.html"

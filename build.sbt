@@ -1,6 +1,7 @@
 import Aliases._
 
 scalafixDependencies in ThisBuild += "com.github.liancheng" %% "organize-imports" % "0.3.1-RC1"
+
 testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", (baseDirectory.value / "target" / "test-reports").toString, "-o")
 
 lazy val root = Project("restUI", file("."))
@@ -10,7 +11,7 @@ lazy val root = Project("restUI", file("."))
   .disablePlugins(ReleasePlugin)
 
 lazy val restUi = Projects.restUi
-  .dependsOn(restUiCore, serviceDiscoveryDocker, serviceDiscoveryKubernetes)
+  .dependsOn(restUiCore, providerDocker, providerKubernetes, providerGit)
   .settings(Dependencies.restUi)
   .settings(DockerSettings.settings)
   .settings(mainClass in Compile := Some("restui.server.Main"))
@@ -21,22 +22,27 @@ lazy val restUi = Projects.restUi
 lazy val restUiCore = Projects.restUiCore
   .settings(Dependencies.restUiCore)
 
-lazy val serviceDiscovery = (project in file("service-discovery"))
-  .aggregate(serviceDiscoveryDocker, serviceDiscoveryKubernetes)
+lazy val providers = (project in file("providers"))
+  .aggregate(providerDocker, providerKubernetes, providerGit)
   .disablePlugins(ReleasePlugin)
 
-lazy val serviceDiscoveryKubernetes = Projects.serviceDiscoveryKubernetes
+lazy val providerGit = Projects.providerGit
   .dependsOn(restUiCore)
-  .settings(Dependencies.serviceDiscoveryKubernetes)
+  .settings(Dependencies.providerGit)
   .disablePlugins(ReleasePlugin)
 
-lazy val serviceDiscoveryDocker = Projects.serviceDiscoveryDocker
+lazy val providerKubernetes = Projects.providerKubernetes
   .dependsOn(restUiCore)
-  .settings(Dependencies.serviceDiscoveryDocker)
+  .settings(Dependencies.providerKubernetes)
+  .disablePlugins(ReleasePlugin)
+
+lazy val providerDocker = Projects.providerDocker
+  .dependsOn(restUiCore)
+  .settings(Dependencies.providerDocker)
   .disablePlugins(ReleasePlugin)
 
 val projects: Seq[ProjectReference] = Seq(
   restUiCore,
   restUi,
-  serviceDiscovery
+  providers
 )

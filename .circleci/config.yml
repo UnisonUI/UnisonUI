@@ -1,90 +1,52 @@
 version: 2.1
+orbs:
+  slack: circleci/slack@3.4.2
 jobs:
   test:
     docker:
       - image: circleci/openjdk:11-jdk
     working_directory: ~/repo
     environment:
-      JVM_OPTS: -Xmx3200m
-      TERM: dumb
+      JAVA_OPTS: -Xmx3200M
     steps:
       - checkout
+      - run:
+          name: Setup git
+          command: |
+            git config --global user.email "pedro.mangabeiralindekrantz@gmail.com"
+            git config --global user.name "Pedro Mangabeira"
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "build.sbt" }}
-            - v1-dependencies-
+            - v2-dependencies-{{ checksum "build.sbt" }}
+            - v2-dependencies-
       - run: sbt test:compile
       - save_cache:
           paths:
             - ~/.m2
-          key: v1-dependencies--{{ checksum "build.sbt" }}
-      - run: sbt ";checkFix; checkFmt; test"
-      - run: |
-          mkdir target/test-reports
-          cp core/target/test-reports/* target/test-reports || true
-          cp rest-ui/target/test-reports/* target/test-reports || true
-          cp service-discovery/docker/target/test-reports/* target/test-reports || true
-          cp service-discovery/kubernetes/target/test-reports/* target/test-reports || true
+            - ~/.cache/coursier/v1
+          key: v2-dependencies--{{ checksum "build.sbt" }}
+      - run: sbt ";checkFix; checkFmt; coverage; test; coverageReport"
+      - run: sbt coverageAggregate
+      - run:
+          name: Copy test reports
+          command: |
+            mkdir target/test-reports
+            cp core/target/test-reports/* target/test-reports || true
+            cp rest-ui/target/test-reports/* target/test-reports || true
+            cp service-discovery/docker/target/test-reports/* target/test-reports || true
+            cp service-discovery/kubernetes/target/test-reports/* target/test-reports || true
+          when: always
       - store_test_results:
           path: target/test-reports
-  release:
-    docker:
-      - image: circleci/openjdk:11-jdk
-    working_directory: ~/repo
-    environment:
-      JVM_OPTS: -Xmx3200m
-      TERM: dumb
-    steps:
-      - checkout
-      - add_ssh_keys:
-          fingerprints:
-            - "de:c0:97:65:ff:b0:7a:09:4b:8d:d5:ac:41:97:89:e4"
-      - run: |
-          git config user.email "pedro.mangabeiralindekrantz@gmail.com"
-          git config user.name "Pedro Mangabeira"
-      - run: |
-            sudo rm -rf /var/lib/apt/lists/*
-            sudo apt update
-            curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
-            sudo apt-get install -y nodejs
-            cd rest-ui/
-            npm install
-            cd ~/repo
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "build.sbt" }}
-            - v1-dependencies-
-      - run: sbt compile
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: v1-dependencies--{{ checksum "build.sbt" }}
-      - setup_remote_docker
-      - run: echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-      - run: sbt ";project rest-ui; release with-defaults"
+      - run:
+          name: Send coverage report
+          command: bash <(curl -s https://codecov.io/bash)
+          when: always
+      - slack/status:
+          channel: "github"
+          fail_only: true
 workflows:
   version: 2
-  test_on_branch:
+  test:
     jobs:
-      - test:
-          filters:
-            branches:
-              ignore:
-                - master
-  release_on_master:
-    jobs:
-      - test:
-          filters:
-            branches:
-              only:
-                - master
-      - release:
-          requires:
-            - test
-          filters:
-            branches:
-              only:
-                - master
-            tags:
-              ignore:
-                - /v.+/
+      - test

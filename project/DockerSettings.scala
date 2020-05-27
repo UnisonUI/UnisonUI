@@ -10,6 +10,11 @@ object DockerSettings {
     dockerUsername := Some("maethornaur"),
     dockerUpdateLatest := true,
     dockerExposedPorts := Seq(8080),
-    dockerEntrypoint := Seq("/opt/docker/entrypoint.sh", executableScriptName.value)
+    dockerEntrypoint := Seq("/opt/docker/entrypoint.sh", executableScriptName.value),
+    dockerCommands ++= Seq(
+      Cmd("USER", "root"),
+      Cmd("RUN", "apt-get update -y && apt-get install -y git"),
+      Cmd("USER", "1001:0")
+    )
   )
 }

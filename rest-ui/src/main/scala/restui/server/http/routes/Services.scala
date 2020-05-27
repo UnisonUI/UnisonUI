@@ -10,10 +10,10 @@ import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.util.Timeout
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+import restui.providers.models.{ContentTypes => ServiceContentTypes, _}
 import restui.server.http.Models
 import restui.server.http.Models.Event._
 import restui.server.service.ServiceActor._
-import restui.servicediscovery.models.{ContentTypes => ServiceContentTypes, _}
 
 object Services {
   implicit val timeout: Timeout = 5.seconds
@@ -27,7 +27,7 @@ object Services {
             .map(_.map { case Service(name, _, metadata) => Models.ServiceUp(name, metadata) })
         complete(response)
       }
-    } ~ path("services" / Segment) { service =>
+    } ~ path("services" / Remaining) { service =>
       get {
         val response = (serviceActorRef ? Get(service))
           .mapTo[Option[Service]]
