@@ -16,7 +16,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
     "not load any vcs" when {
 
       "the entry is empty" in {
-        val config = loadConfig("""restui.service-discovery.git {
+        val config = loadConfig("""restui.provider.git {
 |  cache-duration =  "2 hours"
 |  vcs {
 |  }
@@ -25,7 +25,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
       }
 
       "the entry is missing" in {
-        val config = loadConfig("""restui.service-discovery.git {
+        val config = loadConfig("""restui.provider.git {
 |  cache-duration =  "2 hours"
 |}""".stripMargin)
         Settings.from(config) shouldBe Settings(2.hours, Nil)
@@ -35,7 +35,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
 
     "load github" when {
       "there is no repos" in {
-        val config = loadConfig("""restui.service-discovery.git {
+        val config = loadConfig("""restui.provider.git {
 |  cache-duration =  "2 hours"
 |  vcs {
 |    github {
@@ -48,7 +48,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
       }
 
       "there is repos" in {
-        val config = loadConfig("""restui.service-discovery.git {
+        val config = loadConfig("""restui.provider.git {
 |  cache-duration =  "2 hours"
 |  vcs {
 |    github {
@@ -84,7 +84,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
     }
 
     "load git" in {
-      val config = loadConfig("""restui.service-discovery.git {
+      val config = loadConfig("""restui.provider.git {
 |  cache-duration =  "2 hours"
 |  vcs {
 |    git {
