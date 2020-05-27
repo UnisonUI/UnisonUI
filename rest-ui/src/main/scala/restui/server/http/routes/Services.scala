@@ -10,10 +10,10 @@ import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.util.Timeout
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+import restui.providers.models.{ContentTypes => ServiceContentTypes, _}
 import restui.server.http.Models
 import restui.server.http.Models.Event._
 import restui.server.service.ServiceActor._
-import restui.servicediscovery.models.{ContentTypes => ServiceContentTypes, _}
 
 object Services {
   implicit val timeout: Timeout = 5.seconds

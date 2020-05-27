@@ -2,8 +2,8 @@ package restui.server.service
 
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.stream.scaladsl.SourceQueueWithComplete
+import restui.providers.models._
 import restui.server.http.Models
-import restui.servicediscovery.models._
 
 class ServiceActor(queue: SourceQueueWithComplete[Models.Event]) extends Actor with ActorLogging {
   import ServiceActor._

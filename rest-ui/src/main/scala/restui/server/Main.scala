@@ -7,10 +7,10 @@ import scala.util.{Failure, Success}
 import akka.actor.ActorSystem
 import com.typesafe.scalalogging.LazyLogging
 import restui.Configuration
+import restui.providers.ProvidersLoader
+import restui.providers.models._
 import restui.server.http.HttpServer
 import restui.server.service._
-import restui.servicediscovery.ProvidersLoader
-import restui.servicediscovery.models._
 
 object Main extends App with LazyLogging {
 

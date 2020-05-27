@@ -48,13 +48,13 @@ object Dependencies {
 
   lazy val restUiCore = libraryDependencies ++= common ++ Akka.akka
 
-  lazy val serviceDiscoveryDocker = libraryDependencies ++= common ++ Akka.all ++
+  lazy val providerDocker = libraryDependencies ++= common ++ Akka.all ++
     Seq(
       "com.github.docker-java" % "docker-java" % "3.2.1" exclude
         ("com.github.docker-java", "docker-java-transport-jersey"))
 
-  lazy val serviceDiscoveryKubernetes = libraryDependencies ++= common ++ Akka.all ++
+  lazy val providerKubernetes = libraryDependencies ++= common ++ Akka.all ++
     Seq("io.skuber" %% "skuber" % "2.4.0")
 
-  lazy val serviceDiscoveryGit = libraryDependencies ++= common ++ Akka.all ++ Circe.all
+  lazy val providerGit = libraryDependencies ++= common ++ Akka.all ++ Circe.all
 }
