@@ -49,4 +49,9 @@ workflows:
   version: 2
   test:
     jobs:
-      - test
+      - test:
+          filters:
+            tags:
+              ignore:
+                - /v.+/
+
