@@ -10,7 +10,7 @@ import restui.providers.git.git.Git
 import restui.providers.git.git.data.Repository
 import restui.providers.git.github.{Github, GithubClient}
 import restui.providers.git.settings.{GitSettings, GithubSettings, Settings}
-import restui.providers.models.Service
+import restui.models.Service
 
 object VCS {
   def source(settings: Settings, requestExecutor: RequestExecutor)(implicit

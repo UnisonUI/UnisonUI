@@ -8,7 +8,7 @@ import akka.actor.ActorSystem
 import com.typesafe.scalalogging.LazyLogging
 import restui.Configuration
 import restui.providers.ProvidersLoader
-import restui.providers.models._
+import restui.models._
 import restui.server.http.HttpServer
 import restui.server.service._
 

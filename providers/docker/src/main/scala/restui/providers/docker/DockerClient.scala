@@ -15,7 +15,7 @@ import com.github.dockerjava.api.{DockerClient => JDockerClient}
 import com.github.dockerjava.core.command.EventsResultCallback
 import com.typesafe.scalalogging.LazyLogging
 import restui.providers.Provider
-import restui.providers.models._
+import restui.models._
 
 class DockerClient(private val client: JDockerClient, private val settings: Settings, private val callback: Provider.Callback)(implicit
     val system: ActorSystem)

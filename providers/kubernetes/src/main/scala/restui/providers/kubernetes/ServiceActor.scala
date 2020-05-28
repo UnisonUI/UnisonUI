@@ -7,7 +7,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import restui.providers.Provider
-import restui.providers.models._
+import restui.models._
 import skuber.{Service => KubernetesService}
 
 class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends Actor with ActorLogging {

@@ -17,7 +17,7 @@ import restui.providers.git._
 import restui.providers.git.git.data.{Repository, RestUI}
 import restui.providers.git.process.{Process, ProcessArgs}
 import restui.providers.git.settings.{Location, RepositorySettings}
-import restui.providers.models.{ContentType, OpenApiFile, Service}
+import restui.models.{ContentType, OpenApiFile, Service}
 
 object Git extends LazyLogging {
   val flow: Flow[Repository, Service] =

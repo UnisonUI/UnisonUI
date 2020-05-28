@@ -6,7 +6,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import base.TestBase
 import org.scalatest.Inside
 import restui.providers.git.git.data.Repository
-import restui.providers.models.{ContentTypes, OpenApiFile, Service}
+import restui.models.{ContentTypes, OpenApiFile, Service}
 
 class GitSpec extends TestBase with Inside {
 

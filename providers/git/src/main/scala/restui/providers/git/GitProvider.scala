@@ -11,7 +11,7 @@ import com.typesafe.scalalogging.LazyLogging
 import restui.providers.Provider
 import restui.providers.git.settings.Settings
 import restui.providers.git.vcs.VCS
-import restui.providers.models.ServiceUp
+import restui.models.ServiceUp
 
 class GitProvider extends Provider with LazyLogging {
   override def start(actorSystem: ActorSystem, config: Config, callback: Provider.Callback): Try[Unit] =

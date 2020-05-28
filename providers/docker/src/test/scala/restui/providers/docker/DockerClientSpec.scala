@@ -16,7 +16,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import restui.providers.models._
+import restui.models._
 import restui.stubs.EventsCmdStub
 
 class DockerClientSpec
