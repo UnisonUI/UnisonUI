@@ -14,8 +14,8 @@ import com.github.dockerjava.api.model.{ContainerNetwork, Event}
 import com.github.dockerjava.api.{DockerClient => JDockerClient}
 import com.github.dockerjava.core.command.EventsResultCallback
 import com.typesafe.scalalogging.LazyLogging
+import restui.models.{ContentType, OpenApiFile, Service, ServiceEvent}
 import restui.providers.Provider
-import restui.models._
 
 class DockerClient(private val client: JDockerClient, private val settings: Settings, private val callback: Provider.Callback)(implicit
     val system: ActorSystem)
@@ -32,8 +32,8 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
 
   private def downloadFile(event: ServiceEvent): Source[ServiceEvent, NotUsed] =
     event match {
-      case serviceDown: ServiceDown => Source.single(serviceDown)
-      case ServiceUp(service) =>
+      case serviceDown: ServiceEvent.ServiceDown => Source.single(serviceDown)
+      case ServiceEvent.ServiceUp(service) =>
         Source.futureSource {
           Http()
             .singleRequest(HttpRequest(uri = service.file.content))
@@ -41,7 +41,7 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
               Unmarshaller.stringUnmarshaller(response.entity)
             }
             .map { content =>
-              Source.single(ServiceUp(service.copy(file = service.file.copy(content = content))))
+              Source.single(ServiceEvent.ServiceUp(service.copy(file = service.file.copy(content = content))))
             }
             .recover { throwable =>
               logger.warn("There was an error while download the file", throwable)
@@ -67,8 +67,9 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
           val networks  = container.getNetworkSettings.getNetworks.asScala
           findEndpoint(labels, networks).map {
             case (serviceName, address) =>
-              if (event.getStatus == StartFilter) ServiceUp(Service(serviceName, OpenApiFile(ContentType.fromString(address), address)))
-              else ServiceDown(serviceName)
+              if (event.getStatus == StartFilter)
+                ServiceEvent.ServiceUp(Service(serviceName, OpenApiFile(ContentType.fromString(address), address)))
+              else ServiceEvent.ServiceDown(serviceName)
           }.foreach(queue.offer)
           super.onNext(event)
         }
@@ -85,7 +86,7 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
         val labels   = container.getLabels.asScala
         val networks = container.getNetworkSettings.getNetworks.asScala
         findEndpoint(labels, networks).map {
-          case (serviceName, address) => ServiceUp(Service(serviceName, OpenApiFile(ContentType.fromString(address), address)))
+          case (serviceName, address) => ServiceEvent.ServiceUp(Service(serviceName, OpenApiFile(ContentType.fromString(address), address)))
         }
       }
       .foreach(queue.offer)
@@ -104,7 +105,7 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
     for {
       serviceName <- labels.get(settings.labels.serviceName)
       port        <- labels.get(settings.labels.port)
-      swaggerPath = labels.get(settings.labels.swaggerPath).getOrElse("/swagger.yaml")
+      swaggerPath = labels.getOrElse(settings.labels.swaggerPath, "/swagger.yaml")
     } yield Labels(serviceName, port, swaggerPath)
 }
 

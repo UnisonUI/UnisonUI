@@ -7,8 +7,8 @@ import scala.util.{Failure, Success}
 import akka.actor.ActorSystem
 import com.typesafe.scalalogging.LazyLogging
 import restui.Configuration
-import restui.providers.ProvidersLoader
 import restui.models._
+import restui.providers.ProvidersLoader
 import restui.server.http.HttpServer
 import restui.server.service._
 

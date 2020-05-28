@@ -1,5 +1,8 @@
 package restui.server.http.routes
 
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+
 import akka.actor.ActorRef
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
@@ -7,11 +10,8 @@ import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.util.Timeout
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
-import restui.models.{Event, OpenApiFile, Service, ContentType}
+import restui.models.{ContentType, Event, OpenApiFile, Service}
 import restui.server.service.ServiceActor._
-
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
 
 object Services {
   implicit val timeout: Timeout = 5.seconds

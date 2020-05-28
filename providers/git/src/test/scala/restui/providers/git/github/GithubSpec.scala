@@ -42,7 +42,7 @@ class GithubSpec extends TestBase with Inside with Inspectors {
           uri shouldBe "https://MyAwesomeUser@github.com/MyAwesomeUser/MyAwesomeRepo"
           branch shouldBe "master"
           swagger shouldBe empty
-          ref should not be 'defined
+          ref should not be Symbol("defined")
       }
     }
   }
