@@ -15,9 +15,140 @@ Currently it can discover services through `Docker` and `Kubernetes` (inside the
 
 ![overview](./docs/overview.png "Overview")
 
+## Build
+
+### Requirements
+
+- JDK 11+
+- NodeJS/Npm: Front the react application
+
+### React application
+
+There is two ways to build the React application:
+
+- Using SBT
+- Using only npm commands
+
+#### Using SBT
+
+```sh
+sbt ";project rest-ui; npmInstall; webpackDevTask"
+```
+
+`webpackDevTask` can be replace by `webpackProdTask` if you want to produce minified assets.
+
+#### Using NodeJS
+
+```sh
+cd rest-ui
+npm install
+npm run build
+```
+
+`npm run build` can be replace by `npm run prod` if you want to produce minified assets.
+
+### RestUI
+
+Once the react application build you are able to build RestUI
+
+```sh
+sbt "project rest-ui; packageBin"
+```
+
+This will produce a zip located: `rest-ui/target/universal/rest-ui-{VERSION}-SNAPSHOT.zip`
+
+You also can use `docker:publishLocal` instead of `packageBin` if you want to directly produce a docker image
+
 ## Usage
 
 This project is targeted for Java 11+ in order
+
+### Configuration
+
+RestUI uses an HOCON format for it's configuration.
+
+Here is the default configuration used by RestUI.
+
+In order to override the defaulr values you can either create your own configuration file
+_(with only the fields you want to override)_, or pass the field through system properties:
+
+It is also possible to combine the configuration file and system properties at the time, but
+in that case, the system properties values will **prevail**.
+
+The configuration file is passed as first parameter of RestUI:
+
+```sh
+rest-ui my-config.conf
+```
+
+If you want to override the value with system properties you have to do like this:
+`-Drestui.http.port=3000`.
+
+**Be careful** where an array is expected you have to override the value like so:
+`-Drestui.providers.0=Provider1`, `-Drestui.providers.1=Provider2`, ...
+
+```hocon
+restui {
+  // List of active providers
+  // By default all available providers are activated
+  // You can activate the the providers you want by overriding this field
+  providers = [
+    "restui.providers.git.GitProvider",
+    "restui.providers.docker.DockerProvider",
+    "restui.providers.kubernetes.KubernetesProvider"
+  ]
+
+  http {
+    port = 8080 // Port of the Webserver
+    interface = "0.0.0.0" //Interface where the webserver listen to
+  }
+
+  // Configuration for the docker provider
+  // More information about how this provider works in the Docker provider section
+  provider.docker {
+    host =  "unix:///var/run/docker.sock" //Docker host
+
+    // Labels name use to detect RestUI compatible container
+    labels {
+      port  = "restui.swagger.endpoint.port" //Label specifying the port on which the OpenApi spec is available.
+      service-name = "restui.swagger.endpoint.service-name" //Label specifying the service name for RestUI.
+      swagger-path = "restui.swagger.endpoint.swagger-path" //Label of the path where the OpenApi spec file is.
+    }
+
+  }
+
+  // Configuration for the kubernetes provider
+  // More information about how this provider works in the Kubernetes provider section
+  provider.kubernetes {
+    polling-interval = "1 minute" //Interval between each polling
+
+    labels {
+      port  = "restui.swagger.endpoint.port" //Label specifying the port on which the OpenApi spec is available.
+      protocol = "restui.swagger.endpoint.protocol" //Label specifying which protocol the OpenApi spec is exposed.
+      swagger-path = "restui.swagger.endpoint.swagger-path" //Label of the path where the OpenApi spec file is.
+    }
+  }
+
+  // Configuration for the git provider
+  // More information about how this provider works in the Git provider section
+  provider.git {
+    cache-duration = "2 hours" //Interval between each clone....
+    vcs {
+      // Specific to Github
+      github {
+        api-token = "" //Github personal token.
+        api-uri = "https://api.github.com/graphql" //Github GraphQL url.
+        polling-interval = "1 hour" //Interval between each polling.
+        repositories = [] // List of repositories.
+      }
+      git {
+        repositories = [] // List of repositories
+      }
+    }
+  }
+
+}
+```
 
 ### Docker
 
