@@ -25,7 +25,7 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
           val filteredServices = newServices.filter(service => getLabels(service.metadata.labels).isDefined)
           filteredServices.flatMap(createEndpoint).foreach {
             case (serviceName, file) =>
-              downloadFile(Service(serviceName, file, metadata))
+              downloadFile(Service(serviceName, serviceName, file, metadata))
           }
           context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
         case Some(services) =>
@@ -36,7 +36,7 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
           removed.flatMap(createEndpoint).foreach { case (serviceName, _) => callback(ServiceEvent.ServiceDown(serviceName)) }
           added.flatMap(createEndpoint).foreach {
             case (serviceName, file) =>
-              downloadFile(Service(serviceName, file, metadata))
+              downloadFile(Service(serviceName, serviceName, file, metadata))
           }
 
           context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
