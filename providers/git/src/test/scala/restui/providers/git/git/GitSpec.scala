@@ -64,7 +64,7 @@ class GitSpec extends TestBase with Inside {
         Source.single(repo).via(Git.flow).runWith(Sink.seq).map { result =>
           result should have length 1
           inside(result.head) {
-            case Service(_, file, _) =>
+            case Service(_, _, file, _) =>
               file shouldBe OpenApiFile(ContentType.Plain, "test")
           }
         }

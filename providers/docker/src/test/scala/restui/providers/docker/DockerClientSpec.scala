@@ -43,7 +43,7 @@ class DockerClientSpec
         val clientMock = setupMockWithoutEvent(MatchingContainerLabels)
         val probe      = TestProbe()
         new DockerClient(clientMock, settings, event => probe.ref ! event).listCurrentAndFutureEndpoints
-        probe.expectMsg(ServiceEvent.ServiceUp(Service("test", OpenApiFile(ContentType.Plain, "OK"))))
+        probe.expectMsg(ServiceEvent.ServiceUp(Service("test", "test", OpenApiFile(ContentType.Plain, "OK"))))
       }
       "not find it" when {
         "there is a missing label" in {
