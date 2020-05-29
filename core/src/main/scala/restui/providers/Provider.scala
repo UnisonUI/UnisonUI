@@ -4,7 +4,7 @@ import scala.util.Try
 
 import akka.actor.ActorSystem
 import com.typesafe.config.Config
-import restui.providers.models.ServiceEvent
+import restui.models.ServiceEvent
 
 trait Provider {
   def start(actorSystem: ActorSystem, config: Config, callback: Provider.Callback): Try[Unit]

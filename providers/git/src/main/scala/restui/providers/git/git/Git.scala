@@ -13,11 +13,11 @@ import com.typesafe.scalalogging.LazyLogging
 import io.circe.generic.auto._
 import io.circe.yaml.parser
 import restui.Concurrency
+import restui.models.{ContentType, OpenApiFile, Service}
 import restui.providers.git._
 import restui.providers.git.git.data.{Repository, RestUI}
 import restui.providers.git.process.{Process, ProcessArgs}
 import restui.providers.git.settings.{Location, RepositorySettings}
-import restui.providers.models.{ContentType, OpenApiFile, Service}
 
 object Git extends LazyLogging {
   val flow: Flow[Repository, Service] =

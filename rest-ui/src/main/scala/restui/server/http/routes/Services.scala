@@ -10,9 +10,7 @@ import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.util.Timeout
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
-import restui.providers.models.{ContentTypes => ServiceContentTypes, _}
-import restui.server.http.Models
-import restui.server.http.Models.Event._
+import restui.models.{ContentType, Event, OpenApiFile, Service}
 import restui.server.service.ServiceActor._
 
 object Services {
@@ -24,7 +22,7 @@ object Services {
         val response =
           (serviceActorRef ? GetAll)
             .mapTo[List[Service]]
-            .map(_.map { case Service(name, _, metadata) => Models.ServiceUp(name, metadata) })
+            .map(_.map { case Service(name, _, metadata) => Event.ServiceUp(name, metadata) })
         complete(response)
       }
     } ~ path("services" / Remaining) { service =>
@@ -33,11 +31,11 @@ object Services {
           .mapTo[Option[Service]]
           .map {
             case None => StatusCodes.NotFound -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, s"$service is not registered")
-            case Some(Service(_, OpenApiFile(contenType, content), _)) =>
-              val httpContentType = contenType match {
-                case ServiceContentTypes.Json  => ContentTypes.`application/json`
-                case ServiceContentTypes.Yaml  => ContentTypes.`text/plain(UTF-8)`
-                case ServiceContentTypes.Plain => ContentTypes.`text/plain(UTF-8)`
+            case Some(Service(_, OpenApiFile(contentType, content), _)) =>
+              val httpContentType = contentType match {
+                case ContentType.Json  => ContentTypes.`application/json`
+                case ContentType.Yaml  => ContentTypes.`text/plain(UTF-8)`
+                case ContentType.Plain => ContentTypes.`text/plain(UTF-8)`
               }
               val entity = HttpEntity(httpContentType, content)
               StatusCodes.OK -> entity

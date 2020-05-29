@@ -24,7 +24,7 @@ class HttpServer(private val endpointsActorRef: ActorRef, private val eventsSour
   private val exceptionHandler = ExceptionHandler {
     case exception =>
       logger.error("Something bad happened", exception)
-      complete(StatusCodes.InternalServerError -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Something bas happened"))
+      complete(StatusCodes.InternalServerError -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Something bad happened"))
   }
   private val routes =
     handleExceptions(exceptionHandler) {

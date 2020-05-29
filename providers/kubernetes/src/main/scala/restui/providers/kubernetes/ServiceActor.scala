@@ -6,8 +6,8 @@ import akka.actor.{Actor, ActorLogging, ActorSystem}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.unmarshalling.Unmarshaller
+import restui.models._
 import restui.providers.Provider
-import restui.providers.models._
 import skuber.{Service => KubernetesService}
 
 class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends Actor with ActorLogging {
@@ -33,7 +33,7 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
           val removed          = services.filter(service => !filteredServices.contains(service))
           val added            = filteredServices.filter(service => !services.contains(service))
 
-          removed.flatMap(createEndpoint).foreach { case (serviceName, _) => callback(ServiceDown(serviceName)) }
+          removed.flatMap(createEndpoint).foreach { case (serviceName, _) => callback(ServiceEvent.ServiceDown(serviceName)) }
           added.flatMap(createEndpoint).foreach {
             case (serviceName, file) =>
               downloadFile(Service(serviceName, file, metadata))
@@ -53,7 +53,7 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
         Unmarshaller.stringUnmarshaller(response.entity)
       }
       .map { content =>
-        callback(ServiceUp(service.copy(file = service.file.copy(content = content))))
+        callback(ServiceEvent.ServiceUp(service.copy(file = service.file.copy(content = content))))
       }
       .recover { throwable =>
         log.warning("There was an error while download the file {}", throwable)

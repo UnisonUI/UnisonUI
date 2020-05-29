@@ -8,10 +8,10 @@ import akka.http.scaladsl.Http
 import akka.stream.scaladsl.Sink
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
+import restui.models.ServiceEvent
 import restui.providers.Provider
 import restui.providers.git.settings.Settings
 import restui.providers.git.vcs.VCS
-import restui.providers.models.ServiceUp
 
 class GitProvider extends Provider with LazyLogging {
   override def start(actorSystem: ActorSystem, config: Config, callback: Provider.Callback): Try[Unit] =
@@ -24,7 +24,7 @@ class GitProvider extends Provider with LazyLogging {
 
       VCS
         .source(settings, Http().singleRequest(_))
-        .to(Sink.foreach(service => callback(ServiceUp(service))))
+        .to(Sink.foreach(service => callback(ServiceEvent.ServiceUp(service))))
         .run()
     }
 

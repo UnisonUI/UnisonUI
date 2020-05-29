@@ -44,9 +44,9 @@ object Dependencies {
 
   private lazy val common = Testing.all ++ Logging.all ++ Config.all
 
-  lazy val restUi = libraryDependencies ++= common ++ Akka.all ++ Circe.all
+  lazy val restUi = libraryDependencies ++= common ++ Akka.all
 
-  lazy val restUiCore = libraryDependencies ++= common ++ Akka.akka
+  lazy val restUiCore = libraryDependencies ++= common ++ Akka.akka ++ Circe.all
 
   lazy val providerDocker = libraryDependencies ++= common ++ Akka.all ++
     Seq(

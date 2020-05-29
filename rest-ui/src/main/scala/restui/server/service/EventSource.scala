@@ -7,7 +7,7 @@ import akka.http.scaladsl.model.sse.ServerSentEvent
 import akka.stream.scaladsl.{BroadcastHub, Keep, RunnableGraph, Source, SourceQueueWithComplete}
 import akka.stream.{DelayOverflowStrategy, OverflowStrategy}
 import io.circe.syntax._
-import restui.server.http.Models._
+import restui.models.Event
 
 object EventSource {
   def createEventSource: RunnableGraph[(SourceQueueWithComplete[Event], Source[ServerSentEvent, NotUsed])] =
