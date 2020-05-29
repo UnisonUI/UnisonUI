@@ -1,49 +1,41 @@
-require("swagger-ui-react/swagger-ui.css");
+import PropTypes from 'prop-types'
+import React, { Component } from 'react'
+import { HashRouter as Router, withRouter } from 'react-router-dom'
+import SwaggerUI from 'swagger-ui-react'
+import Services from './services'
 
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import ReactDOM from "react-dom";
-import {
-  HashRouter as Router,
-  Route,
-  Switch,
-  withRouter,
-  useParams
-} from "react-router-dom";
+require('swagger-ui-react/swagger-ui.css')
 
-import SwaggerUI from "swagger-ui-react";
-import Services from "./services";
-
-export default function App() {
+export default function App () {
   return (
     <Router>
-      <nav className="menu">
+      <nav className='menu'>
         <Services />
       </nav>
       <SwaggerWithRouter />
     </Router>
-  );
+  )
 }
 
 class Swagger extends Component {
-  static propTypes = {
-    match: PropTypes.object.isRequired,
-    location: PropTypes.object.isRequired,
-    history: PropTypes.object.isRequired
-  };
-
-  render() {
-    let name = this.props.location.pathname.substring(1);
+  render () {
+    const name = this.props.location.pathname.substring(1)
     return (
       <main>
         {name ? (
-          <SwaggerUI url={`/services/${name}`} docExpansion="list" />
+          <SwaggerUI url={`/services/${name}`} docExpansion='list' />
         ) : (
           <div />
         )}
       </main>
-    );
+    )
   }
 }
 
-const SwaggerWithRouter = withRouter(Swagger);
+Swagger.propTypes = {
+  match: PropTypes.object.isRequired,
+  location: PropTypes.object.isRequired,
+  history: PropTypes.object.isRequired
+}
+
+const SwaggerWithRouter = withRouter(Swagger)

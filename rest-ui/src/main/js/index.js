@@ -1,8 +1,8 @@
-require("./css/main.css");
+import React from 'react'
+import ReactDOM from 'react-dom'
+import App from './components/ui'
 
-import React from "react";
-import ReactDOM from "react-dom";
-import App from "./components/ui";
+require('./css/main.css')
 
-const wrapper = document.getElementById("app");
-wrapper ? ReactDOM.render(<App />, wrapper) : false;
+const wrapper = document.getElementById('app')
+if (wrapper) ReactDOM.render(<App />, wrapper)
