@@ -14,9 +14,8 @@ import com.github.dockerjava.api.model.{ContainerNetwork, Event}
 import com.github.dockerjava.api.{DockerClient => JDockerClient}
 import com.github.dockerjava.core.command.EventsResultCallback
 import com.typesafe.scalalogging.LazyLogging
-import restui.models.{ContentType, OpenApiFile, Service, ServiceEvent}
+import restui.models.{ContentType, Metadata, OpenApiFile, Service, ServiceEvent}
 import restui.providers.Provider
-import restui.models.Metadata
 
 class DockerClient(private val client: JDockerClient, private val settings: Settings, private val callback: Provider.Callback)(implicit
     val system: ActorSystem)
