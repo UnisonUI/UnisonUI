@@ -22,7 +22,7 @@ object Event {
       case ServiceDown(id) =>
         Json.obj(
           "event" -> Json.fromString("serviceDown"),
-          "id"  -> Json.fromString(id)
+          "id"    -> Json.fromString(id)
         )
     }
 
