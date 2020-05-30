@@ -47,7 +47,7 @@ export default class App extends Component {
     if (data.event === 'serviceUp') {
       services = this.state.services
       if (!services.find(item => item.id === data.id)) {
-        services.push({id: data.id,  name: data.name, metadata: data.metadata })
+        services.push({ id: data.id, name: data.name, metadata: data.metadata })
       }
     } else {
       services = this.state.services.filter(item => item.id !== data.id)
