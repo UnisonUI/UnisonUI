@@ -16,6 +16,7 @@ import com.github.dockerjava.core.command.EventsResultCallback
 import com.typesafe.scalalogging.LazyLogging
 import restui.models.{ContentType, OpenApiFile, Service, ServiceEvent}
 import restui.providers.Provider
+import restui.models.Metadata
 
 class DockerClient(private val client: JDockerClient, private val settings: Settings, private val callback: Provider.Callback)(implicit
     val system: ActorSystem)
@@ -41,7 +42,8 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
               Unmarshaller.stringUnmarshaller(response.entity)
             }
             .map { content =>
-              Source.single(ServiceEvent.ServiceUp(service.copy(file = service.file.copy(content = content))))
+              val metadata = Map(Metadata.Provider -> "docker")
+              Source.single(ServiceEvent.ServiceUp(service.copy(file = service.file.copy(content = content), metadata = metadata)))
             }
             .recover { throwable =>
               logger.warn("There was an error while download the file", throwable)

@@ -19,7 +19,7 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
 
   private def handleMessage(servicesByNamespaces: Map[String, List[KubernetesService]]): Receive = {
     case (namespace: String, newServices: List[KubernetesService]) =>
-      val metadata = Map(Namespace -> namespace)
+      val metadata = Map(Metadata.Provider -> "kubernetes", Namespace -> namespace)
       servicesByNamespaces.get(namespace) match {
         case None =>
           val filteredServices = newServices.filter(service => getLabels(service.metadata.labels).isDefined)

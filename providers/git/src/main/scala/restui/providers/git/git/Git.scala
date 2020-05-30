@@ -18,6 +18,7 @@ import restui.providers.git._
 import restui.providers.git.git.data.{Repository, RestUI}
 import restui.providers.git.process.{Process, ProcessArgs}
 import restui.providers.git.settings.{Location, RepositorySettings}
+import restui.models.Metadata
 
 object Git extends LazyLogging {
   val flow: Flow[Repository, Service] =
@@ -99,7 +100,8 @@ object Git extends LazyLogging {
         val uri         = akka.http.scaladsl.model.Uri(repo.uri)
         val nameFromUri = uri.path.toString.substring(1)
         val serviceName = repo.serviceName.getOrElse(nameFromUri)
-        val metadata    = Map("provider" -> uri.authority.host.address.split('.').head)
+        val provider    = uri.authority.host.address.split('.').head
+        val metadata    = Map(Metadata.Provider -> provider)
         Service(serviceName, file, metadata)
       }
       .async
