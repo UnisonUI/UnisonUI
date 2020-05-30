@@ -59,7 +59,7 @@
 {
     font-size: 24px;
 
-    margin: 0 0 5px 0;
+    margin: 0 0 5px;
 
     @include text_headline();
 
@@ -159,7 +159,7 @@
 
 .opblock
 {
-    margin: 0 0 15px 0;
+    margin: 0 0 15px;
 
     border: 1px solid $opblock-border-color;
     border-radius: 4px;
@@ -413,7 +413,7 @@
     {
         width: 100%;
         margin: 20px 0;
-        padding: 10px 10px;
+        padding: 10px;
 
         border: 2px solid $operational-filter-input-border-color;
     }
@@ -486,7 +486,7 @@
     {
         font-size: 12px;
 
-        margin: 0 0 5px 0;
+        margin: 0 0 5px;
 
         @include text_body();
     }
@@ -503,7 +503,7 @@
 
 .opblock-external-docs-wrapper {
   h4 {
-    padding-left: 0px;
+    padding-left: 0;
   }
 }
 
@@ -535,7 +535,7 @@
         padding: 8px 0;
         select
         {
-            margin: 3px 0 0 0;
+            margin: 3px 0 0;
         }
     }
 }
@@ -549,7 +549,7 @@
     {
         font-size: 12px;
 
-        margin: 10px 0 5px 0;
+        margin: 10px 0 5px;
 
         @include text_body();
     }
@@ -654,7 +654,7 @@
 
 .scheme-container
 {
-    margin: 0 0 20px 0;
+    margin: 0 0 20px;
     padding: 30px 0;
 
     background: $scheme-container-background-color;
@@ -728,7 +728,7 @@
 
             width: 60px;
             height: 60px;
-            margin: -30px -30px;
+            margin: -30px;
 
             content: '';
             animation: rotation 1s infinite linear, opacity .5s;
@@ -817,7 +817,7 @@ a.nostyle {
 
 .version-pragma {
   height: 100%;
-  padding: 5em 0px;
+  padding: 5em 0;
 
   &__message {
     display: flex;
@@ -827,7 +827,7 @@ a.nostyle {
     text-align: center;
     line-height: 1.5em;
 
-    padding: 0px .6em;
+    padding: 0 .6em;
 
     > div {
       max-width: 55ch;
