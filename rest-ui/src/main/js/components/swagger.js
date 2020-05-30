@@ -6,11 +6,11 @@ import NoService from './noService'
 
 class Swagger extends Component {
   render () {
-    const name = this.props.location.pathname.substring(1)
+    const id = this.props.location.pathname.substring(1)
     return (
       <div>
-        {name ? (
-          <SwaggerUI url={`/services/${name}`} docExpansion="list" />
+        {id ? (
+          <SwaggerUI url={`/services/${id}`} docExpansion="list" />
         ) : (
           <NoService />
         )}

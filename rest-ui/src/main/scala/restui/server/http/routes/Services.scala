@@ -22,7 +22,7 @@ object Services {
         val response =
           (serviceActorRef ? GetAll)
             .mapTo[List[Service]]
-            .map(_.map { case Service(name, _, metadata) => Event.ServiceUp(name, metadata) })
+            .map(_.map { case Service(id, name, _, metadata) => Event.ServiceUp(id, name, metadata) })
         complete(response)
       }
     } ~ path("services" / Remaining) { service =>
@@ -31,7 +31,7 @@ object Services {
           .mapTo[Option[Service]]
           .map {
             case None => StatusCodes.NotFound -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, s"$service is not registered")
-            case Some(Service(_, OpenApiFile(contentType, content), _)) =>
+            case Some(Service(_, _, OpenApiFile(contentType, content), _)) =>
               val httpContentType = contentType match {
                 case ContentType.Json  => ContentTypes.`application/json`
                 case ContentType.Yaml  => ContentTypes.`text/plain(UTF-8)`

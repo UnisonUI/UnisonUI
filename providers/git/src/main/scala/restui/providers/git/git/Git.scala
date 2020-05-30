@@ -94,28 +94,35 @@ object Git extends LazyLogging {
 
     AkkaSource(files)
       .flatMapMerge(Concurrency.AvailableCore, loadFile(_).async)
-      .map { file =>
-        repo.directory.get.delete()
-        val uri         = akka.http.scaladsl.model.Uri(repo.uri)
-        val nameFromUri = uri.path.toString.substring(1)
-        val serviceName = repo.serviceName.getOrElse(nameFromUri)
-        val provider    = uri.authority.host.address.split('.').head
-        val metadata    = Map(Metadata.Provider -> provider)
-        Service(serviceName, file, metadata)
+      .map {
+        case (path, file) =>
+          repo.directory.get.delete()
+          val uri         = akka.http.scaladsl.model.Uri(repo.uri)
+          val nameFromUri = uri.path.toString.substring(1)
+          val serviceName = repo.serviceName.getOrElse(nameFromUri)
+          val filePath    = repo.directory.get.toPath.relativize(path).toString
+          val id          = s"$nameFromUri:$filePath"
+          val provider    = uri.authority.host.address.split('.').head
+          val metadata =
+            Map(
+              Metadata.Provider -> provider,
+              "file"            -> filePath
+            )
+          Service(id, serviceName, file, metadata)
       }
       .async
 
   }
 
-  private def loadFile(path: Path): Source[OpenApiFile] =
+  private def loadFile(path: Path): Source[(Path, OpenApiFile)] =
     Try(new String(Files.readAllBytes(path), StandardCharsets.UTF_8)) match {
       case Success(content) =>
         val contentType = ContentType.fromString(path.toString)
 
         val openApiFile = OpenApiFile(contentType, content)
-        AkkaSource.single(openApiFile)
+        AkkaSource.single(path -> openApiFile)
       case Failure(exception) =>
         logger.warn(s"Error while reading $path", exception)
-        AkkaSource.empty[OpenApiFile]
+        AkkaSource.empty[(Path, OpenApiFile)]
     }
 }

@@ -26,7 +26,8 @@ class DockerClientSpec
     with Matchers
     with MockFactory
     with BeforeAndAfterAll {
-
+  private val Id          = "12345"
+  private val ServiceName = "test"
   override def beforeAll =
     Http().bindAndHandle(path(PathEnd)(complete(StatusCodes.OK)), "localhost", 9999)
 
@@ -34,8 +35,8 @@ class DockerClientSpec
     TestKit.shutdownActorSystem(system)
 
   private val settings                   = Settings("myDocker.sock", Labels("name", "port", "swagger"))
-  private val MatchingContainerLabels    = Map("name" -> "test", "port" -> "9999", "swagger" -> "/").asJava
-  private val NonMatchingContainerLabels = Map("name" -> "test").asJava
+  private val MatchingContainerLabels    = Map("name" -> ServiceName, "port" -> "9999", "swagger" -> "/").asJava
+  private val NonMatchingContainerLabels = Map("name" -> ServiceName).asJava
 
   "Listing endpoints" when {
     "getting the running container" should {
@@ -45,7 +46,7 @@ class DockerClientSpec
         new DockerClient(clientMock, settings, event => probe.ref ! event).listCurrentAndFutureEndpoints
         probe.expectMsg(
           ServiceEvent.ServiceUp(
-            Service("test", OpenApiFile(ContentType.Plain, "OK"), Map(Metadata.Provider -> "docker"))
+            Service(Id, ServiceName, OpenApiFile(ContentType.Plain, "OK"), Map(Metadata.Provider -> "docker"))
           )
         )
       }
@@ -87,6 +88,7 @@ class DockerClientSpec
     (container.getNetworkSettings _).expects() returning containerNetworkSettings
     (containerNetworkSettings.getNetworks _).expects() returning Map("test" -> containerNetwork).asJava
     (containerNetwork.getIpAddress _).expects().returning("127.0.0.1").anyNumberOfTimes
+    (container.getId _).expects().returning(Id)
     clientMock
 
   }

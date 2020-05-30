@@ -66,11 +66,12 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
           val container = client.inspectContainerCmd(event.getId()).exec
           val labels    = container.getConfig.getLabels.asScala
           val networks  = container.getNetworkSettings.getNetworks.asScala
+          val id        = container.getId
           findEndpoint(labels, networks).map {
             case (serviceName, address) =>
               if (event.getStatus == StartFilter)
-                ServiceEvent.ServiceUp(Service(serviceName, OpenApiFile(ContentType.fromString(address), address)))
-              else ServiceEvent.ServiceDown(serviceName)
+                ServiceEvent.ServiceUp(Service(id, serviceName, OpenApiFile(ContentType.fromString(address), address)))
+              else ServiceEvent.ServiceDown(id)
           }.foreach(queue.offer)
           super.onNext(event)
         }
@@ -86,8 +87,10 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
       .flatMap { container =>
         val labels   = container.getLabels.asScala
         val networks = container.getNetworkSettings.getNetworks.asScala
+        val id       = container.getId
         findEndpoint(labels, networks).map {
-          case (serviceName, address) => ServiceEvent.ServiceUp(Service(serviceName, OpenApiFile(ContentType.fromString(address), address)))
+          case (serviceName, address) =>
+            ServiceEvent.ServiceUp(Service(id, serviceName, OpenApiFile(ContentType.fromString(address), address)))
         }
       }
       .foreach(queue.offer)

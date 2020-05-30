@@ -29,7 +29,7 @@ export default class App extends Component {
   componentDidMount () {
     axios.get('/services').then(res => {
       const services = res.data.map(event => {
-        return { name: event.name, metadata: event.metadata }
+        return { id: event.id, name: event.name, metadata: event.metadata }
       })
       services.sort((a, b) => a.name.localeCompare(b.name))
       this.setState({ services })
@@ -46,11 +46,11 @@ export default class App extends Component {
     let services
     if (data.event === 'serviceUp') {
       services = this.state.services
-      if (!services.find(item => item.name === data.name)) {
-        services.push({ name: data.name, metadata: data.metadata })
+      if (!services.find(item => item.id === data.id)) {
+        services.push({id: data.id,  name: data.name, metadata: data.metadata })
       }
     } else {
-      services = this.state.services.filter(item => item.name !== data.name)
+      services = this.state.services.filter(item => item.id !== data.id)
     }
     services.sort((a, b) => a.name.localeCompare(b.name))
     this.setState({ services })
@@ -60,7 +60,7 @@ export default class App extends Component {
     if (this.state.services.length) {
       const items = this.state.services.map((service, index) => {
         return (
-          <div key={index + 1}>
+          <div key={service.id}>
             <ServiceLink service={service} closeMenu={() => this.closeMenu()} />
           </div>
         )
