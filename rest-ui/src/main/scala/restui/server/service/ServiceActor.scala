@@ -11,22 +11,27 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
   private def handleReceive(services: Map[String, Service]): Receive = {
     case (provider: String, ServiceEvent.ServiceUp(service)) =>
       log.debug("{} got a new service", provider)
-      queue.offer(Event.ServiceUp(service.serviceName))
-      context.become(handleReceive(services + (service.serviceName -> service)))
 
-    case (provider: String, Event.ServiceDown(serviceName)) =>
-      queue.offer(Event.ServiceDown(serviceName))
+      services.find { case (id, _) => id == service.id }.foreach {
+        case (_, Service(id, _, _, _)) => queue.offer(Event.ServiceDown(id))
+      }
+
+      queue.offer(Event.ServiceUp(service.id, service.name, service.metadata))
+      context.become(handleReceive(services + (service.id -> service)))
+
+    case (provider: String, Event.ServiceDown(serviceId)) =>
+      queue.offer(Event.ServiceDown(serviceId))
       log.debug("{} removed a service", provider)
-      context.become(handleReceive(services - serviceName))
+      context.become(handleReceive(services - serviceId))
 
-    case Get(serviceName) => sender() ! services.get(serviceName)
-    case GetAll           => sender() ! services.values.toList
+    case Get(serviceId) => sender() ! services.get(serviceId)
+    case GetAll         => sender() ! services.values.toList
   }
 
 }
 
 object ServiceActor {
   def props(queue: SourceQueueWithComplete[Event]): Props = Props(classOf[ServiceActor], queue)
-  case class Get(serviceName: String)
+  case class Get(serviceId: String)
   case object GetAll
 }

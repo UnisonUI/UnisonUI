@@ -12,11 +12,12 @@ export default class Services extends Component {
   componentDidMount() {
     axios.get(`/services`).then(res => {
       const services = res.data.map(event => {
-        return { name: event.name, metadata: event.metadata };
+        return { id: event.id, name: event.name, metadata: event.metadata };
       });
       services.sort((a, b) => a.name.localeCompare(b.name));
       this.setState({ services });
     });
+
     this.eventSource.onmessage = e => {
       if (e.data) {
         this.handleEndpoint(JSON.parse(e.data));
@@ -26,15 +27,17 @@ export default class Services extends Component {
 
   handleEndpoint(data) {
     let services;
-    let {event, name, metadata} = data;
+    let { event, id, name, metadata } = data;
+
     if (data.event == "serviceUp") {
       services = this.state.services;
-      if (!services.find(item => item.name == name)) {
-        services.push({ name, metadata});
+      if (!services.find(item => item.id == id)) {
+        services.push({ id, name, metadata });
       }
     } else {
-      services = this.state.services.filter(item => item.name != data.name);
+      services = this.state.services.filter(item => item.id != data.id);
     }
+
     services.sort((a, b) => a.name.localeCompare(b.name));
     this.setState({ services });
   }
@@ -52,8 +55,8 @@ export default class Services extends Component {
                 metadata = ` (${obj.join(", ")})`;
               }
               return (
-                <li key={service.name}>
-                  <NavLink to={`/${service.name}`} activeClassName="active">
+                <li key={service.id}>
+                  <NavLink to={`/${service.id}`} activeClassName="active">
                     {`${service.name}${metadata}`}
                   </NavLink>
                 </li>

@@ -33,11 +33,11 @@ class Swagger extends Component {
   };
 
   render() {
-    let name = this.props.location.pathname.substring(1);
+    let id = this.props.location.pathname.substring(1);
     return (
       <main>
-        {name ? (
-          <SwaggerUI url={`/services/${name}`} docExpansion="list" />
+        {id ? (
+          <SwaggerUI url={`/services/${id}`} docExpansion="list" />
         ) : (
           <div />
         )}
