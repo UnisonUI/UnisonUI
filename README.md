@@ -4,12 +4,11 @@
 [![codecov](https://codecov.io/gh/MaethorNaur/restui/branch/master/graph/badge.svg)](https://codecov.io/gh/MaethorNaur/restui)
 [![CodeFactor](https://www.codefactor.io/repository/github/maethornaur/restui/badge)](https://www.codefactor.io/repository/github/maethornaur/restui)
 
-RestUI is a dynamic UI for **Swagger** REST definitions.
+RestUI is intended to be a centralised UI for all your **Swagger**/**OpenApi spec** files.
 
-RestUI will discover automatically new services and expose the documentation
-under one unified website.
+RestUI is an autonomous server, which discover your services and **OpenApi spec** files for you.
 
-Currently it can discover services through `Docker` and `Kubernetes` (inside the cluster)
+Currently, RestUI can discover services through `Docker`, `Kubernetes`, `Git`/`Github`
 
 ## Overview
 
@@ -195,6 +194,8 @@ The following labels are optional:
 
 - A label specifying the path where the OpenApi spec lays (default to: *restui.swagger.endpoint.swagger-path*).
   If this label is not provided the default path is: **/swagger.yaml**
+
+Also those services **MUST** have a `ClusterIP` (the provider will infer the address from the `ClusterIP`)
 
 ------------------------------------------------------------------------------------------------
 
