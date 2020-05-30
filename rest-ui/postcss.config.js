@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
       'node_modules/react-burger-menu/**/*.js',
       'node_modules/swagger-ui-react/**/*.js'
     ],
-    whitelistPatterns: [/swagger-ui/, /opblock/, /opblock-summary/,/^devicon/],
+    whitelistPatterns: [/swagger-ui/, /opblock/, /opblock-summary/, /^devicon/],
     defaultExtractor: content => content.match(/[A-Za-z0-9-_:/]+/g) || []
   }
 }

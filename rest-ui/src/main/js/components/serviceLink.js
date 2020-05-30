@@ -14,10 +14,10 @@ export default class ServiceLink extends Component {
 
   render () {
     const service = this.props.service
-    let metadata = Object.assign({},service.metadata)
+    const metadata = Object.assign({},service.metadata)
     let button = []
     let metadataChild = []
-    let provider = metadata.provider
+    const provider = metadata.provider
     delete metadata.provider
 
     if (Object.values(metadata).length) {
