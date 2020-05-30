@@ -14,7 +14,7 @@ export default class ServiceLink extends Component {
 
   render () {
     const service = this.props.service
-    const metadata = Object.assign({},service.metadata)
+    const metadata = Object.assign({}, service.metadata)
     let button = []
     let metadataChild = []
     const provider = metadata.provider
@@ -54,9 +54,7 @@ export default class ServiceLink extends Component {
           onClick={this.props.closeMenu}
         >
           {service.name}{' '}
-          <i
-            className={`devicon-${provider}-plain-wordmark`}
-          ></i>
+          <i className={`devicon-${provider}-plain-wordmark`}></i>
         </NavLink>
         {metadataChild}
       </div>
