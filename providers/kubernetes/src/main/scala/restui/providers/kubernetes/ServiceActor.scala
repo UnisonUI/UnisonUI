@@ -24,8 +24,8 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
         case None =>
           val filteredServices = newServices.filter(service => getLabels(service.metadata.labels).isDefined)
           filteredServices.flatMap(createEndpoint).foreach {
-            case (serviceName, file) =>
-              downloadFile(Service(serviceName, serviceName, file, metadata))
+            case (id, serviceName, file) =>
+              downloadFile(Service(id, serviceName, file, metadata))
           }
           context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
         case Some(services) =>
@@ -33,10 +33,10 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
           val removed          = services.filter(service => !filteredServices.contains(service))
           val added            = filteredServices.filter(service => !services.contains(service))
 
-          removed.flatMap(createEndpoint).foreach { case (serviceName, _) => callback(ServiceEvent.ServiceDown(serviceName)) }
+          removed.flatMap(createEndpoint).foreach { case (id, _, _) => callback(ServiceEvent.ServiceDown(id)) }
           added.flatMap(createEndpoint).foreach {
-            case (serviceName, file) =>
-              downloadFile(Service(serviceName, serviceName, file, metadata))
+            case (id, serviceName, file) =>
+              downloadFile(Service(id, serviceName, file, metadata))
           }
 
           context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
@@ -59,11 +59,11 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
         log.warning("There was an error while download the file {}", throwable)
       }
 
-  private def createEndpoint(service: KubernetesService): Option[(String, OpenApiFile)] =
+  private def createEndpoint(service: KubernetesService): Option[(String, String, OpenApiFile)] =
     getLabels(service.metadata.labels).map {
       case Labels(protocol, port, swaggerPath) =>
         val address = s"$protocol://${service.copySpec.clusterIP}:$port$swaggerPath"
-        (service.name, OpenApiFile(ContentType.fromString(address), address))
+        (service.uid, service.name, OpenApiFile(ContentType.fromString(address), address))
     }
 
   private def getLabels(labels: Map[String, String]): Option[Labels] =
