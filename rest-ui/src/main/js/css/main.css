@@ -1,4 +1,6 @@
 @tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 *, *:after, *:before { -webkit-box-sizing: border-box; box-sizing: border-box; }
 
@@ -30,19 +32,14 @@ main {
 
 .bm-item{
   @apply text-xl;
-  padding: 0.8em;
+  padding: 1em;
+
   &:focus {
     outline: none;
   }
-}
-
-h1.bm-item {
-  @apply text-4xl;
-}
-
-.bm-item  {
   & a {
-  color: #b8b7ad;
+    color: #b8b7ad;
+    transition: color 0.3s;
     &:hover, &:focus {
       color: #c94e50;
     }
@@ -51,11 +48,30 @@ h1.bm-item {
       pointer-events: none;
     }
   }
- }
+
+}
+
+h1.bm-item {
+  @apply text-4xl;
+  margin: 0 auto;
+  padding: 0;
+}
 
 .metadata {
   display: none;
   &.open {
     display: block;
+  }
+  & li {
+    @apply text-sm;
+  }
+ }
+
+ .search {
+  @apply border-0 appearance-none w-full mb-3 leading-tight;
+  background: #373a47;
+  color: #b8b7ad;
+  &:focus {
+    @apply outline-none;
   }
  }

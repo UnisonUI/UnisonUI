@@ -46,15 +46,15 @@ export default class ServiceLink extends Component {
     }
     return (
       <div>
-        {button}
+        {button}{' '}
         <NavLink
           key="1"
-          to={`/${service.name}`}
+          to={`/${service.id}`}
           activeClassName="active"
           onClick={this.props.closeMenu}
         >
-          {service.name}{' '}
-          <i className={`devicon-${provider}-plain-wordmark`}></i>
+          <i className={`devicon-${provider}-plain-wordmark`}></i>{' '}
+          {service.name}
         </NavLink>
         {metadataChild}
       </div>
