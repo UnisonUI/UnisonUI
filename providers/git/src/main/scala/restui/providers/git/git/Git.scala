@@ -106,7 +106,7 @@ object Git extends LazyLogging {
           val metadata =
             Map(
               Metadata.Provider -> provider,
-              "file"            -> filePath
+              Metadata.File     -> filePath
             )
           Service(id, serviceName, file, metadata)
       }

@@ -14,8 +14,8 @@ export default class App extends Component {
     super(props)
     this.state = {
       menuOpen: false,
-      services: [],
-      filtered: []
+      services: {},
+      filtered: {}
     }
     this.eventSource = new EventSource('/events')
     this.search = this.search.bind(this)
@@ -31,11 +31,18 @@ export default class App extends Component {
 
   componentDidMount () {
     axios.get('/services').then(res => {
-      const services = res.data.map(event => {
-        return { id: event.id, name: event.name, metadata: event.metadata }
-      })
-      services.sort((a, b) => a.name.localeCompare(b.name))
-      this.setState({ services, filtered: services })
+      const services = res.data
+        .map(event => {
+          return { id: event.id, name: event.name, metadata: event.metadata }
+        })
+        .reduce((obj, service) => {
+          if (!obj[service.name]) {
+            obj[service.name] = []
+          }
+          obj[service.name].push(service)
+          return obj
+        }, {})
+      this.setState({ services, filtered: Object.assign({}, services) })
     })
 
     this.eventSource.onmessage = e => {
@@ -49,14 +56,35 @@ export default class App extends Component {
     let services
     if (data.event === 'serviceUp') {
       services = this.state.services
-      if (!services.find(item => item.id === data.id)) {
-        services.push({ id: data.id, name: data.name, metadata: data.metadata })
+      if (!services[data.name]) {
+        services[data.name] = []
+      }
+
+      if (!services[data.name].find(item => item.id === data.id)) {
+        services[data.name].push({
+          id: data.id,
+          name: data.name,
+          metadata: data.metadata
+        })
+      } else {
+        services[data.name] = services[data.name].map(service => {
+          if (service.id !== data.id) return service
+          else return { id: data.id, name: data.name, metadata: data.metadata }
+        })
       }
     } else {
-      services = this.state.services.filter(item => item.id !== data.id)
+      services = Object.assign({}, this.state.services)
+      const service = services[data.name]
+      if (service) {
+        services[data.name] = services[data.name].filter(
+          item => item.id !== data.id
+        )
+      }
+      if (!services[data.name].length) {
+        delete services[data.name]
+      }
     }
-    services.sort((a, b) => a.name.localeCompare(b.name))
-    this.setState({ services, filtered: services })
+    this.setState({ services, filtered: Object.assign({}, services) })
   }
 
   getServices () {
@@ -71,11 +99,16 @@ export default class App extends Component {
       />
     ]
 
-    if (services.length) {
-      services.forEach(service => {
+    if (Object.keys(services).length) {
+      const entries = Object.entries(services)
+      entries.sort((a, b) => a[0].localeCompare(b[0]))
+      entries.forEach(([name, services]) => {
         items.push(
-          <div key={service.id}>
-            <ServiceLink service={service} closeMenu={() => this.closeMenu()} />
+          <div key={name}>
+            <ServiceLink
+              services={services}
+              closeMenu={() => this.closeMenu()}
+            />
           </div>
         )
       })
@@ -86,19 +119,23 @@ export default class App extends Component {
   }
 
   search (e) {
-    let currentList = []
-    let newList = []
+    let newList = {}
 
     if (e.target.value !== '') {
-      currentList = this.state.services
+      const keys = Object.keys(this.state.services)
 
-      newList = currentList.filter(service => {
-        const lc = service.name.toLowerCase()
-        const filter = e.target.value.toLowerCase()
-        return lc.includes(filter)
-      })
+      newList = keys
+        .filter(name => {
+          const lc = name.toLowerCase()
+          const filter = e.target.value.toLowerCase()
+          return lc.includes(filter)
+        })
+        .reduce((obj, name) => {
+          obj[name] = this.state.services[name]
+          return obj
+        }, {})
     } else {
-      newList = this.state.services
+      newList = Object.assign({}, this.state.services)
     }
     this.setState({
       filtered: newList

@@ -5,7 +5,6 @@ import App from './components/ui'
 require('./css/main.css')
 require('./css/burger-menu.css')
 require('./css/swagger-ui/main.scss')
-require('devicon/devicon.css')
 
 const wrapper = document.getElementById('app')
 if (wrapper) ReactDOM.render(<App />, wrapper)

@@ -28,7 +28,6 @@
     "core-js": "^3.6.5",
     "cross-env": "^7.0.0",
     "css-loader": "^3.4.2",
-    "devicon": "^2.2.0",
     "eslint": "^7.1.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-import": "^2.20.2",

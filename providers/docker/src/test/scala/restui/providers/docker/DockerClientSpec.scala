@@ -29,13 +29,13 @@ class DockerClientSpec
   private val Id          = "12345"
   private val ServiceName = "test"
   override def beforeAll =
-    Http().bindAndHandle(path(PathEnd)(complete(StatusCodes.OK)), "localhost", 9999)
+    Http().bindAndHandle(path("openapi.yaml")(complete(StatusCodes.OK)), "localhost", 9999)
 
   override def afterAll: Unit =
     TestKit.shutdownActorSystem(system)
 
   private val settings                   = Settings("myDocker.sock", Labels("name", "port", "swagger"))
-  private val MatchingContainerLabels    = Map("name" -> ServiceName, "port" -> "9999", "swagger" -> "/").asJava
+  private val MatchingContainerLabels    = Map("name" -> ServiceName, "port" -> "9999", "swagger" -> "/openapi.yaml").asJava
   private val NonMatchingContainerLabels = Map("name" -> ServiceName).asJava
 
   "Listing endpoints" when {
@@ -46,7 +46,10 @@ class DockerClientSpec
         new DockerClient(clientMock, settings, event => probe.ref ! event).listCurrentAndFutureEndpoints
         probe.expectMsg(
           ServiceEvent.ServiceUp(
-            Service(Id, ServiceName, OpenApiFile(ContentType.Plain, "OK"), Map(Metadata.Provider -> "docker"))
+            Service(Id,
+                    ServiceName,
+                    OpenApiFile(ContentType.Yaml, "OK"),
+                    Map(Metadata.Provider -> "docker", Metadata.File -> "openapi.yaml"))
           )
         )
       }

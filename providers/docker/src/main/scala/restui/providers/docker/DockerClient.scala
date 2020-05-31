@@ -6,7 +6,7 @@ import scala.jdk.CollectionConverters._
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Source, _}
@@ -41,7 +41,7 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
               Unmarshaller.stringUnmarshaller(response.entity)
             }
             .map { content =>
-              val metadata = Map(Metadata.Provider -> "docker")
+              val metadata = Map(Metadata.Provider -> "docker", Metadata.File -> Uri(service.file.content).path.toString.substring(1))
               Source.single(ServiceEvent.ServiceUp(service.copy(file = service.file.copy(content = content), metadata = metadata)))
             }
             .recover { throwable =>

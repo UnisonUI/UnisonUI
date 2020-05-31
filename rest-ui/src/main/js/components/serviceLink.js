@@ -1,8 +1,5 @@
 import React, { Component } from 'react'
 import { NavLink } from 'react-router-dom'
-import { ChevronDown, ChevronUp } from 'react-feather'
-
-import Metadata from './metadata'
 
 export default class ServiceLink extends Component {
   constructor (props) {
@@ -13,51 +10,39 @@ export default class ServiceLink extends Component {
   }
 
   render () {
-    const service = this.props.service
-    const metadata = Object.assign({}, service.metadata)
-    let button = []
-    let metadataChild = []
-    const provider = metadata.provider
-    delete metadata.provider
-
-    if (Object.values(metadata).length) {
-      let chevron = <ChevronDown size={16} />
-      if (this.state.metadataOpen) {
-        chevron = <ChevronUp size={16} />
-      }
-
-      button = [
-        <button
-          key="0"
-          onClick={() =>
-            this.setState({ metadataOpen: !this.state.metadataOpen })
-          }
-        >
-          {chevron}
-        </button>
-      ]
-      metadataChild = [
-        <Metadata
-          key="2"
-          isOpen={this.state.metadataOpen}
-          metadata={metadata}
-        />
-      ]
+    const services = this.props.services
+    if (services.length === 1) {
+      return (
+        <div>
+          <NavLink
+            key={services[0].id}
+            to={`/${services[0].id}`}
+            activeClassName="active"
+            onClick={this.props.closeMenu}
+          >
+            {services[0].name}
+          </NavLink>
+        </div>
+      )
+    } else {
+      services.sort((a, b) => a.name.localeCompare(b.name))
+      const items = services.map(service => (
+        <div key={service.id} className="text-sm ml-4">
+          <NavLink
+            to={`/${service.id}`}
+            activeClassName="active"
+            onClick={this.props.closeMenu}
+          >
+            {service.metadata.file}
+          </NavLink>
+        </div>
+      ))
+      return (
+        <div>
+          <div>{services[0].name}</div>
+          {items}
+        </div>
+      )
     }
-    return (
-      <div>
-        {button}{' '}
-        <NavLink
-          key="1"
-          to={`/${service.id}`}
-          activeClassName="active"
-          onClick={this.props.closeMenu}
-        >
-          <i className={`devicon-${provider}-plain-wordmark`}></i>{' '}
-          {service.name}
-        </NavLink>
-        {metadataChild}
-      </div>
-    )
   }
 }
