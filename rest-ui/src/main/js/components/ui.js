@@ -18,7 +18,6 @@ export default class App extends Component {
       filtered: {}
     }
     this.eventSource = new EventSource('/events')
-    this.search = this.search.bind(this)
   }
 
   handleStateChange (state) {
@@ -42,7 +41,8 @@ export default class App extends Component {
           obj[service.name].push(service)
           return obj
         }, {})
-      this.setState({ services, filtered: Object.assign({}, services) })
+      this.setState({ services })
+      this.search(document.getElementById('search').value)
     })
 
     this.eventSource.onmessage = e => {
@@ -73,18 +73,19 @@ export default class App extends Component {
         })
       }
     } else {
-      services = Object.assign({}, this.state.services)
-      const service = services[data.name]
-      if (service) {
-        services[data.name] = services[data.name].filter(
-          item => item.id !== data.id
-        )
-      }
-      if (!services[data.name].length) {
-        delete services[data.name]
-      }
+      services = Object.entries(this.state.services).reduce(
+        (obj, [name, services]) => {
+          const filteredServices = services.filter(item => item.id !== data.id)
+          if (filteredServices.length) {
+            obj[name] = filteredServices
+          }
+          return obj
+        },
+        {}
+      )
     }
-    this.setState({ services, filtered: Object.assign({}, services) })
+    this.setState({ services })
+    this.search(document.getElementById('search').value)
   }
 
   getServices () {
@@ -92,9 +93,10 @@ export default class App extends Component {
     const items = [
       <input
         type="text"
+        id="search"
         className="search"
         placeholder="Search for a service..."
-        onChange={this.search}
+        onChange={e => this.search(e.target.value)}
         key="_search"
       />
     ]
@@ -118,16 +120,16 @@ export default class App extends Component {
     return items
   }
 
-  search (e) {
+  search (input) {
     let newList = {}
 
-    if (e.target.value !== '') {
+    if (input !== '') {
       const keys = Object.keys(this.state.services)
 
       newList = keys
         .filter(name => {
           const lc = name.toLowerCase()
-          const filter = e.target.value.toLowerCase()
+          const filter = input.toLowerCase()
           return lc.includes(filter)
         })
         .reduce((obj, name) => {
