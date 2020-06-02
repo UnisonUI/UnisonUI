@@ -12,7 +12,7 @@ Currently, RestUI can discover services through `Docker`, `Kubernetes`, `Git`/`G
 
 ## Overview
 
-![overview](./docs/overview.png "Overview")
+![overview](./docs/overview.gif "Overview")
 
 ## Build
 

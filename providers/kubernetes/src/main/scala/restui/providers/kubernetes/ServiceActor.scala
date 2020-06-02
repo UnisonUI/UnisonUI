@@ -19,12 +19,12 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
 
   private def handleMessage(servicesByNamespaces: Map[String, List[KubernetesService]]): Receive = {
     case (namespace: String, newServices: List[KubernetesService]) =>
-      val metadata = Map(Namespace -> namespace)
       servicesByNamespaces.get(namespace) match {
         case None =>
           val filteredServices = newServices.filter(service => getLabels(service.metadata.labels).isDefined)
           filteredServices.flatMap(createEndpoint).foreach {
-            case (id, serviceName, file) =>
+            case (id, serviceName, swaggerPath, file) =>
+              val metadata = Map(Metadata.Provider -> "kubernetes", Metadata.File -> swaggerPath, Namespace -> namespace)
               downloadFile(Service(id, serviceName, file, metadata))
           }
           context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
@@ -33,9 +33,10 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
           val removed          = services.filter(service => !filteredServices.contains(service))
           val added            = filteredServices.filter(service => !services.contains(service))
 
-          removed.flatMap(createEndpoint).foreach { case (id, _, _) => callback(ServiceEvent.ServiceDown(id)) }
+          removed.flatMap(createEndpoint).foreach { case (id, _, _, _) => callback(ServiceEvent.ServiceDown(id)) }
           added.flatMap(createEndpoint).foreach {
-            case (id, serviceName, file) =>
+            case (id, serviceName, swaggerPath, file) =>
+              val metadata = Map(Metadata.Provider -> "kubernetes", Metadata.File -> swaggerPath, Namespace -> namespace)
               downloadFile(Service(id, serviceName, file, metadata))
           }
 
@@ -59,11 +60,11 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
         log.warning("There was an error while download the file {}", throwable)
       }
 
-  private def createEndpoint(service: KubernetesService): Option[(String, String, OpenApiFile)] =
+  private def createEndpoint(service: KubernetesService): Option[ServiceFoundWithFile] =
     getLabels(service.metadata.labels).map {
       case Labels(protocol, port, swaggerPath) =>
         val address = s"$protocol://${service.copySpec.clusterIP}:$port$swaggerPath"
-        (service.uid, service.name, OpenApiFile(ContentType.fromString(address), address))
+        (service.uid, service.name, swaggerPath, OpenApiFile(ContentType.fromString(address), address))
     }
 
   private def getLabels(labels: Map[String, String]): Option[Labels] =
@@ -76,6 +77,7 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
 }
 
 object ServiceActor {
+  private type ServiceFoundWithFile = (String, String, String, OpenApiFile)
   private val Namespace = "namespace"
   case object Init
   case object Complete

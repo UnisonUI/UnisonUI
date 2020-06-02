@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.circe.generic.auto._
 import io.circe.yaml.parser
 import restui.Concurrency
-import restui.models.{ContentType, OpenApiFile, Service}
+import restui.models.{ContentType, Metadata, OpenApiFile, Service}
 import restui.providers.git._
 import restui.providers.git.git.data.{Repository, RestUI}
 import restui.providers.git.process.{Process, ProcessArgs}
@@ -102,10 +102,11 @@ object Git extends LazyLogging {
           val serviceName = repo.serviceName.getOrElse(nameFromUri)
           val filePath    = repo.directory.get.toPath.relativize(path).toString
           val id          = s"$nameFromUri:$filePath"
+          val provider    = uri.authority.host.address.split('.').head
           val metadata =
             Map(
-              "provider" -> uri.authority.host.address.split('.').head,
-              "file"     -> filePath
+              Metadata.Provider -> provider,
+              Metadata.File     -> filePath
             )
           Service(id, serviceName, file, metadata)
       }

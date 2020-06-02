@@ -1,23 +1,26 @@
-let plugins = {
-  "postcss-import": {},
+const plugins = {
+  'postcss-import': {},
   tailwindcss: {},
-  "postcss-nesting": {},
-  "postcss-preset-env": {
-    browsers: "last 2 versions"
+  'postcss-nesting': {},
+  'postcss-preset-env': {
+    browsers: 'last 2 versions'
   },
   autoprefixer: {}
-};
-if (process.env.NODE_ENV === "production") {
-  plugins["@fullhuman/postcss-purgecss"] = {
-    content: [
-      "src/main/js/**/*.html",
-      "src/main/js/**/*.js",
-      "node_modules/swagger-ui-react/**/*.js"
-    ],
-    whitelistPatterns: [/swagger-ui/, /opblock/, /opblock-summary/],
-    defaultExtractor: content => content.match(/[A-Za-z0-9-_:/]+/g) || []
-  };
 }
+
+if (process.env.NODE_ENV === 'production') {
+  plugins['@fullhuman/postcss-purgecss'] = {
+    content: [
+      'src/main/js/**/*.html',
+      'src/main/js/**/*.js',
+      'node_modules/react-burger-menu/**/*.js',
+      'node_modules/swagger-ui-react/**/*.js'
+    ],
+    whitelistPatterns: [/swagger-ui/, /opblock/, /opblock-summary/, /^devicon/],
+    defaultExtractor: content => content.match(/[A-Za-z0-9-_:/]+/g) || []
+  }
+}
+
 module.exports = {
   plugins: plugins
-};
+}

@@ -6,7 +6,7 @@ import scala.jdk.CollectionConverters._
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpRequest
+import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{Source, _}
@@ -14,7 +14,7 @@ import com.github.dockerjava.api.model.{ContainerNetwork, Event}
 import com.github.dockerjava.api.{DockerClient => JDockerClient}
 import com.github.dockerjava.core.command.EventsResultCallback
 import com.typesafe.scalalogging.LazyLogging
-import restui.models.{ContentType, OpenApiFile, Service, ServiceEvent}
+import restui.models.{ContentType, Metadata, OpenApiFile, Service, ServiceEvent}
 import restui.providers.Provider
 
 class DockerClient(private val client: JDockerClient, private val settings: Settings, private val callback: Provider.Callback)(implicit
@@ -41,7 +41,8 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
               Unmarshaller.stringUnmarshaller(response.entity)
             }
             .map { content =>
-              Source.single(ServiceEvent.ServiceUp(service.copy(file = service.file.copy(content = content))))
+              val metadata = Map(Metadata.Provider -> "docker", Metadata.File -> Uri(service.file.content).path.toString.substring(1))
+              Source.single(ServiceEvent.ServiceUp(service.copy(file = service.file.copy(content = content), metadata = metadata)))
             }
             .recover { throwable =>
               logger.warn("There was an error while download the file", throwable)
