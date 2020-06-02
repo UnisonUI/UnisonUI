@@ -13,7 +13,7 @@ Currently it can discover services through `Docker` and `Kubernetes` (inside the
 
 ## Overview
 
-![overview](./docs/overview.png "Overview")
+![overview](./docs/overview.gif "Overview")
 
 ## Usage
 
