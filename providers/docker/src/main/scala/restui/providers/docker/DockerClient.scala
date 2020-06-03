@@ -100,7 +100,7 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
     for {
       labels    <- findMatchingLabels(labels)
       ipAddress <- findFirstIpAddress(networks)
-    } yield (labels.serviceName, s"http://$ipAddress:${labels.port.toInt}${labels.swaggerPath}")
+    } yield (labels.serviceName, s"http://$ipAddress:${labels.port.toInt}${labels.specificationPath}")
 
   private def findFirstIpAddress(networks: mutable.Map[String, ContainerNetwork]): Option[String] =
     networks.toList.headOption.map(_._2.getIpAddress)
@@ -109,8 +109,8 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
     for {
       serviceName <- labels.get(settings.labels.serviceName)
       port        <- labels.get(settings.labels.port)
-      swaggerPath = labels.getOrElse(settings.labels.swaggerPath, "/swagger.yaml")
-    } yield Labels(serviceName, port, swaggerPath)
+      specificationPath = labels.getOrElse(settings.labels.specificationPath, "/specification.yaml")
+    } yield Labels(serviceName, port, specificationPath)
 }
 
 object DockerClient {

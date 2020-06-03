@@ -25,16 +25,16 @@ object Github extends LazyLogging {
     AkkaFlow[GithubClient].flatMapConcat { client =>
       GithubClient
         .listRepositories(client)
-        .map(repos => client.settings -> repos)
+        .map(repositories => client.settings -> repositories)
     }.map {
-      case (GithubSettings(token, _, _, repos), Node(name, url, branch)) =>
-        repos
+      case (GithubSettings(token, _, _, repositories), Node(name, url, branch)) =>
+        repositories
           .find(_.location.isMatching(name))
-          .map { repo =>
-            logger.debug(s"Matching repo: $name")
+          .map { repository =>
+            logger.debug(s"Matching repository: $name")
             val uri          = Uri(url)
             val uriWithToken = uri.withAuthority(uri.authority.copy(userinfo = token))
-            Repository(uriWithToken.toString, branch, repo.swaggerPaths)
+            Repository(uriWithToken.toString, branch, repository.specificationPaths)
           }
-    }.collect { case Some(repo) => repo }
+    }.collect { case Some(repository) => repository }
 }

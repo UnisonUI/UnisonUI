@@ -31,8 +31,8 @@ object Git extends LazyLogging {
 
   def source(repositories: Seq[RepositorySettings]): Source[Repository] =
     AkkaSource(repositories.collect {
-      case RepositorySettings(Location.Uri(uri), branch, swaggerPaths) =>
-        Repository(uri, branch.getOrElse(DefaultBranch), swaggerPaths)
+      case RepositorySettings(Location.Uri(uri), branch, specificationPaths) =>
+        Repository(uri, branch.getOrElse(DefaultBranch), specificationPaths)
     })
 
   private def cloneRepository(repo: Repository): Source[Repository] = {
@@ -51,7 +51,7 @@ object Git extends LazyLogging {
 
   private def findFreshSwaggerFiles(repo: Repository): Source[(Repository, List[Path])] = {
     val repoWithNewPath = findRestUIConfig(repo.directory.get.toPath).fold(repo) {
-      case RestUI(serviceName, swaggerPaths) => repo.copy(swaggerPaths = swaggerPaths, serviceName = serviceName)
+      case RestUI(serviceName, specificationPaths) => repo.copy(specificationPaths = specificationPaths, serviceName = serviceName)
     }
     val localFiles = Files
       .walk(repo.directory.get.toPath)
@@ -80,11 +80,11 @@ object Git extends LazyLogging {
     }
 
   private def filterSwaggerFiles(repo: Repository, files: LazyList[Path]): List[Path] = {
-    val repoPath     = repo.directory.get.toPath
-    val swaggerPaths = repo.swaggerPaths.map(repoPath.resolve(_).normalize)
+    val repoPath           = repo.directory.get.toPath
+    val specificationPaths = repo.specificationPaths.map(repoPath.resolve(_).normalize)
     files.filter { file =>
-      swaggerPaths.exists { swaggerPath =>
-        file.startsWith(swaggerPath)
+      specificationPaths.exists { specificationPath =>
+        file.startsWith(specificationPath)
       }
     }.toList
   }

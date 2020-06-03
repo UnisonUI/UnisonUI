@@ -109,9 +109,9 @@ restui {
 
     // Labels name use to detect RestUI compatible container
     labels {
-      port  = "restui.swagger.endpoint.port" // Label specifying the port on which the OpenApi spec is available.
-      service-name = "restui.swagger.endpoint.service-name" // Label specifying the service name for RestUI.
-      swagger-path = "restui.swagger.endpoint.swagger-path" // Label of the path where the OpenApi spec file is.
+      port  = "restui.specification.endpoint.port" // Label specifying the port on which the OpenApi spec is available.
+      service-name = "restui.specification.endpoint.service-name" // Label specifying the service name for RestUI.
+      specification-path = "restui.specification.endpoint.specification-path" // Label of the path where the OpenApi spec file is.
     }
 
   }
@@ -122,9 +122,9 @@ restui {
     polling-interval = "1 minute" // Interval between each polling
 
     labels {
-      port  = "restui.swagger.endpoint.port" // Label specifying the port on which the OpenApi spec is available.
-      protocol = "restui.swagger.endpoint.protocol" // Label specifying which protocol the OpenApi spec is exposed.
-      swagger-path = "restui.swagger.endpoint.swagger-path" // Label of the path where the OpenApi spec file is.
+      port  = "restui.specification.endpoint.port" // Label specifying the port on which the OpenApi spec is available.
+      protocol = "restui.specification.endpoint.protocol" // Label specifying which protocol the OpenApi spec is exposed.
+      specification-path = "restui.specification.endpoint.specification-path" // Label of the path where the OpenApi spec file is.
     }
   }
 
@@ -157,20 +157,20 @@ The docker provider list all running containers and detect new and stopped conta
 
 To find a compatible container, those containers **MUST** have the following labels on it:
 
-- A label for the port where the OpenApi spec lays (default to: *restui.swagger.endpoint.port*)
-- A label giving the service's name (default to: *restui.swagger.endpoint.service-name*)
+- A label for the port where the OpenApi spec lays (default to: *restui.specification.endpoint.port*)
+- A label giving the service's name (default to: *restui.specification.endpoint.service-name*)
 
 The following labels are optional:
 
-- A label specifying the path where the OpenApi spec lays (default to: *restui.swagger.endpoint.swagger-path*).
-  If this label is not provided with the default path is: **/swagger.yaml**
+- A label specifying the path where the OpenApi spec lays (default to: *restui.specification.endpoint.specification-path*).
+  If this label is not provided with the default path is: **/specification.yaml**
 
 ------------------------------------------------------------------------------------------------
 
 Example:
 
 ```sh
-docker  run --rm -l "restui.swagger.endpoint.port=80" -l "restui.swagger.endpoint.service-name=nginx" -v $(pwd):/usr/share/nginx/html:ro nginx:alpine
+docker  run --rm -l "restui.specification.endpoint.port=80" -l "restui.specification.endpoint.service-name=nginx" -v $(pwd):/usr/share/nginx/html:ro nginx:alpine
 ```
 
 ------------------------------------------------------------------------------------------------
@@ -187,13 +187,13 @@ The value for the interval is defined by `polling-interval` which default to `1 
 
 To find compatible services, those services **MUST** have the following labels on it:
 
-- A label for the port where the OpenApi spec lays (default to: *restui.swagger.endpoint.port*)
-- A label specifying the protocol to use (default to: *restui.swagger.endpoint.protocol*)
+- A label for the port where the OpenApi spec lays (default to: *restui.specification.endpoint.port*)
+- A label specifying the protocol to use (default to: *restui.specification.endpoint.protocol*)
 
 The following labels are optional:
 
-- A label specifying the path where the OpenApi spec lays (default to: *restui.swagger.endpoint.swagger-path*).
-  If this label is not provided with the default path is: **/swagger.yaml**
+- A label specifying the path where the OpenApi spec lays (default to: *restui.specification.endpoint.specification-path*).
+  If this label is not provided with the default path is: **/specification.yaml**
 
 Also those services **MUST** have a `ClusterIP` (the provider will infer the address from the `ClusterIP`)
 
@@ -206,9 +206,9 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    restui.swagger.endpoint.port: "80"
-    restui.swagger.endpoint.protocol: http
-  name: swagger
+    restui.specification.endpoint.port: "80"
+    restui.specification.endpoint.protocol: http
+  name: specification
   namespace: default
 spec:
   clusterIP: 10.96.0.2
@@ -229,7 +229,7 @@ kind: Deployment
 metadata:
   labels:
     selector: deployment
-  name: swagger
+  name: openapi
   namespace: default
 spec:
   progressDeadlineSeconds: 600
@@ -251,7 +251,7 @@ spec:
       containers:
       - image: nginx:alpine
         imagePullPolicy: Always
-        name: swagger5
+        name: openapi
         ports:
         - containerPort: 80
           name: 80tcp02
@@ -293,7 +293,7 @@ The object follows this schema:
   location = "" // Full url, `organization/project` for Github or
                 // a regex (the string **MUST** starts and ends with `/`)
   branch = "" // Branch to clone (default to `master` or inferred from the default branch in Github)
-  swagger-paths = [] // List of OpenApi spec files or directories containing those kind of files
+  specification-paths = [] // List of OpenApi spec files or directories containing those kind of files
                      // inside your repository. Those paths are overrided by the restui configuration file inside
                      // of your repository.
 }
@@ -308,7 +308,7 @@ YAML
 # Example: "https://github.com/MyOrg/MyRepo" -> "MyOrg/MyOrg"
 name = "service name"
 # List of OpenApi spec files or directories
-swagger = []
+specifications = []
 ```
 
 If you intend to use the Github option you need to provide a token.

@@ -56,7 +56,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
 |     repositories = [
 |       {
 |         location = "myOrg/Test"
-|         swagger-paths = ["test/"]
+|         specification-paths = ["test/"]
 |       },
 |       {
 |         location = "/myOrg\/.+/"
@@ -81,36 +81,6 @@ class SettingsSpec extends AnyWordSpec with Matchers {
           )
         )
       }
-    }
-
-    "load git" in {
-      val config = loadConfig("""restui.provider.git {
-|  cache-duration =  "2 hours"
-|  vcs {
-|    git {
-|     repositories = [
-|       {
-|         location = "myOrg/Test"
-|         swagger-paths = ["test/"]
-|       },
-|       {
-|         location = "/myOrg\/.+/"
-|       },
-|       "restui"
-|     ]
-|    }
-|  }
-|}""".stripMargin)
-      Settings.from(config) shouldBe Settings(
-        2.hours,
-        List(
-          GitSettings(
-            RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/")) :: RepositorySettings(
-              Location.Regex("myOrg/.+"),
-              None,
-              Nil) :: RepositorySettings(Location.Uri("restui"), None, Nil) :: Nil)
-        )
-      )
     }
   }
 
