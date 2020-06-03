@@ -38,10 +38,10 @@ class GithubSpec extends TestBase with Inside with Inspectors {
 
     forAll(results) { result =>
       inside(result) {
-        case GitRepository(uri, branch, _, swagger, ref) =>
+        case GitRepository(uri, branch, _, specification, ref) =>
           uri shouldBe "https://MyAwesomeUser@github.com/MyAwesomeUser/MyAwesomeRepo"
           branch shouldBe "master"
-          swagger shouldBe empty
+          specification shouldBe empty
           ref should not be Symbol("defined")
       }
     }

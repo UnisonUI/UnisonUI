@@ -34,8 +34,8 @@ class DockerClientSpec
   override def afterAll: Unit =
     TestKit.shutdownActorSystem(system)
 
-  private val settings                   = Settings("myDocker.sock", Labels("name", "port", "swagger"))
-  private val MatchingContainerLabels    = Map("name" -> ServiceName, "port" -> "9999", "swagger" -> "/openapi.yaml").asJava
+  private val settings                   = Settings("myDocker.sock", Labels("name", "port", "specification"))
+  private val MatchingContainerLabels    = Map("name" -> ServiceName, "port" -> "9999", "specification" -> "/openapi.yaml").asJava
   private val NonMatchingContainerLabels = Map("name" -> ServiceName).asJava
 
   "Listing endpoints" when {

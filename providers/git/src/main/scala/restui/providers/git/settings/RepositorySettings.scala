@@ -6,7 +6,7 @@ import scala.jdk.CollectionConverters._
 
 import com.typesafe.config.{Config, ConfigFactory}
 
-final case class RepositorySettings(location: Location, branch: Option[String] = None, swaggerPaths: List[String] = Nil)
+final case class RepositorySettings(location: Location, branch: Option[String] = None, specificationPaths: List[String] = Nil)
 
 object RepositorySettings {
 
@@ -23,10 +23,10 @@ object RepositorySettings {
     val branch =
       if (config.hasPath("branch")) Some(config.getString("branch"))
       else None
-    val swaggerPaths =
-      if (config.hasPath("swagger-paths")) config.getStringList("swagger-paths").asScala.toList
+    val specificationPaths =
+      if (config.hasPath("specification-paths")) config.getStringList("specification-paths").asScala.toList
       else Nil
-    RepositorySettings(location, branch, swaggerPaths)
+    RepositorySettings(location, branch, specificationPaths)
   }
 }
 sealed trait Location {
