@@ -11,7 +11,7 @@ object Configuration extends LazyLogging {
   private val defaultConfig: Config = ConfigFactory.load()
   def config(maybeFile: Option[String] = None): Config =
     maybeFile.flatMap {
-      case filename =>
+      filename =>
         Try {
           val file = new File(filename)
           ConfigFactory.systemProperties.withFallback(ConfigFactory.parseFile(file)).withFallback(defaultConfig)
