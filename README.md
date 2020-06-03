@@ -6,7 +6,7 @@
 
 RestUI is intended to be a centralised UI for all your **Swagger**/**OpenApi spec** files.
 
-RestUI is an autonomous server, which discover your services and **OpenApi spec** files for you.
+RestUI is an autonomous server, which discovers your services and **OpenApi spec** files for you.
 
 Currently, RestUI can discover services through `Docker`, `Kubernetes`, `Git`/`Github`
 
@@ -23,7 +23,7 @@ Currently, RestUI can discover services through `Docker`, `Kubernetes`, `Git`/`G
 
 ### React application
 
-There is two ways to build the React application:
+There are two ways to build the React application:
 
 - Using SBT
 - Using only npm commands
@@ -34,7 +34,7 @@ There is two ways to build the React application:
 sbt ";project rest-ui; npmInstall; webpackDevTask"
 ```
 
-`webpackDevTask` can be replace by `webpackProdTask` if you want to produce minified assets.
+`webpackDevTask` can be replaced by `webpackProdTask` if you want to produce minified assets.
 
 #### Using NodeJS
 
@@ -44,11 +44,11 @@ npm install
 npm run build
 ```
 
-`npm run build` can be replace by `npm run prod` if you want to produce minified assets.
+`npm run build` can be replaced by `npm run prod` if you want to produce minified assets.
 
 ### RestUI
 
-Once the react application build you are able to build RestUI
+Once the react application build you can build RestUI
 
 ```sh
 sbt "project rest-ui; packageBin"
@@ -64,17 +64,17 @@ This project is targeted for Java 11+ in order
 
 ### Configuration
 
-RestUI uses an HOCON format for it's configuration.
+RestUI uses a HOCON format for its configuration.
 
 Here is the default configuration used by RestUI.
 
-In order to override the defaulr values you can either create your own configuration file
+To override the default values you can either create your configuration file
 _(with only the fields you want to override)_, or pass the field through system properties:
 
 It is also possible to combine the configuration file and system properties at the time, but
 in that case, the system properties values will **prevail**.
 
-The configuration file is passed as first parameter of RestUI:
+The configuration file is passed as the first parameter of RestUI:
 
 ```sh
 rest-ui my-config.conf
@@ -116,7 +116,7 @@ restui {
 
   }
 
-  // Configuration for the kubernetes provider
+  // Configuration for the Kubernetes provider
   // More information about how this provider works in the Kubernetes provider section
   provider.kubernetes {
     polling-interval = "1 minute" // Interval between each polling
@@ -155,7 +155,7 @@ restui {
 
 The docker provider list all running containers and detect new and stopped containers.
 
-In order to find compatible container, those containers **MUST** have the following labels on it:
+To find a compatible container, those containers **MUST** have the following labels on it:
 
 - A label for the port where the OpenApi spec lays (default to: *restui.swagger.endpoint.port*)
 - A label giving the service's name (default to: *restui.swagger.endpoint.service-name*)
@@ -163,7 +163,7 @@ In order to find compatible container, those containers **MUST** have the follow
 The following labels are optional:
 
 - A label specifying the path where the OpenApi spec lays (default to: *restui.swagger.endpoint.swagger-path*).
-  If this label is not provided the default path is: **/swagger.yaml**
+  If this label is not provided with the default path is: **/swagger.yaml**
 
 ------------------------------------------------------------------------------------------------
 
@@ -177,15 +177,15 @@ docker  run --rm -l "restui.swagger.endpoint.port=80" -l "restui.swagger.endpoin
 
 #### Kubernetes provider
 
-In order to make this provider work, RestUI **MUST** run inside the them Kubernetes
+To make this provider work, RestUI **MUST** run inside them Kubernetes
 cluster as the services you want to discover.
 
-The kubernetes provider list all running services and detect new services.
+The Kubernetes provider list all running services and detect new services.
 
-New services are detected by polling the kubernetes api at a regular interval.
+New services are detected by polling the Kubernetes API at a regular interval.
 The value for the interval is defined by `polling-interval` which default to `1 minute`.
 
-In order to find compatible services, those services **MUST** have the following labels on it:
+To find compatible services, those services **MUST** have the following labels on it:
 
 - A label for the port where the OpenApi spec lays (default to: *restui.swagger.endpoint.port*)
 - A label specifying the protocol to use (default to: *restui.swagger.endpoint.protocol*)
@@ -193,7 +193,7 @@ In order to find compatible services, those services **MUST** have the following
 The following labels are optional:
 
 - A label specifying the path where the OpenApi spec lays (default to: *restui.swagger.endpoint.swagger-path*).
-  If this label is not provided the default path is: **/swagger.yaml**
+  If this label is not provided with the default path is: **/swagger.yaml**
 
 Also those services **MUST** have a `ClusterIP` (the provider will infer the address from the `ClusterIP`)
 
@@ -278,13 +278,13 @@ spec:
 
 #### Git provider
 
-The git provider can be used to clone git repositories at regular interval (`cache-duration`).
-You can either provider the list of repositories you to clone or use Github to discover repositories.
+The git provider can be used to clone git repositories at a regular interval (`cache-duration`).
+You can either provide the list of repositories you to clone or use Github to discover repositories.
 
 It's possible to use both options at the same time.
 
-Each options requires a list of `repositories`. This list can be either a **string** corresponding to
-the full (or `organization/project` for Github) or on object.
+Each option requires a list of `repositories`. This list can be either a **string** corresponding to
+the full (or `organization/project` for Github) or on an object.
 
 The object follows this schema:
 
@@ -302,18 +302,18 @@ The object follows this schema:
 If your repository contains a file at the root of it called `.restui.yaml`, the provider will
 read it and get the OpenApi spec files or directories from it.
 
-```yaml
+YAML
 # Service's name.
-# If this field is not provide the service name will be inferred from the repository url
+# If this field does not provide the service name will be inferred from the repository URL
 # Example: "https://github.com/MyOrg/MyRepo" -> "MyOrg/MyOrg"
 name = "service name"
 # List of OpenApi spec files or directories
 swagger = []
 ```
 
-If you intend to use the github option you need to provide a token.
+If you intend to use the Github option you need to provide a token.
 This token can be generated [here](https://github.com/settings/tokens/new).
-You will need at allow:
+You will need to allow:
 
 - `public_repo` if you want to list public repositories
 - `repo`: if want to list public and private repositories
@@ -327,7 +327,7 @@ docker run -p 8080:8080 maethornaur/rest-ui
 
 ```
 
-Options can either be passed as an environment variable or as parameter.
+Options can either be passed as an environment variable or as a parameter.
 
 To override the default value for a configuration entry (found in the
 `reference.conf` files) just pass the `HOCON` path preceded by `-D`
@@ -340,8 +340,8 @@ There is a special case for configuration fields that are arrays.
 You need to append the path by the index:
 `restui.providers.0=restui.servicediscovery.docker.DockerProvider`
 
-If you prefere you can use environment variable instead.
-For that take the path, uppercase it and replace th `.` by `_` and `-` by `__`.
+If you prefer you can use an environment variable instead.
+For that take the path, uppercase it and replace the `.` by `_` and `-` by `__`.
 
 ```sh
 docker run -p 8081:8081 -e RESTUI_HTTP_PORT=8081 maethornaur/rest-ui
