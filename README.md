@@ -277,14 +277,14 @@ You can either provide the list of repositories you to clone or use Github to di
 It's possible to use both options at the same time.
 
 Each option requires a list of `repositories`. This list can be either a **string** corresponding to
-the full (or `organization/project` for Github) or on an object.
+the full url (`organization/project` for Github) or on an object.
 
 The object follows this schema:
 
 ```hocon
 {
-  location = "" // Full url, `organization/project` for Github or
-                // a regex (the string **MUST** starts and ends with `/`)
+  location = "" // Full url, `organization/project` for Github
+                // or a regex (the string **MUST** starts and ends with `/`)
   branch = "" // Branch to clone (default to `master` or inferred from the default branch in Github)
   specification-paths = [] // List of OpenApi spec files or directories containing those kind of files
                      // inside your repository. Those paths are overrided by the restui configuration file inside
@@ -292,8 +292,18 @@ The object follows this schema:
 }
 ```
 
-If your repository contains a file at the root of it called `.restui.yaml`, the provider will
-read it and get the OpenApi spec files or directories from it.
+If the repository contains a file at the root level called `.restui.yaml` then Git provider will
+read the OpenApi spec files specified in that file.
+
+Example:
+
+`.restui.yaml`
+```yaml
+name: "Test"
+specifications:
+  - "foo-service.yaml"
+  - "/openapi/bar-service.yaml"
+```
 
 YAML
 # Service's name.
