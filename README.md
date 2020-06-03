@@ -4,9 +4,9 @@
 [![codecov](https://codecov.io/gh/MaethorNaur/restui/branch/master/graph/badge.svg)](https://codecov.io/gh/MaethorNaur/restui)
 [![CodeFactor](https://www.codefactor.io/repository/github/maethornaur/restui/badge)](https://www.codefactor.io/repository/github/maethornaur/restui)
 
-RestUI is intended to be a centralised UI for all your OpenApi spec files.
+RestUI is intended to be a centralised UI for all your **OpenApi Specification** files.
 
-RestUI is an autonomous server, which discovers your **OpenAPI Specification** for you.
+RestUI is an autonomous server, which discovers your **OpenAPI Spec** for you.
 
 Currently, RestUI can discover your API descriptions through `Docker`, `Kubernetes`, `Git`/`Github`
 
