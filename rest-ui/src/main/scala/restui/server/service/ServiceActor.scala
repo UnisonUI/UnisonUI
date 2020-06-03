@@ -12,11 +12,14 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
     case (provider: String, ServiceEvent.ServiceUp(service)) =>
       log.debug("{} got a new service", provider)
 
-      services.find { case (id, _) => id == service.id }.foreach {
-        case (_, Service(id, _, _, _)) => queue.offer(Event.ServiceDown(id))
-      }
+      val hasServiceNameChanged = hasServiceNameChanged(services, service)
 
-      queue.offer(Event.ServiceUp(service.id, service.name, service.metadata))
+      if (hasServiceNameChanged)
+        queue.offer(Event.ServiceDown(service.id))
+
+      if (isNewService(services, service) || hasServiceNameChanged)
+        queue.offer(Event.ServiceUp(service.id, service.name, service.metadata))
+
       context.become(handleReceive(services + (service.id -> service)))
 
     case (provider: String, Event.ServiceDown(serviceId)) =>
@@ -28,6 +31,13 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
     case GetAll         => sender() ! services.values.toList
   }
 
+  private def hasServiceNameChanged(services: Map[String, Service], service: Service): Boolean =
+    services.exists {
+      case (id, currentService) =>
+        id == service.id && currentService.name != service.name
+    }
+
+  private def isNewService(services: Map[String, Service], service: Service): Boolean = !services.contains(service.id)
 }
 
 object ServiceActor {
