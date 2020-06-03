@@ -12,12 +12,12 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
     case (provider: String, ServiceEvent.ServiceUp(service)) =>
       log.debug("{} got a new service", provider)
 
-      val hasServiceNameChanged = hasServiceNameChanged(services, service)
+      val serviceNameChanged = hasServiceNameChanged(services, service)
 
-      if (hasServiceNameChanged)
+      if (serviceNameChanged)
         queue.offer(Event.ServiceDown(service.id))
 
-      if (isNewService(services, service) || hasServiceNameChanged)
+      if (isNewService(services, service) || serviceNameChanged)
         queue.offer(Event.ServiceUp(service.id, service.name, service.metadata))
 
       context.become(handleReceive(services + (service.id -> service)))
