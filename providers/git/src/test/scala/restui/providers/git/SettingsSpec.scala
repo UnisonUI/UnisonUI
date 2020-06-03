@@ -10,6 +10,17 @@ import restui.providers.git.settings._
 class SettingsSpec extends AnyWordSpec with Matchers {
   private val defaultConfig                      = ConfigFactory.defaultReference()
   private def loadConfig(config: String): Config = ConfigFactory.parseString(config).withFallback(defaultConfig)
+  private val repositories                       = """ repositories = [
+|       {
+|         location = "myOrg/Test"
+|         specification-paths = ["test/"]
+|       },
+|       {
+|         location = "/myOrg\/.+/"
+|       },
+|       "restui"
+|     ]
+|""".stripMargin
 
   "Settings" should {
 
@@ -48,21 +59,12 @@ class SettingsSpec extends AnyWordSpec with Matchers {
       }
 
       "there is repos" in {
-        val config = loadConfig("""restui.provider.git {
+        val config = loadConfig(s"""restui.provider.git {
 |  cache-duration =  "2 hours"
 |  vcs {
 |    github {
 |     api-token = "test"
-|     repositories = [
-|       {
-|         location = "myOrg/Test"
-|         specification-paths = ["test/"]
-|       },
-|       {
-|         location = "/myOrg\/.+/"
-|       },
-|       "restui"
-|     ]
+|     $repositories
 |    }
 |  }
 |}""".stripMargin)
@@ -82,6 +84,28 @@ class SettingsSpec extends AnyWordSpec with Matchers {
         )
       }
     }
+
+    "load git" in {
+      val config = loadConfig(s"""restui.provider.git {
+|  cache-duration =  "2 hours"
+|  vcs {
+|    git {
+|     $repositories
+|    }
+|  }
+|}""".stripMargin)
+      Settings.from(config) shouldBe Settings(
+        2.hours,
+        List(
+          GitSettings(
+            RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/")) :: RepositorySettings(
+              Location.Regex("myOrg/.+"),
+              None,
+              Nil) :: RepositorySettings(Location.Uri("restui"), None, Nil) :: Nil)
+        )
+      )
+    }
+
   }
 
 }
