@@ -171,8 +171,7 @@ docker  run --rm -l "restui.specification.endpoint.port=80" -l "restui.specifica
 
 ### Kubernetes provider
 
-In order to discover **OpenApi Specs** with RestUI in Kubernetes, the service **MUST** run inside the same Kubernetes
-cluster of your services.
+In order to discover **OpenApi Specs** with RestUI in Kubernetes, the service **MUST** run inside the same Kubernetes cluster of your services.
 
 The Kubernetes provider list and detect all running services in real time.
 
