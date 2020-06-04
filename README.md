@@ -45,7 +45,7 @@ npm run build
 
 ### RestUI
 
-Once the React application build you can generate the package for RestUI
+Once the React application is built you can generate the package for RestUI
 
 ```sh
 sbt "project rest-ui; packageBin"
@@ -176,7 +176,7 @@ cluster of your services.
 
 The Kubernetes provider list and detect all running services in real time.
 
-New services are detected by polling from Kubernetes API at a regular interval.
+New services are detected by polling from the Kubernetes API at a regular interval.
 The value for the interval is defined by `polling-interval` which default to `1 minute`.
 
 A compatible service **MUST** have the following labels on it:
@@ -277,7 +277,7 @@ You can either provide the list of repositories you to clone or use Github to di
 It's possible to use both options at the same time.
 
 Each option requires a list of `repositories`. This list can be either a **string** corresponding to
-the full url (`organization/project` for Github) or on an object.
+the full URL/Regex (`organization/project` for Github) or on an object.
 
 The object follows this schema:
 
