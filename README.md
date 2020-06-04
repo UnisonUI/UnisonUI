@@ -4,11 +4,11 @@
 [![codecov](https://codecov.io/gh/MaethorNaur/restui/branch/master/graph/badge.svg)](https://codecov.io/gh/MaethorNaur/restui)
 [![CodeFactor](https://www.codefactor.io/repository/github/maethornaur/restui/badge)](https://www.codefactor.io/repository/github/maethornaur/restui)
 
-RestUI is intended to be a centralised UI for all your **Swagger**/**OpenApi spec** files.
+RestUI is intended to be a centralised UI for all your **OpenApi Specification** files.
 
-RestUI is an autonomous server, which discovers your services and **OpenApi spec** files for you.
+RestUI is an autonomous server, which discovers your **OpenAPI Spec** for you.
 
-Currently, RestUI can discover services through `Docker`, `Kubernetes`, `Git`/`Github`
+Currently, RestUI can discover your API descriptions through `Docker`, `Kubernetes`, `Git`/`Github`
 
 ## Overview
 
@@ -23,12 +23,9 @@ Currently, RestUI can discover services through `Docker`, `Kubernetes`, `Git`/`G
 
 ### React application
 
-There are two ways to build the React application:
+#### There are two ways to build it:
 
-- Using SBT
-- Using only npm commands
-
-#### Using SBT
+#### 1. Using SBT
 
 ```sh
 sbt ";project rest-ui; npmInstall; webpackDevTask"
@@ -36,7 +33,7 @@ sbt ";project rest-ui; npmInstall; webpackDevTask"
 
 `webpackDevTask` can be replaced by `webpackProdTask` if you want to produce minified assets.
 
-#### Using NodeJS
+#### 2. Using NodeJS
 
 ```sh
 cd rest-ui
@@ -48,7 +45,7 @@ npm run build
 
 ### RestUI
 
-Once the react application build you can build RestUI
+Once the React application is built you can generate the package for RestUI
 
 ```sh
 sbt "project rest-ui; packageBin"
@@ -56,7 +53,7 @@ sbt "project rest-ui; packageBin"
 
 This will produce a zip located: `rest-ui/target/universal/rest-ui-{VERSION}-SNAPSHOT.zip`
 
-You also can use `docker:publishLocal` instead of `packageBin` if you want to directly produce a docker image
+You also can use `docker:publishLocal` instead of `packageBin` if you want directly to produce a docker image
 
 ## Usage
 
@@ -67,25 +64,6 @@ This project is targeted for Java 11+ in order
 RestUI uses a HOCON format for its configuration.
 
 Here is the default configuration used by RestUI.
-
-To override the default values you can either create your configuration file
-_(with only the fields you want to override)_, or pass the field through system properties:
-
-It is also possible to combine the configuration file and system properties at the time, but
-in that case, the system properties values will **prevail**.
-
-The configuration file is passed as the first parameter of RestUI:
-
-```sh
-rest-ui my-config.conf
-```
-
-If you want to override the value with system properties you have to do like this:
-`-Drestui.http.port=3000`.
-
-**Be careful** where an array is expected you have to override the value like so:
-`-Drestui.providers.0=Provider1`, `-Drestui.providers.1=Provider2`, ...
-
 ```hocon
 restui {
   // List of active providers
@@ -149,23 +127,39 @@ restui {
 }
 ```
 
-### Providers
+To override the default values you can either create your configuration file
+_(with only the fields you want to override)_, or pass parameter fields through system properties:
 
-#### Docker provider
+It is also possible to combine the configuration file and system properties at the time, but
+in that case, the system properties values will **prevail**.
 
-The docker provider list all running containers and detect new and stopped containers.
+Example:
 
-To find a compatible container, those containers **MUST** have the following labels on it:
+1. Pass a configuration file to system properties
+```sh
+rest-ui my-config.conf
+```
+2. Pass parameter fields and override the values to system properties:
+```sh
+rest-ui -Drestui.providers.0=Provider1, -Drestui.providers.1=Provider2, ...
+```
 
-- A label for the port where the OpenApi spec lays (default to: *restui.specification.endpoint.port*)
-- A label giving the service's name (default to: *restui.specification.endpoint.service-name*)
+## Providers
 
-The following labels are optional:
+### Docker provider
 
-- A label specifying the path where the OpenApi spec lays (default to: *restui.specification.endpoint.specification-path*).
-  If this label is not provided with the default path is: **/specification.yaml**
+The docker provider list and detect all running containers in real time.
 
-------------------------------------------------------------------------------------------------
+A compatible container **MUST** include the following labels:
+
+- A label specifying the service's name `restui.specification.endpoint.service-name`
+- A label specifying the port where the OpenApi spec lays `restui.specification.endpoint.port`
+
+Optional labels:
+
+- A label specifying the path where the OpenApi spec lays `restui.specification.endpoint.specification-path`.
+  
+  Default path: `/specification.yaml`
 
 Example:
 
@@ -175,29 +169,27 @@ docker  run --rm -l "restui.specification.endpoint.port=80" -l "restui.specifica
 
 ------------------------------------------------------------------------------------------------
 
-#### Kubernetes provider
+### Kubernetes provider
 
-To make this provider work, RestUI **MUST** run inside them Kubernetes
-cluster as the services you want to discover.
+In order to discover **OpenApi Specs** with RestUI in Kubernetes, the service **MUST** run inside the same Kubernetes cluster of your services.
 
-The Kubernetes provider list all running services and detect new services.
+The Kubernetes provider list and detect all running services in real time.
 
-New services are detected by polling the Kubernetes API at a regular interval.
+New services are detected by polling from the Kubernetes API at a regular interval.
 The value for the interval is defined by `polling-interval` which default to `1 minute`.
 
-To find compatible services, those services **MUST** have the following labels on it:
+A compatible service **MUST** have the following labels on it:
 
-- A label for the port where the OpenApi spec lays (default to: *restui.specification.endpoint.port*)
-- A label specifying the protocol to use (default to: *restui.specification.endpoint.protocol*)
+- A label specifying the protocol `restui.specification.endpoint.protocol`
+- A label specifying the port where the OpenApi spec lays `restui.specification.endpoint.port`
 
-The following labels are optional:
+Optional labels:
 
-- A label specifying the path where the OpenApi spec lays (default to: *restui.specification.endpoint.specification-path*).
-  If this label is not provided with the default path is: **/specification.yaml**
+- A label specifying the path where the OpenApi spec lays `restui.specification.endpoint.specification-path`.
+  
+  Default path is: `/specification.yaml`
 
-Also those services **MUST** have a `ClusterIP` (the provider will infer the address from the `ClusterIP`)
-
-------------------------------------------------------------------------------------------------
+Also the services **MUST** have a `ClusterIP` (the provider will infer the address from the `ClusterIP`)
 
 Example:
 
@@ -276,7 +268,7 @@ spec:
 
 ------------------------------------------------------------------------------------------------
 
-#### Git provider
+### Git provider
 
 The git provider can be used to clone git repositories at a regular interval (`cache-duration`).
 You can either provide the list of repositories you to clone or use Github to discover repositories.
@@ -284,14 +276,14 @@ You can either provide the list of repositories you to clone or use Github to di
 It's possible to use both options at the same time.
 
 Each option requires a list of `repositories`. This list can be either a **string** corresponding to
-the full (or `organization/project` for Github) or on an object.
+the full URL/Regex (`organization/project` for Github) or on an object.
 
 The object follows this schema:
 
 ```hocon
 {
-  location = "" // Full url, `organization/project` for Github or
-                // a regex (the string **MUST** starts and ends with `/`)
+  location = "" // Full url, `organization/project` for Github
+                // or a regex (the string **MUST** starts and ends with `/`)
   branch = "" // Branch to clone (default to `master` or inferred from the default branch in Github)
   specification-paths = [] // List of OpenApi spec files or directories containing those kind of files
                      // inside your repository. Those paths are overrided by the restui configuration file inside
@@ -299,8 +291,18 @@ The object follows this schema:
 }
 ```
 
-If your repository contains a file at the root of it called `.restui.yaml`, the provider will
-read it and get the OpenApi spec files or directories from it.
+If the repository contains a file at the root level called `.restui.yaml` then Git provider will
+read the OpenApi spec files specified in that file.
+
+Example:
+
+`.restui.yaml`
+```yaml
+name: "Test"
+specifications:
+  - "foo-service.yaml"
+  - "/openapi/bar-service.yaml"
+```
 
 YAML
 # Service's name.
