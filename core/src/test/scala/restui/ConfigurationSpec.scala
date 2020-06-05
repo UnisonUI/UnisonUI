@@ -1,6 +1,6 @@
 package restui
 
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.compatible.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
@@ -21,7 +21,14 @@ class ConfigurationSpec extends AnyWordSpec with Matchers {
         "the file is not a valid HOCON file" in {
           checkConfiguration(Configuration.config(Some("src/test/resources/invalid.conf")))
         }
-
+      }
+      "get the value from the file" in {
+        checkConfiguration(Configuration.config(Some("src/test/resources/valid.conf")), "valid")
+      }
+      "get the value from the system property over the file" in {
+        System.setProperty("test", "property")
+        ConfigFactory.invalidateCaches()
+        checkConfiguration(Configuration.config(Some("src/test/resources/valid.conf")), "property")
       }
     }
   }
