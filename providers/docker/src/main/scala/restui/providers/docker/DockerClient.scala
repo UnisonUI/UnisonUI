@@ -1,111 +1,113 @@
 package restui.providers.docker
-import scala.collection.mutable
-import scala.concurrent.ExecutionContext
-import scala.jdk.CollectionConverters._
+
+import scala.concurrent.{ExecutionContext, Future}
 
 import akka.NotUsed
 import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpRequest, Uri}
-import akka.http.scaladsl.unmarshalling.Unmarshaller
-import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.{Source, _}
-import com.github.dockerjava.api.model.{ContainerNetwork, Event}
-import com.github.dockerjava.api.{DockerClient => JDockerClient}
-import com.github.dockerjava.core.command.EventsResultCallback
+import akka.http.scaladsl.model.Uri
+import akka.http.scaladsl.unmarshalling.Unmarshal
+import akka.stream.scaladsl.{JsonFraming, Source}
 import com.typesafe.scalalogging.LazyLogging
+import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
+import io.circe.parser.parse
+import restui.Concurrency
 import restui.models.{ContentType, Metadata, OpenApiFile, Service, ServiceEvent}
-import restui.providers.Provider
+import restui.providers.docker.client.HttpClient
+import restui.providers.docker.client.models.{Container, Event, State}
 
-class DockerClient(private val client: JDockerClient, private val settings: Settings, private val callback: Provider.Callback)(implicit
-    val system: ActorSystem)
-    extends LazyLogging {
+class DockerClient(private val client: HttpClient, private val settings: Settings)(implicit val system: ActorSystem) extends LazyLogging {
   import DockerClient._
   implicit val executionContent: ExecutionContext = system.dispatcher
 
-  private def createQueue: SourceQueueWithComplete[ServiceEvent] =
-    Source
-      .queue(BufferSize, OverflowStrategy.backpressure)
-      .flatMapConcat(downloadFile)
-      .toMat(Sink.foreach[ServiceEvent](callback))(Keep.left)
-      .run()
+  def startStreaming: Source[ServiceEvent, NotUsed] =
+    events.collect {
+      case event @ Event(id, Some(state), attributes) if findMatchingLabels(attributes).isDefined =>
+        logger.debug(s"Event found: $event")
+        (id, state)
+    }.flatMapMerge(
+        Concurrency.AvailableCore,
+        {
+          case (id, State.Start) =>
+            handleServiceUp(id).async
+          case (id, _) =>
+            Source.single(ServiceEvent.ServiceDown(id))
+        }
+      )
+      .async
 
-  private def downloadFile(event: ServiceEvent): Source[ServiceEvent, NotUsed] =
-    event match {
-      case serviceDown: ServiceEvent.ServiceDown => Source.single(serviceDown)
-      case ServiceEvent.ServiceUp(service) =>
-        Source.futureSource {
-          Http()
-            .singleRequest(HttpRequest(uri = service.file.content))
-            .flatMap { response =>
-              Unmarshaller.stringUnmarshaller(response.entity)
-            }
-            .map { content =>
-              val metadata = Map(Metadata.Provider -> "docker", Metadata.File -> Uri(service.file.content).path.toString.substring(1))
-              Source.single(ServiceEvent.ServiceUp(service.copy(file = service.file.copy(content = content), metadata = metadata)))
-            }
-            .recover { throwable =>
-              logger.warn("There was an error while download the file", throwable)
-              Source.empty[ServiceEvent]
-            }
-        }.mapMaterializedValue(_ => NotUsed)
+  private def events: Source[Event, NotUsed] =
+    client
+      .watch(Uri("/events").withRawQueryString("""since=0&filters={"event":["start","stop","kill"],"type":["container"]}"""))
+      .flatMapMerge(
+        Concurrency.AvailableCore,
+        response =>
+          if (response.status.isSuccess) response.entity.dataBytes
+          else Source.empty
+      )
+      .via(JsonFraming.objectScanner(MaximumFrameSize))
+      .flatMapMerge(
+        Concurrency.AvailableCore,
+        entity =>
+          parse(entity.utf8String).flatMap(_.as[Event]) match {
+            case Left(e) =>
+              logger.warn("Decoding error", e)
+              Source.empty
+            case Right(event) => Source.single(event)
+          }
+      )
+
+  private def handleServiceUp(id: String): Source[ServiceEvent, NotUsed] =
+    container(id).async.flatMapConcat { container =>
+      findEndpoint(container.labels, container.ip).fold(Source.empty[ServiceEvent]) {
+        case (serviceName, address) =>
+          downloadFile(id, serviceName, ContentType.fromString(address), address).async
+      }
     }
 
-  def listCurrentAndFutureEndpoints: Unit = {
-    val queue = createQueue
-    listRunningEndpoints(queue)
-    listenForNewEnpoints(queue)
-  }
-
-  private def listenForNewEnpoints(queue: SourceQueueWithComplete[ServiceEvent]) =
-    client
-      .eventsCmd()
-      .withEventFilter(StartFilter, StopFilter, KillFilter)
-      .exec(new EventsResultCallback {
-        override def onNext(event: Event): Unit = {
-          val container = client.inspectContainerCmd(event.getId()).exec
-          val labels    = container.getConfig.getLabels.asScala
-          val networks  = container.getNetworkSettings.getNetworks.asScala
-          val id        = container.getId
-          findEndpoint(labels, networks).map {
-            case (serviceName, address) =>
-              if (event.getStatus == StartFilter)
-                ServiceEvent.ServiceUp(Service(id, serviceName, OpenApiFile(ContentType.fromString(address), address)))
-              else ServiceEvent.ServiceDown(id)
-          }.foreach(queue.offer)
-          super.onNext(event)
+  private def container(id: String): Source[Container, NotUsed] =
+    Source.futureSource {
+      client
+        .get(Uri(s"/containers/$id/json"))
+        .flatMap { response =>
+          if (response.status.isSuccess) Unmarshal(response).to[Container]
+          else Future.failed(new Exception(response.status.defaultMessage))
         }
-      })
-
-  private def listRunningEndpoints(queue: SourceQueueWithComplete[ServiceEvent]) =
-    client
-      .listContainersCmd()
-      .withStatusFilter(Seq(RunningFilter).asJavaCollection)
-      .exec()
-      .asScala
-      .toList
-      .flatMap { container =>
-        val labels   = container.getLabels.asScala
-        val networks = container.getNetworkSettings.getNetworks.asScala
-        val id       = container.getId
-        findEndpoint(labels, networks).map {
-          case (serviceName, address) =>
-            ServiceEvent.ServiceUp(Service(id, serviceName, OpenApiFile(ContentType.fromString(address), address)))
+        .map(Source.single(_))
+        .recover { throwable =>
+          logger.warn("There was an error while retrieving the container information", throwable)
+          Source.empty[Container]
         }
-      }
-      .foreach(queue.offer)
+    }.mapMaterializedValue(_ => NotUsed)
 
-  private def findEndpoint(labels: mutable.Map[String, String],
-                           networks: mutable.Map[String, ContainerNetwork]): Option[ServiceNameWithAddress] =
+  private def downloadFile(id: String, serviceName: String, contentType: ContentType, uri: String): Source[ServiceEvent, NotUsed] =
+    Source.futureSource {
+      client
+        .downloadFile(uri)
+        .map { content =>
+          val metadata = Map(
+            Metadata.Provider -> "docker",
+            Metadata.File     -> Uri(uri).path.toString.substring(1)
+          )
+
+          Source.single(
+            ServiceEvent.ServiceUp(
+              Service(id, serviceName, OpenApiFile(contentType, content), metadata)
+            )
+          )
+        }
+        .recover { throwable =>
+          logger.warn("There was an error while download the file", throwable)
+          Source.empty[ServiceEvent]
+        }
+    }.mapMaterializedValue(_ => NotUsed)
+
+  private def findEndpoint(labels: Map[String, String], maybeIpAddress: Option[String]): Option[ServiceNameWithAddress] =
     for {
       labels    <- findMatchingLabels(labels)
-      ipAddress <- findFirstIpAddress(networks)
+      ipAddress <- maybeIpAddress
     } yield (labels.serviceName, s"http://$ipAddress:${labels.port.toInt}${labels.specificationPath}")
 
-  private def findFirstIpAddress(networks: mutable.Map[String, ContainerNetwork]): Option[String] =
-    networks.toList.headOption.map(_._2.getIpAddress)
-
-  private def findMatchingLabels(labels: mutable.Map[String, String]): Option[Labels] =
+  private def findMatchingLabels(labels: Map[String, String]): Option[Labels] =
     for {
       serviceName <- labels.get(settings.labels.serviceName)
       port        <- labels.get(settings.labels.port)
@@ -115,9 +117,5 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
 
 object DockerClient {
   private type ServiceNameWithAddress = (String, String)
-  private val BufferSize: Int = 10
-  private val StartFilter     = "start"
-  private val RunningFilter   = "running"
-  private val StopFilter      = "stop"
-  private val KillFilter      = "kill"
+  private val MaximumFrameSize: Int = 10000
 }
