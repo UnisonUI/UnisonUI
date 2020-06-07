@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.circe.generic.auto._
 import io.circe.yaml.parser
 import restui.Concurrency
-import restui.models.{ContentType, Metadata, OpenApiFile, Service}
+import restui.models.{Metadata, Service}
 import restui.providers.git._
 import restui.providers.git.git.data.{Repository, RestUI}
 import restui.providers.git.process.{Process, ProcessArgs}
@@ -114,15 +114,12 @@ object Git extends LazyLogging {
 
   }
 
-  private def loadFile(path: Path): Source[(Path, OpenApiFile)] =
+  private def loadFile(path: Path): Source[(Path, String)] =
     Try(new String(Files.readAllBytes(path), StandardCharsets.UTF_8)) match {
       case Success(content) =>
-        val contentType = ContentType.fromString(path.toString)
-
-        val openApiFile = OpenApiFile(contentType, content)
-        AkkaSource.single(path -> openApiFile)
+        AkkaSource.single(path -> content)
       case Failure(exception) =>
         logger.warn(s"Error while reading $path", exception)
-        AkkaSource.empty[(Path, OpenApiFile)]
+        AkkaSource.empty[(Path, String)]
     }
 }

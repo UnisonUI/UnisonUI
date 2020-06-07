@@ -11,7 +11,7 @@ import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.parser.parse
 import restui.Concurrency
-import restui.models.{ContentType, Metadata, OpenApiFile, Service, ServiceEvent}
+import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.docker.client.HttpClient
 import restui.providers.docker.client.models.{Container, Event, State}
 
@@ -57,12 +57,33 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
           }
         }
       )
+  =======
+  private def downloadFile(event: ServiceEvent): Source[ServiceEvent, NotUsed] =
+    event match {
+      case serviceDown: ServiceEvent.ServiceDown => Source.single(serviceDown)
+      case ServiceEvent.ServiceUp(service) =>
+        Source.futureSource {
+          Http()
+            .singleRequest(HttpRequest(uri = service.file))
+            .flatMap { response =>
+              Unmarshaller.stringUnmarshaller(response.entity)
+            }
+            .map { content =>
+              val metadata = Map(Metadata.Provider -> "docker", Metadata.File -> Uri(service.file).path.toString.substring(1))
+              Source.single(ServiceEvent.ServiceUp(service.copy(file = content, metadata = metadata)))
+            }
+            .recover { throwable =>
+              logger.warn("There was an error while download the file", throwable)
+              Source.empty[ServiceEvent]
+            }
+        }.mapMaterializedValue(_ => NotUsed)
+    }
 
   private def handleServiceUp(id: String): Source[ServiceEvent, NotUsed] =
     container(id).async.flatMapConcat { container =>
       findEndpoint(container.labels, container.ip).fold(Source.empty[ServiceEvent]) {
         case (serviceName, address) =>
-          downloadFile(id, serviceName, ContentType.fromString(address), address).async
+          downloadFile(id, serviceName, address).async
       }
     }
 
@@ -81,7 +102,7 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
         }
     }.mapMaterializedValue(_ => NotUsed)
 
-  private def downloadFile(id: String, serviceName: String, contentType: ContentType, uri: String): Source[ServiceEvent, NotUsed] =
+  private def downloadFile(id: String, serviceName: String, uri: String): Source[ServiceEvent, NotUsed] =
     Source.futureSource {
       client
         .downloadFile(uri)
@@ -93,7 +114,7 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
 
           Source.single(
             ServiceEvent.ServiceUp(
-              Service(id, serviceName, OpenApiFile(contentType, content), metadata)
+              Service(id, serviceName, content, metadata)
             )
           )
         }

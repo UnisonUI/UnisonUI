@@ -82,10 +82,7 @@ class DockerClientSpec
         probe.expectMsg(ServiceEvent.ServiceDown(Id))
         probe.expectMsg(
           ServiceEvent.ServiceUp(
-            Service(Id,
-                    ServiceName,
-                    OpenApiFile(ContentType.Yaml, "OK"),
-                    Map(Metadata.Provider -> "docker", Metadata.File -> "openapi.yaml"))
+            Service(Id, ServiceName, "OK", Map(Metadata.Provider -> "docker", Metadata.File -> "openapi.yaml"))
           )
         )
       }
