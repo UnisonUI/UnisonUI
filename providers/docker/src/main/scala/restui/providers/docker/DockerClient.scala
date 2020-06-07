@@ -47,13 +47,15 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
       .via(JsonFraming.objectScanner(MaximumFrameSize))
       .flatMapMerge(
         Concurrency.AvailableCore,
-        entity =>
+        entity => {
+          logger.debug("{}", parse(entity.utf8String))
           parse(entity.utf8String).flatMap(_.as[Event]) match {
             case Left(e) =>
               logger.warn("Decoding error", e)
               Source.empty
             case Right(event) => Source.single(event)
           }
+        }
       )
 
   private def handleServiceUp(id: String): Source[ServiceEvent, NotUsed] =

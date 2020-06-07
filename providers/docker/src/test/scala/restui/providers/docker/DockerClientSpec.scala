@@ -14,6 +14,7 @@ import org.scalatest.wordspec.AnyWordSpecLike
 import restui.models.{ContentType, Metadata, OpenApiFile, Service, ServiceEvent}
 import restui.providers.docker.client.HttpClient
 import restui.providers.docker.client.models.{Container, Event, State}
+import akka.http.scaladsl.model.StatusCodes
 
 class DockerClientSpec
     extends TestKit(ActorSystem("test"))
@@ -34,6 +35,39 @@ class DockerClientSpec
   private val NonMatchingContainerLabels = Map("name" -> ServiceName)
 
   "Streaming the containers" when {
+    "there is an error" when {
+
+      "the events endpoint fail" in {
+        val clientMock = mock[HttpClient]
+        (clientMock.watch _)
+          .expects(*)
+          .returning(Source.single(HttpResponse(status = StatusCodes.BadRequest)))
+
+        val probe = TestProbe()
+        new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+
+        probe.expectMsg("completed")
+
+      }
+
+      "could not decode event" in {
+        val clientMock = mock[HttpClient]
+        (clientMock.watch _)
+          .expects(*)
+          .returning(
+            Source.single(
+              HttpResponse(
+                entity = HttpEntity(ContentTypes.`application/json`, "not a json")
+              )))
+
+        val probe = TestProbe()
+        new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+
+        probe.expectMsg("completed")
+
+      }
+    }
+
     "there is a container which is up and one down" should {
       "find it" in {
         val clientMock =
