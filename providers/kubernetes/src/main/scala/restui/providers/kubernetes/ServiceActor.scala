@@ -49,12 +49,12 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
 
   private def downloadFile(service: Service): Future[Unit] =
     Http()
-      .singleRequest(HttpRequest(uri = service.file.content))
+      .singleRequest(HttpRequest(uri = service.file))
       .flatMap { response =>
         Unmarshaller.stringUnmarshaller(response.entity)
       }
       .map { content =>
-        callback(ServiceEvent.ServiceUp(service.copy(file = service.file.copy(content = content))))
+        callback(ServiceEvent.ServiceUp(service.copy(file = content)))
       }
       .recover { throwable =>
         log.warning("There was an error while download the file {}", throwable)
@@ -64,7 +64,7 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
     getLabels(service.metadata.labels).map {
       case Labels(protocol, port, specificationPath) =>
         val address = s"$protocol://${service.copySpec.clusterIP}:$port$specificationPath"
-        (service.uid, service.name, specificationPath, OpenApiFile(ContentType.fromString(address), address))
+        (service.uid, service.name, specificationPath, address)
     }
 
   private def getLabels(labels: Map[String, String]): Option[Labels] =
@@ -77,7 +77,7 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
 }
 
 object ServiceActor {
-  private type ServiceFoundWithFile = (String, String, String, OpenApiFile)
+  private type ServiceFoundWithFile = (String, String, String, String)
   private val Namespace = "namespace"
   case object Init
   case object Complete
