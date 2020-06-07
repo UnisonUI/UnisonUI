@@ -47,37 +47,14 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
       .via(JsonFraming.objectScanner(MaximumFrameSize))
       .flatMapMerge(
         Concurrency.AvailableCore,
-        entity => {
-          logger.debug("{}", parse(entity.utf8String))
+        entity =>
           parse(entity.utf8String).flatMap(_.as[Event]) match {
             case Left(e) =>
               logger.warn("Decoding error", e)
               Source.empty
             case Right(event) => Source.single(event)
           }
-        }
       )
-  =======
-  private def downloadFile(event: ServiceEvent): Source[ServiceEvent, NotUsed] =
-    event match {
-      case serviceDown: ServiceEvent.ServiceDown => Source.single(serviceDown)
-      case ServiceEvent.ServiceUp(service) =>
-        Source.futureSource {
-          Http()
-            .singleRequest(HttpRequest(uri = service.file))
-            .flatMap { response =>
-              Unmarshaller.stringUnmarshaller(response.entity)
-            }
-            .map { content =>
-              val metadata = Map(Metadata.Provider -> "docker", Metadata.File -> Uri(service.file).path.toString.substring(1))
-              Source.single(ServiceEvent.ServiceUp(service.copy(file = content, metadata = metadata)))
-            }
-            .recover { throwable =>
-              logger.warn("There was an error while download the file", throwable)
-              Source.empty[ServiceEvent]
-            }
-        }.mapMaterializedValue(_ => NotUsed)
-    }
 
   private def handleServiceUp(id: String): Source[ServiceEvent, NotUsed] =
     container(id).async.flatMapConcat { container =>

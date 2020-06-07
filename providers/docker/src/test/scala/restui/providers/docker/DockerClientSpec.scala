@@ -3,7 +3,7 @@ package restui.providers.docker
 import scala.concurrent.{ExecutionContext, Future}
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
+import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import akka.stream.scaladsl.{Sink, Source}
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import io.circe.syntax._
@@ -11,10 +11,9 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
-import restui.models.{ContentType, Metadata, OpenApiFile, Service, ServiceEvent}
+import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.docker.client.HttpClient
 import restui.providers.docker.client.models.{Container, Event, State}
-import akka.http.scaladsl.model.StatusCodes
 
 class DockerClientSpec
     extends TestKit(ActorSystem("test"))
@@ -57,9 +56,33 @@ class DockerClientSpec
           .returning(
             Source.single(
               HttpResponse(
-                entity = HttpEntity(ContentTypes.`application/json`, "not a json")
+                entity = HttpEntity(ContentTypes.`application/json`, "{}")
               )))
 
+        val probe = TestProbe()
+        new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+
+        probe.expectMsg("completed")
+
+      }
+
+      "the container endpoint fail" in {
+        val clientMock = mock[HttpClient]
+        (clientMock.watch _)
+          .expects(*)
+          .returning(
+            Source.single(
+              HttpResponse(
+                entity = HttpEntity(ContentTypes.`application/json`, Event(Id, Some(State.Start), MatchingContainerLabels).asJson.noSpaces)
+              )))
+
+        (clientMock.get _)
+          .expects(*)
+          .returning(
+            Future.successful(
+              HttpResponse(status = StatusCodes.BadRequest)
+            )
+          )
         val probe = TestProbe()
         new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
 
