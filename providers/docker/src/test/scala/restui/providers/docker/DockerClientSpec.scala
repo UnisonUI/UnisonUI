@@ -46,10 +46,7 @@ class DockerClientSpec
         new DockerClient(clientMock, settings, event => probe.ref ! event).listCurrentAndFutureEndpoints
         probe.expectMsg(
           ServiceEvent.ServiceUp(
-            Service(Id,
-                    ServiceName,
-                    OpenApiFile(ContentType.Yaml, "OK"),
-                    Map(Metadata.Provider -> "docker", Metadata.File -> "openapi.yaml"))
+            Service(Id, ServiceName, "OK", Map(Metadata.Provider -> "docker", Metadata.File -> "openapi.yaml"))
           )
         )
       }

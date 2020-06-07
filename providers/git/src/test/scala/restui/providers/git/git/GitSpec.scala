@@ -5,7 +5,7 @@ import java.nio.file.Files
 import akka.stream.scaladsl.{Sink, Source}
 import base.TestBase
 import org.scalatest.Inside
-import restui.models.{ContentType, OpenApiFile, Service}
+import restui.models.{Service}
 import restui.providers.git.git.data.Repository
 
 class GitSpec extends TestBase with Inside {
@@ -65,7 +65,7 @@ class GitSpec extends TestBase with Inside {
           result should have length 1
           inside(result.head) {
             case Service(_, _, file, _) =>
-              file shouldBe OpenApiFile(ContentType.Plain, "test")
+              file shouldBe "test"
           }
         }
       }

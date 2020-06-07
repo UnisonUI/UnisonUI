@@ -14,7 +14,7 @@ import com.github.dockerjava.api.model.{ContainerNetwork, Event}
 import com.github.dockerjava.api.{DockerClient => JDockerClient}
 import com.github.dockerjava.core.command.EventsResultCallback
 import com.typesafe.scalalogging.LazyLogging
-import restui.models.{ContentType, Metadata, OpenApiFile, Service, ServiceEvent}
+import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.Provider
 
 class DockerClient(private val client: JDockerClient, private val settings: Settings, private val callback: Provider.Callback)(implicit
@@ -36,13 +36,13 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
       case ServiceEvent.ServiceUp(service) =>
         Source.futureSource {
           Http()
-            .singleRequest(HttpRequest(uri = service.file.content))
+            .singleRequest(HttpRequest(uri = service.file))
             .flatMap { response =>
               Unmarshaller.stringUnmarshaller(response.entity)
             }
             .map { content =>
-              val metadata = Map(Metadata.Provider -> "docker", Metadata.File -> Uri(service.file.content).path.toString.substring(1))
-              Source.single(ServiceEvent.ServiceUp(service.copy(file = service.file.copy(content = content), metadata = metadata)))
+              val metadata = Map(Metadata.Provider -> "docker", Metadata.File -> Uri(service.file).path.toString.substring(1))
+              Source.single(ServiceEvent.ServiceUp(service.copy(file = content, metadata = metadata)))
             }
             .recover { throwable =>
               logger.warn("There was an error while download the file", throwable)
@@ -70,7 +70,7 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
           findEndpoint(labels, networks).map {
             case (serviceName, address) =>
               if (event.getStatus == StartFilter)
-                ServiceEvent.ServiceUp(Service(id, serviceName, OpenApiFile(ContentType.fromString(address), address)))
+                ServiceEvent.ServiceUp(Service(id, serviceName, address))
               else ServiceEvent.ServiceDown(id)
           }.foreach(queue.offer)
           super.onNext(event)
@@ -90,7 +90,7 @@ class DockerClient(private val client: JDockerClient, private val settings: Sett
         val id       = container.getId
         findEndpoint(labels, networks).map {
           case (serviceName, address) =>
-            ServiceEvent.ServiceUp(Service(id, serviceName, OpenApiFile(ContentType.fromString(address), address)))
+            ServiceEvent.ServiceUp(Service(id, serviceName, address))
         }
       }
       .foreach(queue.offer)
