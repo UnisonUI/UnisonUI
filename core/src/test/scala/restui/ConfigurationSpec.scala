@@ -1,10 +1,9 @@
 package restui
 
-import com.typesafe.config.Config
+import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.compatible.Assertion
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import com.typesafe.config.ConfigFactory
 
 class ConfigurationSpec extends AnyWordSpec with Matchers {
   private def checkConfiguration(config: Config, value: String = "configuration"): Assertion =
