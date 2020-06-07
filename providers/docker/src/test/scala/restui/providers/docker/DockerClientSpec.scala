@@ -33,12 +33,19 @@ class DockerClientSpec
   private val MatchingContainerLabels    = Map("name" -> ServiceName, "port" -> "9999", "specification" -> "/openapi.yaml")
   private val NonMatchingContainerLabels = Map("name" -> ServiceName)
 
-  "Listing endpoints" when {
-    "getting the running container" should {
+  "Streaming the containers" when {
+    "there is a container which is up and one down" should {
       "find it" in {
-        val clientMock = setupMock(MatchingContainerLabels)
-        val probe      = TestProbe()
+        val clientMock =
+          setupMock(MatchingContainerLabels,
+                    List(
+                      Event(Id, Some(State.Start), MatchingContainerLabels),
+                      Event(Id, Some(State.Stop), MatchingContainerLabels)
+                    ))
+        val probe = TestProbe()
         new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+
+        probe.expectMsg(ServiceEvent.ServiceDown(Id))
         probe.expectMsg(
           ServiceEvent.ServiceUp(
             Service(Id,
@@ -50,14 +57,14 @@ class DockerClientSpec
       }
       "not find it" when {
         "there is a missing label" in {
-          val clientMock = setupMock(NonMatchingContainerLabels)
+          val clientMock = setupMock(NonMatchingContainerLabels, List(Event(Id, Some(State.Kill), NonMatchingContainerLabels)))
           val probe      = TestProbe()
           new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
           probe.expectMsg("completed")
         }
 
         "there is no labels at all" in {
-          val clientMock = setupMock(Map.empty)
+          val clientMock = setupMock(Map.empty, Nil)
           val probe      = TestProbe()
           new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
           probe.expectMsg("completed")
@@ -66,16 +73,16 @@ class DockerClientSpec
     }
   }
 
-  private def setupMock(labels: Map[String, String], state: State = State.Start) = {
+  private def setupMock(labels: Map[String, String], events: List[Event]) = {
     val clientMock = mock[HttpClient]
 
     (clientMock.watch _)
       .expects(*)
-      .returning(
-        Source.single(
-          HttpResponse(
-            entity = HttpEntity(ContentTypes.`application/json`, Event(Id, Some(state), labels).asJson.noSpaces)
-          )))
+      .returning(Source(events.map { event =>
+        HttpResponse(
+          entity = HttpEntity(ContentTypes.`application/json`, event.asJson.noSpaces)
+        )
+      }))
       .once
 
     (clientMock.get _)
