@@ -16,7 +16,7 @@ object ProvidersLoader extends LazyLogging {
     logger.debug("List of providers: {}", providers.mkString(", "))
     providers.flatMap { classname =>
       Try {
-        val classInstance = Class.forName(classname);
+        val classInstance = Class.forName(classname)
         classInstance.getDeclaredConstructor().newInstance().asInstanceOf[Provider]
       }.toOption
     }.foldLeft(Source.empty[(String, ServiceEvent)]) { (source, provider) =>
