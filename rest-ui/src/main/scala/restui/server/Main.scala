@@ -12,6 +12,7 @@ import restui.providers.ProvidersLoader
 import restui.server.http.HttpServer
 import restui.server.service._
 
+// $COVERAGE-OFF$
 object Main extends App with LazyLogging {
 
   private val Namespace: String                   = "restui.http"

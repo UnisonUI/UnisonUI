@@ -12,6 +12,7 @@ import restui.providers.Provider
 import restui.providers.git.settings.Settings
 import restui.providers.git.vcs.VCS
 
+// $COVERAGE-OFF$
 class GitProvider extends Provider with LazyLogging {
   override def start(actorSystem: ActorSystem, config: Config): Provider.StreamingSource = {
     val name                                        = classOf[GitProvider].getCanonicalName

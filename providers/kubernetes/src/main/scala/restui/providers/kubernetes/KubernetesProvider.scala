@@ -5,6 +5,7 @@ import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
 import restui.providers.Provider
 
+// $COVERAGE-OFF$
 class KubernetesProvider extends Provider with LazyLogging {
 
   override def start(actorSystem: ActorSystem, config: Config): Provider.StreamingSource = {

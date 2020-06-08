@@ -6,6 +6,7 @@ import com.typesafe.scalalogging.LazyLogging
 import restui.providers.Provider
 import restui.providers.docker.client.impl.HttpClient
 
+// $COVERAGE-OFF$
 class DockerProvider extends Provider with LazyLogging {
 
   override def start(actorSystem: ActorSystem, config: Config): Provider.StreamingSource = {
