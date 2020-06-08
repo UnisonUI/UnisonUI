@@ -5,9 +5,9 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 import akka.actor.ActorSystem
+import akka.stream.scaladsl.Sink
 import com.typesafe.scalalogging.LazyLogging
 import restui.Configuration
-import restui.models._
 import restui.providers.ProvidersLoader
 import restui.server.http.HttpServer
 import restui.server.service._
@@ -24,10 +24,14 @@ object Main extends App with LazyLogging {
 
   private val httpServer = new HttpServer(actorRef, eventSource)
 
-  private def callback(provider: String)(event: ServiceEvent): Unit =
-    actorRef ! (provider -> event)
-
-  ProvidersLoader.load(config, callback)
+  ProvidersLoader
+    .load(config)
+    .runWith(
+      Sink.actorRefWithBackpressure(actorRef,
+                                    ServiceActor.Init,
+                                    ServiceActor.Ack,
+                                    ServiceActor.Complete,
+                                    e => logger.warn("Streaming error", e)))
 
   val interface = config.getString(s"$Namespace.interface")
   val port      = config.getInt(s"$Namespace.port")

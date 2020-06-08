@@ -1,11 +1,10 @@
 package restui.providers.git
 
 import scala.concurrent.ExecutionContext
-import scala.util.Try
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.stream.scaladsl.Sink
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
 import restui.models.ServiceEvent
@@ -14,18 +13,18 @@ import restui.providers.git.settings.Settings
 import restui.providers.git.vcs.VCS
 
 class GitProvider extends Provider with LazyLogging {
-  override def start(actorSystem: ActorSystem, config: Config, callback: Provider.Callback): Try[Unit] =
-    Try {
-      implicit val system: ActorSystem                = actorSystem
-      implicit val executionContext: ExecutionContext = actorSystem.dispatcher
-      val settings                                    = Settings.from(config)
+  override def start(actorSystem: ActorSystem, config: Config): Provider.StreamingSource = {
+    val name                                        = classOf[GitProvider].getCanonicalName
+    implicit val system: ActorSystem                = actorSystem
+    implicit val executionContext: ExecutionContext = actorSystem.dispatcher
+    val settings                                    = Settings.from(config)
 
-      logger.debug("Initialising git provider")
+    logger.debug("Initialising git provider")
 
-      VCS
-        .source(settings, Http().singleRequest(_))
-        .to(Sink.foreach(service => callback(ServiceEvent.ServiceUp(service))))
-        .run()
-    }
+    VCS
+      .source(settings, Http().singleRequest(_))
+      .mapMaterializedValue(_ => NotUsed)
+      .map(service => name -> ServiceEvent.ServiceUp(service))
+  }
 
 }

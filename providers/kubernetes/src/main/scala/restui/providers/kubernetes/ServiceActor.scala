@@ -6,11 +6,11 @@ import akka.actor.{Actor, ActorLogging, ActorSystem}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.unmarshalling.Unmarshaller
+import akka.stream.scaladsl.SourceQueueWithComplete
 import restui.models._
-import restui.providers.Provider
 import skuber.{Service => KubernetesService}
 
-class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends Actor with ActorLogging {
+class ServiceActor(settingsLabels: Labels, queue: SourceQueueWithComplete[ServiceEvent]) extends Actor with ActorLogging {
   import ServiceActor._
   private implicit val system: ActorSystem                = context.system
   private implicit val executionContext: ExecutionContext = context.dispatcher
@@ -33,7 +33,7 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
           val removed          = services.filter(service => !filteredServices.contains(service))
           val added            = filteredServices.filter(service => !services.contains(service))
 
-          removed.flatMap(createEndpoint).foreach { case (id, _, _, _) => callback(ServiceEvent.ServiceDown(id)) }
+          removed.flatMap(createEndpoint).foreach { case (id, _, _, _) => queue.offer(ServiceEvent.ServiceDown(id)) }
           added.flatMap(createEndpoint).foreach {
             case (id, serviceName, specificationPath, file) =>
               val metadata = Map(Metadata.Provider -> "kubernetes", Metadata.File -> specificationPath, Namespace -> namespace)
@@ -53,8 +53,8 @@ class ServiceActor(settingsLabels: Labels, callback: Provider.Callback) extends 
       .flatMap { response =>
         Unmarshaller.stringUnmarshaller(response.entity)
       }
-      .map { content =>
-        callback(ServiceEvent.ServiceUp(service.copy(file = content)))
+      .flatMap { content =>
+        queue.offer(ServiceEvent.ServiceUp(service.copy(file = content))).map(_ => ())
       }
       .recover { throwable =>
         log.warning("There was an error while download the file {}", throwable)
