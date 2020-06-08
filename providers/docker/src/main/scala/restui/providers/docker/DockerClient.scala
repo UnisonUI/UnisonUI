@@ -42,7 +42,7 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
         Concurrency.AvailableCore,
         response =>
           if (response.status.isSuccess) response.entity.dataBytes
-          else Source.empty
+          else Source.futureSource(response.entity.discardBytes().future.map(_ => Source.empty))
       )
       .via(JsonFraming.objectScanner(MaximumFrameSize))
       .flatMapMerge(
@@ -70,7 +70,7 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
         .get(Uri(s"/containers/$id/json"))
         .flatMap { response =>
           if (response.status.isSuccess) Unmarshal(response).to[Container]
-          else Future.failed(new Exception(response.status.defaultMessage))
+          else response.entity.discardBytes().future.flatMap(_ => Future.failed(new Exception(response.status.defaultMessage)))
         }
         .map(Source.single(_))
         .recover { throwable =>

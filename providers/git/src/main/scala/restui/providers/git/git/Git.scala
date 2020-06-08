@@ -38,7 +38,7 @@ object Git extends LazyLogging {
   private def cloneRepository(repo: Repository): Source[Repository] = {
     val repoWithDirectory = repo.copy(directory = Some(Files.createTempDirectory("restui-git-clone").toFile))
     execute(
-      "clone" :: "--branch" :: repo.branch :: "--single-branch" :: repo.uri :: repoWithDirectory.directory.get.getAbsolutePath :: Nil).flatMapConcat {
+      "clone" :: "--branch" :: repo.branch :: "--single-branch" :: "--depth" :: "1" :: repo.uri :: repoWithDirectory.directory.get.getAbsolutePath :: Nil).flatMapConcat {
       case Right(_) => AkkaSource.single(repoWithDirectory)
       case Left(exception) =>
         logger.warn("Error during cloning", exception)
