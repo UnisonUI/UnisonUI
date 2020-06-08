@@ -22,7 +22,7 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
 
       context.become(handleReceive(services + (service.id -> service)))
 
-    case (provider: String, Event.ServiceDown(serviceId)) =>
+    case (provider: String, ServiceEvent.ServiceDown(serviceId)) =>
       queue.offer(Event.ServiceDown(serviceId))
       log.debug("{} removed a service", provider)
       context.become(handleReceive(services - serviceId))

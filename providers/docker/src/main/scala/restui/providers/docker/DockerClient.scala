@@ -37,7 +37,7 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
 
   private def events: Source[Event, NotUsed] =
     client
-      .watch(Uri("/events").withRawQueryString("""since=0&filters={"event":["start","stop","kill"],"type":["container"]}"""))
+      .watch(Uri("/events").withRawQueryString("""since=0&filters={"event":["start","stop"],"type":["container"]}"""))
       .flatMapMerge(
         Concurrency.AvailableCore,
         response =>

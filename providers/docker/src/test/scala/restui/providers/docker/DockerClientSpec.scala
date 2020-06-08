@@ -109,9 +109,10 @@ class DockerClientSpec
           )
         )
       }
+
       "not find it" when {
         "there is a missing label" in {
-          val clientMock = setupMock(NonMatchingContainerLabels, List(Event(Id, Some(State.Kill), NonMatchingContainerLabels)))
+          val clientMock = setupMock(NonMatchingContainerLabels, List(Event(Id, Some(State.Start), NonMatchingContainerLabels)))
           val probe      = TestProbe()
           new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
           probe.expectMsg("completed")
