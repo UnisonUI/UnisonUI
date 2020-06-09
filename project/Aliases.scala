@@ -3,8 +3,7 @@ import sbt.addCommandAlias
 object Aliases {
   val aliases = scalafmtAliases ++
     scalafixAliases ++
-    addCommandAlias("coverage", ";coverageOn;test;coverageOff;coverageReport") ++
-    addCommandAlias("sonar", ";coverage;sonarScan")
+    addCommandAlias("coverage", ";coverageOn;test;coverageOff;coverageReport")
 
   private def scalafmtAliases =
     addCommandAlias("checkFmt", "; scalafmtCheckAll") ++

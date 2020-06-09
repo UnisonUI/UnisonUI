@@ -5,6 +5,7 @@ import scala.concurrent.ExecutionContext
 import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.stream.scaladsl.Source
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
 import restui.models.ServiceEvent
@@ -14,7 +15,7 @@ import restui.providers.git.vcs.VCS
 
 // $COVERAGE-OFF$
 class GitProvider extends Provider with LazyLogging {
-  override def start(actorSystem: ActorSystem, config: Config): Provider.StreamingSource = {
+  override def start(actorSystem: ActorSystem, config: Config): Source[(String, ServiceEvent), NotUsed] = {
     val name                                        = classOf[GitProvider].getCanonicalName
     implicit val system: ActorSystem                = actorSystem
     implicit val executionContext: ExecutionContext = actorSystem.dispatcher

@@ -2,6 +2,7 @@ package restui.providers
 
 import scala.reflect.ClassTag
 
+import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.stream.scaladsl.{Sink, Source}
 import akka.testkit.{TestKit, TestProbe}
@@ -36,10 +37,10 @@ class ProviderLoaderSpec extends TestKit(ActorSystem("test")) with AnyWordSpecLi
   }
 }
 class StubProvider extends Provider {
-  override def start(actorSystem: ActorSystem, config: Config): Provider.StreamingSource =
+  override def start(actorSystem: ActorSystem, config: Config): Source[(String, ServiceEvent), NotUsed] =
     Source.single(classOf[StubProvider].getCanonicalName -> ServiceEvent.ServiceDown("test"))
 }
 
 class FailedStubProvider extends Provider {
-  override def start(actorSystem: ActorSystem, config: Config): Provider.StreamingSource = throw new Exception("test")
+  override def start(actorSystem: ActorSystem, config: Config): Source[(String, ServiceEvent), NotUsed] = throw new Exception("test")
 }

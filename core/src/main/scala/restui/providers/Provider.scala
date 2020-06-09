@@ -7,9 +7,5 @@ import com.typesafe.config.Config
 import restui.models.ServiceEvent
 
 trait Provider {
-  def start(actorSystem: ActorSystem, config: Config): Provider.StreamingSource
-}
-
-object Provider {
-  type StreamingSource = Source[(String, ServiceEvent), NotUsed]
+  def start(actorSystem: ActorSystem, config: Config): Source[(String, ServiceEvent), NotUsed]
 }
