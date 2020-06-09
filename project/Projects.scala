@@ -31,4 +31,5 @@ object Projects {
   val providerDocker     = createModule("provider-docker", "providers/docker")
   val providerKubernetes = createModule("provider-kubernetes", "providers/kubernetes")
   val providerGit        = createModule("provider-git", "providers/git")
+  val providerWebhook    = createModule("provider-webhook", "providers/webhook")
 }
