@@ -13,24 +13,35 @@ import restui.providers.webhook.models.Service
 
 object Services extends Directives with FailFastCirceSupport {
   def route(queue: SourceQueueWithComplete[ServiceEvent])(implicit executionContext: ExecutionContext): Route =
-    path("services") {
-      upsertService(queue) ~ get {
-        complete(StatusCodes.OK)
+    pathPrefix("services") {
+      upsertService(queue) ~ path(Segment) { serviceName =>
+        deleteService(serviceName, queue)
       }
     }
+
   private def upsertService(queue: SourceQueueWithComplete[ServiceEvent])(implicit executionContext: ExecutionContext) =
     post {
       entity(as[Service]) { service =>
         import service._
-        val id = s"webhook:${name}"
+        val id = s"webhook:$name"
         val serviceEvent = ServiceEvent.ServiceUp(
           ModelService(id, name, specification, metadata ++ Map(Metadata.File -> name, Metadata.Provider -> "webhook")))
         val response = queue.offer(serviceEvent).flatMap {
-          case QueueOfferResult.Enqueued    => Future.successful(StatusCodes.NoContent)
           case QueueOfferResult.Failure(ex) => Future.failed(ex)
           case _                            => Future.successful(StatusCodes.NoContent)
         }
         onSuccess(response)(complete(_))
       }
+    }
+
+  private def deleteService(name: String, queue: SourceQueueWithComplete[ServiceEvent])(implicit executionContext: ExecutionContext) =
+    delete {
+      val id           = s"webhook:$name"
+      val serviceEvent = ServiceEvent.ServiceDown(id)
+      val response = queue.offer(serviceEvent).flatMap {
+        case QueueOfferResult.Failure(ex) => Future.failed(ex)
+        case _                            => Future.successful(StatusCodes.NoContent)
+      }
+      onSuccess(response)(complete(_))
     }
 }
