@@ -1,9 +1,10 @@
 package restui.providers
 
 import scala.reflect.ClassTag
-import scala.util.Try
 
+import akka.NotUsed
 import akka.actor.ActorSystem
+import akka.stream.scaladsl.{Sink, Source}
 import akka.testkit.{TestKit, TestProbe}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.matchers.should.Matchers
@@ -22,26 +23,24 @@ class ProviderLoaderSpec extends TestKit(ActorSystem("test")) with AnyWordSpecLi
     "the provider start successfully" in {
       val (className, config) = setupProvider[StubProvider]
       val probe               = TestProbe()
-      ProvidersLoader.load(config, provider => event => probe.ref ! (provider, event))
+      ProvidersLoader.load(config).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
       probe.expectMsg(className -> ServiceEvent.ServiceDown("test"))
     }
 
     "the provider don't start successfully" in {
       val (_, config) = setupProvider[FailedStubProvider]
       val probe       = TestProbe()
-      ProvidersLoader.load(config, provider => event => probe.ref ! (provider, event))
-      probe.expectNoMessage
+      ProvidersLoader.load(config).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+      probe.expectMsg("completed")
     }
 
   }
 }
 class StubProvider extends Provider {
-  override def start(actorSystem: ActorSystem, config: Config, callback: Provider.Callback): Try[Unit] =
-    Try {
-      callback(ServiceEvent.ServiceDown("test"))
-    }
+  override def start(actorSystem: ActorSystem, config: Config): Source[(String, ServiceEvent), NotUsed] =
+    Source.single(classOf[StubProvider].getCanonicalName -> ServiceEvent.ServiceDown("test"))
 }
 
 class FailedStubProvider extends Provider {
-  override def start(actorSystem: ActorSystem, config: Config, callback: Provider.Callback): Try[Unit] = Try(throw new Exception("test"))
+  override def start(actorSystem: ActorSystem, config: Config): Source[(String, ServiceEvent), NotUsed] = throw new Exception("test")
 }
