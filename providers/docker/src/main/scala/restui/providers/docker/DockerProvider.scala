@@ -1,27 +1,27 @@
 package restui.providers.docker
 
-import scala.util.Try
-
+import akka.NotUsed
 import akka.actor.ActorSystem
-import com.github.dockerjava.core.{DefaultDockerClientConfig, DockerClientBuilder}
-import com.github.dockerjava.netty.NettyDockerCmdExecFactory
+import akka.stream.scaladsl.Source
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
+import restui.models.ServiceEvent
 import restui.providers.Provider
+import restui.providers.docker.client.impl.HttpClient
 
+// $COVERAGE-OFF$
 class DockerProvider extends Provider with LazyLogging {
 
-  override def start(actorSystem: ActorSystem, config: Config, callback: Provider.Callback): Try[Unit] =
-    Try {
-      implicit val system: ActorSystem = actorSystem
-      val settings                     = Settings.from(config)
+  override def start(actorSystem: ActorSystem, config: Config): Source[(String, ServiceEvent), NotUsed] = {
+    implicit val system: ActorSystem = actorSystem
+    val name                         = classOf[DockerProvider].getCanonicalName
+    val settings                     = Settings.from(config)
 
-      val dockerConfig = DefaultDockerClientConfig.createDefaultConfigBuilder().withDockerHost(settings.dockerHost).build()
-      val client       = DockerClientBuilder.getInstance(dockerConfig).withDockerCmdExecFactory(new NettyDockerCmdExecFactory()).build()
+    val client = new HttpClient(settings.dockerHost)
 
-      logger.debug("Initialising docker provider")
+    logger.debug("Initialising docker provider")
 
-      new DockerClient(client, settings, callback).listCurrentAndFutureEndpoints
-    }
+    new DockerClient(client, settings).startStreaming.map(name -> _)
+  }
 
 }

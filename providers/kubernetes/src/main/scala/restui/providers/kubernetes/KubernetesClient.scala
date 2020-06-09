@@ -3,22 +3,29 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
+import akka.NotUsed
 import akka.actor.{ActorSystem, Props}
-import akka.stream.scaladsl.{Sink, Source}
+import akka.stream.OverflowStrategy
+import akka.stream.scaladsl.{BroadcastHub, Keep, Sink, Source}
 import com.typesafe.scalalogging.LazyLogging
-import restui.providers.Provider
+import restui.models.ServiceEvent
 import skuber._
 import skuber.api.Configuration
 import skuber.json.format._
 
-class KubernetesClient(private val settings: Settings, private val callback: Provider.Callback)(implicit system: ActorSystem)
-    extends LazyLogging {
+class KubernetesClient(private val settings: Settings)(implicit system: ActorSystem) extends LazyLogging {
   implicit val executionContent: ExecutionContext = system.dispatcher
-  private val serviceActorRef                     = system.actorOf(Props(classOf[ServiceActor], settings.labels, callback))
+  private val BufferSize                          = 10
+  private val (queue, source) =
+    Source.queue[ServiceEvent](BufferSize, OverflowStrategy.backpressure).toMat(BroadcastHub.sink[ServiceEvent])(Keep.both).run
 
-  def listCurrentAndFutureServices: Unit =
+  private val serviceActorRef = system.actorOf(Props(classOf[ServiceActor], settings.labels, queue))
+
+  def listCurrentAndFutureServices: Source[ServiceEvent, NotUsed] =
     Configuration.inClusterConfig match {
-      case Failure(e) => logger.warn("Couldn't connect to the Kubernetes cluster", e)
+      case Failure(e) =>
+        logger.warn("Couldn't connect to the Kubernetes cluster", e)
+        Source.empty
       case Success(configuration) =>
         val k8s = k8sInit(configuration)
         Source
@@ -41,5 +48,6 @@ class KubernetesClient(private val settings: Settings, private val callback: Pro
                                         ServiceActor.Ack,
                                         ServiceActor.Complete,
                                         e => logger.warn("Streaming error", e)))
+        source
     }
 }

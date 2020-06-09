@@ -23,14 +23,16 @@ object Dependencies {
   }
 
   object Akka {
-    private val akkaVersion     = "2.6.5"
+    private val akkaVersion     = "2.6.6"
     private val akkaHttpVersion = "10.1.12"
-    private val sl4j            = "com.typesafe.akka" %% "akka-slf4j"          % akkaVersion
-    private val http            = "com.typesafe.akka" %% "akka-http"           % akkaHttpVersion
-    private val stream          = "com.typesafe.akka" %% "akka-stream"         % akkaVersion
-    private val circe           = "de.heikoseeberger" %% "akka-http-circe"     % "1.32.0"
-    private val httpTestKit     = "com.typesafe.akka" %% "akka-http-testkit"   % akkaHttpVersion % Test
-    private val streamTestKit   = "com.typesafe.akka" %% "akka-stream-testkit" % akkaVersion     % Test
+    private val alpakka         = "2.0.0"
+    private val sl4j            = "com.typesafe.akka"  %% "akka-slf4j"                             % akkaVersion
+    private val http            = "com.typesafe.akka"  %% "akka-http"                              % akkaHttpVersion
+    private val stream          = "com.typesafe.akka"  %% "akka-stream"                            % akkaVersion
+    private val circe           = "de.heikoseeberger"  %% "akka-http-circe"                        % "1.32.0"
+    private val httpTestKit     = "com.typesafe.akka"  %% "akka-http-testkit"                      % akkaHttpVersion % Test
+    private val streamTestKit   = "com.typesafe.akka"  %% "akka-stream-testkit"                    % akkaVersion     % Test
+    val unixDomain              = "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % alpakka
     val akka                    = Seq(sl4j, stream, streamTestKit)
     val akkaHttp                = Seq(http, circe, httpTestKit)
     val all                     = akka ++ akkaHttp
@@ -48,10 +50,7 @@ object Dependencies {
 
   lazy val restUiCore = libraryDependencies ++= common ++ Akka.akka ++ Circe.all
 
-  lazy val providerDocker = libraryDependencies ++= common ++ Akka.all ++
-    Seq(
-      "com.github.docker-java" % "docker-java" % "3.2.1" exclude
-        ("com.github.docker-java", "docker-java-transport-jersey"))
+  lazy val providerDocker = libraryDependencies ++= common ++ Akka.all ++ Circe.all ++ Seq(Akka.unixDomain)
 
   lazy val providerKubernetes = libraryDependencies ++= common ++ Akka.all ++
     Seq("io.skuber" %% "skuber" % "2.4.0")

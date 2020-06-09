@@ -36,8 +36,7 @@ jobs:
             - ~/.m2
             - ~/.cache/coursier/v1
           key: v2-dependencies--{{ checksum "build.sbt" }}
-      - run: sbt ";checkFix; checkFmt; coverage; test; coverageReport"
-      - run: sbt coverageAggregate
+      - run: sbt ";checkFix; checkFmt; coverage; test; coverageReport; coverageAggregate"
       - run:
           name: Copy test reports
           command: |

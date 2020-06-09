@@ -148,6 +148,8 @@ rest-ui -Drestui.providers.0=Provider1, -Drestui.providers.1=Provider2, ...
 
 ### Docker provider
 
+**Warning: the docker provider DOES NOT support TLS connection yet**
+
 The docker provider list and detect all running containers in real time.
 
 A compatible container **MUST** include the following labels:

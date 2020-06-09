@@ -21,14 +21,18 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
         queue.offer(Event.ServiceUp(service.id, service.name, service.metadata))
 
       context.become(handleReceive(services + (service.id -> service)))
+      sender() ! Ack
 
-    case (provider: String, Event.ServiceDown(serviceId)) =>
+    case (provider: String, ServiceEvent.ServiceDown(serviceId)) =>
       queue.offer(Event.ServiceDown(serviceId))
       log.debug("{} removed a service", provider)
       context.become(handleReceive(services - serviceId))
+      sender() ! Ack
 
     case Get(serviceId) => sender() ! services.get(serviceId)
     case GetAll         => sender() ! services.values.toList
+    case Init           => sender() ! Ack
+    case Complete       => sender() ! Ack
   }
 
   private def hasServiceNameChanged(services: Map[String, Service], service: Service): Boolean =
@@ -44,4 +48,7 @@ object ServiceActor {
   def props(queue: SourceQueueWithComplete[Event]): Props = Props(classOf[ServiceActor], queue)
   case class Get(serviceId: String)
   case object GetAll
+  case object Init
+  case object Complete
+  case object Ack
 }
