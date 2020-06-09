@@ -36,13 +36,13 @@ class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender wi
       sockFile.toFile.delete
       val client = new HttpClient(s"unix://${sockFile.toString}")
       for {
-        s <- UnixDomainSocket().bindAndHandle(
+        server <- UnixDomainSocket().bindAndHandle(
           Flow[ByteString].map(_ => httpResponse),
           sockFile
         )
         response <- client.get(Uri("/"))
         body     <- Unmarshaller.stringUnmarshaller(response.entity)
-        _        <- s.unbind
+        _        <- server.unbind
       } yield {
         response.status shouldBe StatusCodes.OK
         body shouldBe "OK"
@@ -56,7 +56,7 @@ class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender wi
       sockFile.toFile.delete
       val client = new HttpClient(s"unix://${sockFile.toString}")
       for {
-        s <- UnixDomainSocket().bindAndHandle(
+        server <- UnixDomainSocket().bindAndHandle(
           Flow[ByteString].map(_ => httpResponse),
           sockFile
         )
@@ -68,11 +68,11 @@ class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender wi
               Source.future(Unmarshaller.stringUnmarshaller(response.entity))
             }
             .runWith(Sink.seq)
-        _ <- s.unbind
+        _ <- server.unbind
       } yield result shouldBe Seq("OK")
     }
     "there is an error" in {
-      val client = new HttpClient(s"unix:///unknown")
+      val client = new HttpClient("unix:///unknown")
 
       client
         .watch(Uri("/"))
@@ -88,11 +88,11 @@ class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender wi
   }
   "Downloading a file" in {
     val route  = path("file")(get(httpComplete(StatusCodes.OK)))
-    val client = new HttpClient(s"unix:///unknown")
+    val client = new HttpClient("unix:///unknown")
     for {
-      s      <- Http().bindAndHandle(route, "localhost", 8080)
+      server <- Http().bindAndHandle(route, "localhost", 8080)
       result <- client.downloadFile("http://localhost:8080/file")
-      _      <- s.unbind
+      _      <- server.unbind
     } yield result shouldBe "OK"
   }
 }
