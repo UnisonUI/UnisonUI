@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: RestUI webhook
+  description: >
+    RestUI webhook is a service intends to give the ability to RestUI to add/remove services through webhook calls
+  license:
+    name: MIT
+    url: https://raw.githubusercontent.com/MaethorNaur/restui/master/LICENSE
+  version: 0.5.0
+paths:
+  /services:
+    post:
+      summary: Create or update a service
+      requestBody:
+        description: Service to be inserted or update
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - specification
+              properties:
+                name:
+                  type: string
+                  description: Service's name
+                specification:
+                  type: string
+                  description: Specification file data
+                metadata:
+                  type: object
+                  description: Optional metadata linked to the service
+      responses:
+        204:
+          description: Service successfully inserted or updated
+        500:
+          description: Something bad happened
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /services/{serviceName}:
+    delete:
+      summary: Delete a service
+      parameters:
+        - name: serviceName
+          in: path
+          description: Service's name to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Service successfully deleted
+        500:
+          description: Something bad happened
+          content:
+            text/plain:
+              schema:
+                type: string

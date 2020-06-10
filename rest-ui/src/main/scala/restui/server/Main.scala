@@ -5,9 +5,10 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 import akka.actor.ActorSystem
-import akka.stream.scaladsl.Sink
+import akka.stream.scaladsl.{Sink, Source}
 import com.typesafe.scalalogging.LazyLogging
 import restui.Configuration
+import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.ProvidersLoader
 import restui.server.http.HttpServer
 import restui.server.service._
@@ -20,22 +21,31 @@ object Main extends App with LazyLogging {
   implicit val system                             = ActorSystem()
   implicit val executionContext: ExecutionContext = system.dispatcher
 
+  val interface         = config.getString(s"$Namespace.interface")
+  val port              = config.getInt(s"$Namespace.port")
+  val selfSpecification = config.getBoolean("restui.self-specification")
+
   private val (queue, eventSource) = EventSource.createEventSource.run()
   private val actorRef             = system.actorOf(ServiceActor.props(queue))
 
   private val httpServer = new HttpServer(actorRef, eventSource)
 
+  val specificationSource = if (selfSpecification) {
+    val specification = scala.io.Source.fromResource("specification.yaml").getLines.mkString("\n")
+    Source.single(
+      Main.getClass.getCanonicalName -> ServiceEvent.ServiceUp(
+        Service("restui:restui", "RestUI", specification, Map(Metadata.File -> "specification.yaml"))))
+  } else Source.empty[(String, ServiceEvent)]
+
   ProvidersLoader
     .load(config)
+    .prepend(specificationSource)
     .runWith(
       Sink.actorRefWithBackpressure(actorRef,
                                     ServiceActor.Init,
                                     ServiceActor.Ack,
                                     ServiceActor.Complete,
                                     e => logger.warn("Streaming error", e)))
-
-  val interface = config.getString(s"$Namespace.interface")
-  val port      = config.getInt(s"$Namespace.port")
 
   httpServer.bind(interface, port).onComplete {
     case Success(binding) =>

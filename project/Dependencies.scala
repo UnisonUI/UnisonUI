@@ -55,5 +55,6 @@ object Dependencies {
   lazy val providerKubernetes = libraryDependencies ++= common ++ Akka.all ++
     Seq("io.skuber" %% "skuber" % "2.4.0")
 
-  lazy val providerGit = libraryDependencies ++= common ++ Akka.all ++ Circe.all
+  lazy val providerGit     = libraryDependencies ++= common ++ Akka.all ++ Circe.all
+  lazy val providerWebhook = libraryDependencies ++= common ++ Akka.all ++ Circe.all
 }
