@@ -5,11 +5,9 @@ import akka.actor.ActorSystem
 import akka.stream.scaladsl.Source
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
-import restui.models.ServiceEvent
+import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.Provider
 import restui.providers.webhook.settings.Settings
-import restui.models.Service
-import restui.models.Metadata
 
 // $COVERAGE-OFF$
 class WebhookProvider extends Provider with LazyLogging {

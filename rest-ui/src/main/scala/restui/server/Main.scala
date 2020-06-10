@@ -23,7 +23,7 @@ object Main extends App with LazyLogging {
 
   val interface         = config.getString(s"$Namespace.interface")
   val port              = config.getInt(s"$Namespace.port")
-  val selfSpecification = config.getBoolean(s"restui.self-specification")
+  val selfSpecification = config.getBoolean("restui.self-specification")
 
   private val (queue, eventSource) = EventSource.createEventSource.run()
   private val actorRef             = system.actorOf(ServiceActor.props(queue))
