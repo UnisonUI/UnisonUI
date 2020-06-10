@@ -1,3 +1,22 @@
+# [0.5.0](https://github.com/MaethorNaur/restui/compare/v0.4.0...v0.5.0) (2020-06-10)
+
+
+### Code Refactoring
+
+* 💡 Remove docker java client for a custom on with Akka ([#30](https://github.com/MaethorNaur/restui/issues/30)) ([571b4f6](https://github.com/MaethorNaur/restui/commit/571b4f6f3fcb605585d8b644a14e1a63145ee56c)), closes [#24](https://github.com/MaethorNaur/restui/issues/24)
+
+
+### Features
+
+* Create a webhook provider ([#42](https://github.com/MaethorNaur/restui/issues/42)) ([f8f5b97](https://github.com/MaethorNaur/restui/commit/f8f5b9799075a62822bf2556697139e48d13f556)), closes [#32](https://github.com/MaethorNaur/restui/issues/32)
+
+
+### BREAKING CHANGES
+
+* 🧨 TLS connection is dropped at the moment
+
+
+
 # [0.4.0](https://github.com/MaethorNaur/restui/compare/v0.3.0...v0.4.0) (2020-06-03)
 
 
