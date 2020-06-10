@@ -16,6 +16,7 @@ object Release {
       runTest,
       inquireVersions,
       setReleaseVersion,
+      ReleaseStep(releaseStepTask(npmInstall)),
       ReleaseStep(releaseStepTask(webpackProdTask)),
       ReleaseStep(releaseStepTask(publish in docker)),
       tagRelease,
