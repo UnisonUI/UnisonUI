@@ -8,7 +8,7 @@ RestUI is intended to be a centralised UI for all your **OpenApi Specification**
 
 RestUI is an autonomous server, which discovers your **OpenAPI Spec** for you.
 
-Currently, RestUI can discover your API descriptions through `Docker`, `Kubernetes`, `Git`/`Github`
+Currently, RestUI can discover your API descriptions through `Docker`, `Kubernetes`, `Git`/`Github` or `Webhooks`
 
 ## Overview
 
@@ -69,6 +69,9 @@ restui {
   // List of active providers
   // By default all available providers are activated
   // You can activate the the providers you want by overriding this field
+
+  self-specification = no // Should the webhook's specification be available in RestUI
+
   providers = [
     "restui.providers.git.GitProvider",
     "restui.providers.docker.DockerProvider",
@@ -124,6 +127,11 @@ restui {
     }
   }
 
+  provider.webhook {
+    interface = "0.0.0.0" // Interface where the webhook server listen to
+    port = 3000 // Port used by the webhook server
+    self-specification = no // Should the webhook's specification be available in RestUI
+  }
 }
 ```
 

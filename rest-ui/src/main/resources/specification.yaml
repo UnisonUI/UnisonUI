@@ -1,0 +1,111 @@
+openapi: 3.0.3
+info:
+  title: RestUI
+  description: >
+    RestUI is a webapp which gather all your OpenApi Specification in one place
+  license:
+    name: MIT
+    url: https://raw.githubusercontent.com/MaethorNaur/restui/master/LICENSE
+  version: 0.5.0
+paths:
+  /services:
+    get:
+      summary: List all available services
+      responses:
+        200:
+          description: Available services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+              example:
+                - event: serviceUp
+                  id: serviceId
+                  name: serviceName
+                  metadata:
+                    file: /specification.yaml
+                    provider: someProvider
+        500:
+          description: Something bad happened
+          content:
+            text/plain:
+              schema:
+                type: string
+  /services/{serviceId}:
+    get:
+      summary: Get the specification of a service
+      parameters:
+        - name: serviceId
+          in: path
+          description: Service's id
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: Return the speicifation of a service
+          content:
+            text/plain:
+              schema:
+                type: string
+        404:
+          description: The service is not available
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: serviceId is not registered
+  /events:
+    get:
+      summary: SSE (server-side event) endpoint for server pushing new events
+      description: New event are pushed when a new service iss up or down
+      responses:
+        200:
+          description: SSE events
+          content:
+            text/event-stream:
+              schema:
+                type: array
+                format: chunked
+                items:
+                  type: object
+                  format: text
+                  required:
+                    - id
+                    - event
+                    - data
+                  properties:
+                    id:
+                      type: integer
+                      description: event's id
+                    event:
+                      type: string
+                      description: event's type
+                    data:
+                      type: object
+                      format: json
+                      allOf:
+                        - $ref: '#/components/schemas/Event'
+components:
+  schemas:
+    Event:
+      type: object
+      required:
+        - event
+        - id
+      properties:
+        event:
+          type: string
+          enum: ["serviceUp", "serviceDown"]
+          description: Event's type
+        id:
+          type: string
+          description: Service's id
+        name:
+          type: string
+          description: Service's name
+        metadata:
+          type: object
+          description: Service's metadata

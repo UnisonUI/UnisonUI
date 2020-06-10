@@ -30,7 +30,7 @@ class ServicesSpec extends AnyWordSpec with ScalatestRouteTest with Matchers wit
     "the content send is valid" should {
       "return no content" in {
         val (queue, probe)  = createQueue
-        val body            = WebhookService("test", "content", Map())
+        val body            = WebhookService("test", "content")
         val expectedService = Service("webhook:test", "test", "content", Map(Metadata.Provider -> "webhook", Metadata.File -> "test"))
         Post("/services", body) ~> Services.route(queue) ~> check {
           response.status shouldBe StatusCodes.NoContent

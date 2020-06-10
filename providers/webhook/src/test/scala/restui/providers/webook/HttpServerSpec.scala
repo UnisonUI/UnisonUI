@@ -29,7 +29,7 @@ class HttpServerSpec
     "receive a no content response" in {
       val probe = TestProbe()
 
-      val body            = WebhookService("test", "content", Map())
+      val body            = WebhookService("test", "content")
       val expectedService = Service("webhook:test", "test", "content", Map(Metadata.Provider -> "webhook", Metadata.File -> "test"))
       for {
         source <- HttpServer.start("localhost", 3000)
