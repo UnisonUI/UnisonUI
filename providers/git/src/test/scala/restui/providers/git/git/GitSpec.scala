@@ -2,14 +2,17 @@ package restui.providers.git.git
 
 import java.nio.file.Files
 
+import scala.concurrent.duration._
+
 import akka.stream.scaladsl.{Sink, Source}
+import akka.testkit.TestProbe
 import base.TestBase
 import org.scalatest.Inside
 import restui.models.{Service}
 import restui.providers.git.git.data.Repository
-
 class GitSpec extends TestBase with Inside {
 
+  private val duration = 50.millis
   trait StubRepository {
     import sys.process._
     val repo       = Files.createTempDirectory("restui-git-test")
@@ -35,9 +38,9 @@ class GitSpec extends TestBase with Inside {
       val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
       val repo    = Repository(fixture.repo.toAbsolutePath.toString, "i-do-not-exists", List("test"), Some(tempDir))
 
-      Source.single(repo).via(Git.flow).runWith(Sink.seq).map { result =>
-        result shouldBe empty
-      }
+      val probe = TestProbe()
+      Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+      probe.expectNoMessage()
     }
 
     "retrieving files from git" should {
@@ -49,26 +52,51 @@ class GitSpec extends TestBase with Inside {
           val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
           val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List("test"), Some(tempDir))
 
-          Source.single(repo).via(Git.flow).runWith(Sink.seq).map { result =>
-            result shouldBe empty
-          }
+          val probe = TestProbe()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+          probe.expectNoMessage()
         }
       }
 
-      "find files" in {
-        val fixture = new StubRepository {}
-        fixture.commit("test", "test")
-        val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
-        val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List("test"), Some(tempDir))
+      "find files" when {
+        "no new file is present" in {
+          val fixture = new StubRepository {}
+          fixture.commit("test", "test")
+          val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
+          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List("test"), Some(tempDir))
 
-        Source.single(repo).via(Git.flow).runWith(Sink.seq).map { result =>
-          result should have length 1
-          inside(result.head) {
+          val probe = TestProbe()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+          val result = probe.expectMsgType[Service]
+          inside(result) {
             case Service(_, _, file, _) =>
               file shouldBe "test"
           }
         }
+        "a new file is present" in {
+          val fixture = new StubRepository {}
+          fixture.commit("test", "test")
+          val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
+          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List("test"), Some(tempDir))
+
+          val probe = TestProbe()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+
+          fixture.commit("test", "test2")
+          val resultTest = probe.expectMsgType[Service]
+          inside(resultTest) {
+            case Service(_, _, file, _) =>
+              file shouldBe "test"
+          }
+          val resultTest2 = probe.expectMsgType[Service]
+          inside(resultTest2) {
+            case Service(_, _, file, _) =>
+              file shouldBe "test2"
+          }
+
+        }
       }
+
     }
   }
 
