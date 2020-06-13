@@ -30,11 +30,11 @@ class GithubSpec extends TestBase with Inside with Inspectors {
 
     val probe = TestProbe()
 
-    Github.retrieveRepositoriesRegularly(client).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+    Github(client).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
     val results = mutable.ListBuffer.empty[GitRepository]
     results += probe.expectMsgType[GitRepository](1.second)
     probe.expectNoMessage(200.millis)
-    results += probe.expectMsgType[GitRepository](1.second)
+    probe.expectNoMessage(1.second)
 
     forAll(results) { result =>
       inside(result) {

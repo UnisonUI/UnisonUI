@@ -4,12 +4,12 @@ import scala.concurrent.Future
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.stream.scaladsl.Sink
-import base.TestBase
+import base.AsyncTestBase
 import io.circe.syntax._
 import restui.providers.git.github.data.{Error, Node, Repository}
 import restui.providers.git.settings.GithubSettings
 
-class GithubClientSpec extends TestBase {
+class GithubClientSpec extends AsyncTestBase {
   private val github = GithubSettings("MyAwesomeUser", "MyAwesomeUser")
   private val nodes  = Seq(Node("MyAwesomeUser/MyAwesomeRepo", "https://github.com/MyAwesomeUser/MyAwesomeRepo", "master"))
 
