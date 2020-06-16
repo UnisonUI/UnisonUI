@@ -168,7 +168,6 @@ object Git extends LazyLogging {
       .flatMapMerge(Concurrency.AvailableCore, loadFile(_).async)
       .map {
         case (path, file) =>
-          repo.directory.get.delete()
           val uri         = akka.http.scaladsl.model.Uri(repo.uri)
           val nameFromUri = uri.path.toString.substring(1)
           val serviceName = repo.serviceName.getOrElse(nameFromUri)
