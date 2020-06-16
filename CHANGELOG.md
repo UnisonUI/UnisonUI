@@ -1,3 +1,12 @@
+## [0.5.2](https://github.com/MaethorNaur/restui/compare/v0.5.1...v0.5.2) (2020-06-16)
+
+
+### Bug Fixes
+
+* 🐛 Should not delete repository ([1f5a117](https://github.com/MaethorNaur/restui/commit/1f5a1171d33763c20760d21f27f6369275fb1dfe))
+
+
+
 ## [0.5.1](https://github.com/MaethorNaur/restui/compare/v0.5.0...v0.5.1) (2020-06-13)
 
 
