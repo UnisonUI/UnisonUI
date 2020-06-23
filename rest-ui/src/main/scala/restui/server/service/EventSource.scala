@@ -15,7 +15,7 @@ object EventSource {
       .queue[Event](Int.MaxValue, OverflowStrategy.backpressure)
       .delay(1.seconds, DelayOverflowStrategy.backpressure)
       .map(event => ServerSentEvent(event.asJson.noSpaces))
-      .keepAlive(1.second, () => ServerSentEvent.heartbeat)
+      .keepAlive(5.seconds, () => ServerSentEvent.heartbeat)
       .toMat(BroadcastHub.sink[ServerSentEvent])(Keep.both)
 
 }

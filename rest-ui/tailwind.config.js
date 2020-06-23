@@ -1,4 +1,5 @@
 module.exports = {
+  plugins: [require('tailwindcss-neumorphism')],
   purge: false,
   theme: {
     screens: {

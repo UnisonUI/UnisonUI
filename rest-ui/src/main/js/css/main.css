@@ -9,9 +9,8 @@ html {
 }
 
 body {
-  @apply font-body w-full h-full text-gray-800;
+  @apply font-body w-full h-full text-gray-800 bg-gray-200;
   margin: inherit;
-  background-color: #b4bad2;
 }
 
 #app {
@@ -19,8 +18,7 @@ body {
 }
 
 main {
-  @apply h-full;
-  padding: 5em;
+  @apply h-full p-32;
   overflow: auto;
 }
 
@@ -30,23 +28,77 @@ main {
   top: 50%;
 }
 
-.bm-item{
-  @apply text-xl;
-  padding: 1em;
+.bm-burger-button {
+  position: fixed;
+  width: 36px;
+  height: 30px;
+  left: 36px;
+  top: 36px;
+}
+
+.bm-burger-bars {
+  @apply bg-gray-800;
+}
+
+.bm-cross-button {
+  @apply nm-flat-gray-800 rounded-full;
+
+  &:hover {
+   @apply nm-flat-gray-800-lg;
+  }
+}
+
+.bm-cross {
+  @apply bg-gray-200;
+}
+
+.bm-menu-wrap {
+  position: fixed;
+  height: 100%;
+}
+
+.bm-menu {
+  @apply bg-gray-800;
+  font-size: 1.15em;
+}
+
+.bm-morph-shape {
+  fill: #373a47;
+}
+
+.bm-item-list {
+  padding: 0.8em;
+}
+
+.bm-overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.bm-item {
+  @apply text-xl inline-block text-gray-200 nm-flat-gray-800 rounded-lg p-4 mb-5 cursor-pointer transition duration-500 ease-in-out;
+ 
+  &:hover {
+   @apply nm-flat-gray-800-lg;
+  }
 
   &:focus {
-    outline: none;
+    @apply outline-none;
   }
+
+  &.active {
+    @apply nm-inset-gray-800 cursor-default;
+    & a {
+      color: #c94e50;
+      pointer-events: none;
+    }
+  }
+
   & a {
-    color: #b8b7ad;
     transition: color 0.3s;
     &:hover, &:focus {
       color: #c94e50;
     }
-    &.active {
-      color: #c94e50;
-      pointer-events: none;
-    }
+ 
   }
 
 }
@@ -68,10 +120,8 @@ h1.bm-item {
  }
 
  .search {
-  @apply border-0 appearance-none w-full mb-3 leading-tight;
-  background: #373a47;
-  color: #b8b7ad;
-  &:focus {
-    @apply outline-none;
+  @apply border-0 appearance-none w-full my-6 leading-tight rounded-full nm-inset-gray-800 text-sm text-gray-200 cursor-text;
+  &:hover {
+   @apply nm-inset-gray-800;
   }
  }
