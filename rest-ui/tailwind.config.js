@@ -1,4 +1,5 @@
 module.exports = {
+  plugins: [require('tailwindcss-neumorphism')],
   purge: false,
   theme: {
     screens: {
@@ -8,8 +9,8 @@ module.exports = {
       xl: '1280px'
     },
     fontFamily: {
-      body: ['monoisomeregular', 'sans-serif'],
-      code: ['monoisomeregular', 'sans-serif']
+      body: ['Montserrat', 'sans-serif'],
+      code: ['Source Sans Pro', 'sans-serif']
     },
     minWidth: {
       0: '0',

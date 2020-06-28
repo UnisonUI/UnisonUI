@@ -1,7 +1,11 @@
 const plugins = {
-  'postcss-import': {},
+  'postcss-import': { path: ['src/main/js/css'] },
+  'postcss-mixins': { mixinsDir: 'src/main/js/css/mixins' },
+  'postcss-simple-vars': {},
+  'postcss-url': {},
   tailwindcss: {},
-  'postcss-nesting': {},
+  'postcss-font-magician': {},
+  'postcss-nested': {},
   'postcss-preset-env': {
     browsers: 'last 2 versions'
   },
@@ -14,9 +18,9 @@ if (process.env.NODE_ENV === 'production') {
       'src/main/js/**/*.html',
       'src/main/js/**/*.js',
       'node_modules/react-burger-menu/**/*.js',
-      'node_modules/swagger-ui-react/**/*.js'
+      'node_modules/swagger-ui/**/*.js'
     ],
-    whitelistPatterns: [/swagger-ui/, /opblock/, /opblock-summary/, /^devicon/],
+    whitelistPatterns: [/swagger-ui/, /opblock/, /opblock-summary/],
     defaultExtractor: content => content.match(/[A-Za-z0-9-_:/]+/g) || []
   }
 }

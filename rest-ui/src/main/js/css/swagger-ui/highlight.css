@@ -1,0 +1,18 @@
+.swagger-ui {
+  .highlight-code {
+    @apply relative;
+    > .microlight {
+      @apply overflow-y-auto;
+      max-height: 400px;
+      min-height: 6em;
+    }
+
+    .download-contents {
+      @apply absolute cursor-pointer p-2;
+      @apply text-lg text-center font-bold text-gray-200;
+      bottom: 10px;
+      right: 10px;
+      height: 30px;
+    }
+  }
+}

@@ -1,0 +1,65 @@
+.swagger-ui {
+  .schemes {
+    @apply flex items-end;
+    > label {
+      @apply relative leading-5 flex-grow m-0;
+      font-weight: inherit;
+      font-size: inherit;
+
+      select {
+        @apply rounded-lg nm-flat-gray-200;
+        @apply appearance-none w-full px-8 py-4 bg-transparent font-semibold;
+      }
+
+      &::after {
+        @apply absolute right-0 h-full pr-8 pointer-events-none block;
+        width: 24px;
+        top: 60%;
+        content: url('../mixins/chevron-down.svg'); 
+      }
+    }
+  }
+
+  .servers-title, .schemes-title {
+    @apply text-4xl font-bold capitalize cursor-pointer block;
+    @apply p-2 mb-3;
+  }
+
+  .servers {
+    @mixin select label;
+    h4.message {
+      @apply pb-8;
+    }
+
+    table {
+      tr {
+        width: 30em;
+      }
+      td {
+        @apply align-middle pt-2 pb-2;
+        @apply inline-block;
+        max-width: 15em;
+        &:first-of-type {
+          @apply pr-8;
+        }
+        input {
+          @apply w-full h-full;
+        }
+      }
+    }
+
+    .computed-url {
+      @apply my-8 mx-0;
+
+      code {
+        @apply inline-block p-1 my-0 mx-4 text-lg;
+      }
+    }
+  }
+
+  .operation-servers {
+    h4.message {
+      @pply mb-8;
+    }
+  }
+}

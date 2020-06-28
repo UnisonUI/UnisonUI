@@ -14,14 +14,12 @@ module.exports = {
   },
   optimization: {
     splitChunks: {
+      chunks: 'all',
       cacheGroups: {
-        default: false,
-        vendors: false,
         vendor: {
-          name: 'vendor',
-          chunks: 'all',
-          test: /node_modules/,
-          priority: 10
+          test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+          name: 'react',
+          chunks: 'all'
         }
       }
     }
@@ -29,9 +27,14 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.((png)|(eot)|(woff)|(woff2)|(ttf)|(svg)|(gif))(\?v=\d+\.\d+\.\d+)?$/,
+        test: /\.((png)|(svg)|(gif))(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'file-loader',
-        options: { name: '[hash].[ext]', publicPath: '/statics/' }
+        options: { name: 'images/[name]-[sha512:hash:base64:7].[ext]', publicPath: '/statics/' }
+      },
+      {
+        test: /\.((eot)|(woff)|(woff2)|(ttf))(\?v=\d+\.\d+\.\d+)?$/,
+        loader: 'file-loader',
+        options: { name: 'fonts/[name]-[sha512:hash:base64:7].[ext]', publicPath: '/statics/' }
       },
       { test: /\.json$/, loader: 'json-loader' },
       {
@@ -47,16 +50,6 @@ module.exports = {
           'style-loader',
           MiniCssExtractPlugin.loader,
           'css-loader',
-          'postcss-loader'
-        ]
-      },
-      {
-        test: /\.(sa|sc)ss$/,
-        use: [
-          'style-loader',
-          MiniCssExtractPlugin.loader,
-          'css-loader',
-          'sass-loader',
           'postcss-loader'
         ]
       }

@@ -8,14 +8,14 @@ object Tasks {
     },
     webpackDevTask := {
       import sys.process._
-      Process(Seq("npm", "run", "build"), baseDirectory.value).!
+      Process(Seq("npm", "run", "build:dev"), baseDirectory.value).!
     },
     webpackProdTask := {
       import sys.process._
-      Process(Seq("npm", "run", "prod"), baseDirectory.value).!
+      Process(Seq("npm", "run", "build:prod"), baseDirectory.value).!
     }
   )
   val npmInstall      = taskKey[Unit]("npm install")
-  val webpackDevTask  = taskKey[Unit]("webpack dev")
-  val webpackProdTask = taskKey[Unit]("webpack prod")
+  val webpackDevTask  = taskKey[Unit]("webpack target development")
+  val webpackProdTask = taskKey[Unit]("webpack target production")
 }

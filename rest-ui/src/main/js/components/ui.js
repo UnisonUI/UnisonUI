@@ -1,13 +1,15 @@
+import loadable from '@loadable/component'
+import { createBrowserHistory } from 'history'
 import React, { Component } from 'react'
 import { HashRouter as Router } from 'react-router-dom'
-import Menu from 'react-burger-menu/lib/menus/pushRotate'
-import { Menu as FeatherMenu, XSquare } from 'react-feather'
+import Menu from 'react-burger-menu/lib/menus/push'
 import axios from 'axios'
-import Konami from 'react-konami-code'
 import * as cornify from '../cornified'
 
-import SwaggerWithRouter from './swagger'
-import ServiceLink from './serviceLink'
+const Konami = loadable(() => import('react-konami-code'))
+const SwaggerWithRouter = loadable(() => import('./swagger'))
+const ServiceLink = loadable(() => import('./serviceLink'))
+const history = createBrowserHistory()
 
 export default class App extends Component {
   constructor (props) {
@@ -106,7 +108,7 @@ export default class App extends Component {
       entries.sort((a, b) => a[0].localeCompare(b[0]))
       entries.forEach(([name, services]) => {
         items.push(
-          <div key={name}>
+          <div key={name} className={this.getNavLinkClass(services)}>
             <ServiceLink
               services={services}
               closeMenu={() => this.closeMenu()}
@@ -144,6 +146,14 @@ export default class App extends Component {
     })
   }
 
+  getNavLinkClass (services) {
+    return services.some(
+      service => history.location.hash === `#/${service.id}`
+    )
+      ? 'active'
+      : ''
+  }
+
   render () {
     return (
       <div id="outer-container" style={{ height: '100%' }}>
@@ -156,8 +166,6 @@ export default class App extends Component {
           <Menu
             pageWrapId={'page-wrap'}
             outerContainerId={'outer-container'}
-            customBurgerIcon={<FeatherMenu size={48} />}
-            customCrossIcon={<XSquare size={48} color="#e2e8f0" />}
             isOpen={this.state.menuOpen}
             onStateChange={state => this.handleStateChange(state)}
           >
