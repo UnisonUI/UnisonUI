@@ -9,7 +9,7 @@ module.exports = merge(common, {
   mode: 'production',
   cache: true,
   output: {
-    hashDigest: 'base64',
+    hashDigest: 'hex',
     hashFunction: 'sha512',
     filename: 'js/[chunkhash:10].js',
     chunkFilename: 'js/[chunkhash:10].js'
@@ -28,7 +28,7 @@ module.exports = merge(common, {
       }),
 
       new MiniCssExtractPlugin({
-        hashDigest: 'base64',
+        hashDigest: 'hex',
         hashFunction: 'sha512',
         filename: 'css/[chunkhash:10].css',
         chunkFilename: 'css/[chunkhash:10].css'
