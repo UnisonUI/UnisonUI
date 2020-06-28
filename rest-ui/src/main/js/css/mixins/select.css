@@ -1,0 +1,14 @@
+@define-mixin select $prev {
+  @apply rounded-lg nm-flat-gray-200 leading-5 flex-grow relative;
+
+  select {
+    @apply appearance-none w-full px-8 py-4 bg-transparent font-semibold;
+  }
+
+  $prev::after {
+    @apply absolute right-0 h-full pr-8 pointer-events-none block;
+    width: 24px;
+    top: 25%;
+    content: url('./chevron-down.svg'); 
+  }
+}

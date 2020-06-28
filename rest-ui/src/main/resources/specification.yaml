@@ -6,7 +6,7 @@ info:
   license:
     name: MIT
     url: https://raw.githubusercontent.com/MaethorNaur/restui/master/LICENSE
-  version: 0.5.0
+  version: 0.5.3
 paths:
   /services:
     get:

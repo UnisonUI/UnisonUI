@@ -18,7 +18,7 @@ body {
 }
 
 main {
-  @apply h-full p-32;
+  @apply h-full px-32 pt-16;
   overflow: auto;
 }
 
@@ -75,7 +75,10 @@ main {
 }
 
 .bm-item {
-  @apply text-xl inline-block text-gray-200 nm-flat-gray-800 rounded-lg p-4 mb-5 cursor-pointer transition duration-500 ease-in-out;
+  @apply text-xl text-gray-200;
+  @apply inline-block nm-flat-gray-800 rounded-lg;
+  @apply p-4 mb-5;
+  @apply transition duration-500 ease-in-out;
  
   &:hover {
    @apply nm-flat-gray-800-lg;
@@ -87,16 +90,15 @@ main {
 
   &.active {
     @apply nm-inset-gray-800 cursor-default;
-    & a {
-      color: #c94e50;
-      pointer-events: none;
+    a {
+      @apply text-red-700;
     }
   }
 
-  & a {
+  a {
     transition: color 0.3s;
     &:hover, &:focus {
-      color: #c94e50;
+      @apply text-red-700;
     }
  
   }
@@ -111,16 +113,19 @@ h1.bm-item {
 
 .metadata {
   display: none;
+
   &.open {
     display: block;
   }
-  & li {
+  li {
     @apply text-sm;
   }
  }
 
  .search {
-  @apply border-0 appearance-none w-full my-6 leading-tight rounded-full nm-inset-gray-800 text-sm text-gray-200 cursor-text;
+  @apply border-0 appearance-none rounded-full;
+  @apply w-full my-6 leading-tight nm-inset-gray-800;
+  @apply text-sm text-gray-200 cursor-text;
   &:hover {
    @apply nm-inset-gray-800;
   }
