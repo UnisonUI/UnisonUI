@@ -4,8 +4,6 @@
       "@babel/preset-env",
       {
         "modules": false,
-        "useBuiltIns": "entry",
-        "corejs": 3,
         "targets": "> 0.5%, last 2 versions"
       }
     ],

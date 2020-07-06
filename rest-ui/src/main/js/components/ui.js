@@ -6,7 +6,7 @@ import Menu from 'react-burger-menu/lib/menus/push'
 import axios from 'axios'
 import * as cornify from '../cornified'
 
-const Konami = loadable(() => import('react-konami-code'))
+import Konami from 'react-konami-code'
 const SwaggerWithRouter = loadable(() => import('./swagger'))
 const ServiceLink = loadable(() => import('./serviceLink'))
 const history = createBrowserHistory()

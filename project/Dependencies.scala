@@ -29,7 +29,7 @@ object Dependencies {
     private val sl4j            = "com.typesafe.akka"  %% "akka-slf4j"                             % akkaVersion
     private val http            = "com.typesafe.akka"  %% "akka-http"                              % akkaHttpVersion
     private val stream          = "com.typesafe.akka"  %% "akka-stream"                            % akkaVersion
-    private val circe           = "de.heikoseeberger"  %% "akka-http-circe"                        % "1.32.0"
+    private val circe           = "de.heikoseeberger"  %% "akka-http-circe"                        % "1.33.0"
     private val httpTestKit     = "com.typesafe.akka"  %% "akka-http-testkit"                      % akkaHttpVersion % Test
     private val streamTestKit   = "com.typesafe.akka"  %% "akka-stream-testkit"                    % akkaVersion     % Test
     val unixDomain              = "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % alpakka
@@ -39,7 +39,7 @@ object Dependencies {
   }
 
   object Testing {
-    private val scalaTest = "org.scalatest" %% "scalatest" % "3.1.2" % Test
+    private val scalaTest = "org.scalatest" %% "scalatest" % "3.2.0" % Test
     private val scalamock = "org.scalamock" %% "scalamock" % "4.4.0" % Test
     val all               = Seq(scalaTest, scalamock)
   }

@@ -1,10 +1,8 @@
-import loadable from '@loadable/component'
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
 import swaggerUIConstructor from 'swagger-ui'
-
-const NoService = loadable(() => import('./noService'))
+import NoService from './noService' 
 
 const RestUILayoutPlugin = () => {
   return {
