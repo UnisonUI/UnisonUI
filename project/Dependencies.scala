@@ -16,9 +16,11 @@ object Dependencies {
   }
   object Circe {
     private val version = "0.13.0"
-    private val core    = "io.circe" %% "circe-core"    % version
-    private val generic = "io.circe" %% "circe-generic" % version
-    private val yaml    = "io.circe" %% "circe-yaml"    % version
+    private val core    = "io.circe" %% "circe-core"        % version
+    private val generic = "io.circe" %% "circe-generic"     % version
+    private val yaml    = "io.circe" %% "circe-yaml"        % version
+    val parser          = "io.circe" %% "circe-parser"      % version
+    val schema          = "io.circe" %% "circe-json-schema" % "0.1.0"
     val all             = Seq(core, generic, yaml)
   }
 
@@ -48,7 +50,7 @@ object Dependencies {
 
   lazy val restUi = libraryDependencies ++= common ++ Akka.all
 
-  lazy val restUiCore = libraryDependencies ++= common ++ Akka.akka ++ Circe.all
+  lazy val restUiCore = libraryDependencies ++= common ++ Akka.akka ++ Circe.all ++ Seq(Circe.schema, Circe.parser)
 
   lazy val providerDocker = libraryDependencies ++= common ++ Akka.all ++ Circe.all ++ Seq(Akka.unixDomain)
 

@@ -31,7 +31,7 @@ object Main extends App with LazyLogging {
   private val httpServer = new HttpServer(actorRef, eventSource)
 
   val specificationSource = if (selfSpecification) {
-    val specification = scala.io.Source.fromResource("specification.yaml").getLines.mkString("\n")
+    val specification = scala.io.Source.fromResource("specification.yaml").getLines().mkString("\n")
     Source.single(
       Main.getClass.getCanonicalName -> ServiceEvent.ServiceUp(
         Service("restui:restui", "RestUI", specification, Map(Metadata.File -> "specification.yaml"))))
