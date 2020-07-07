@@ -19,7 +19,7 @@ class WebhookProvider extends Provider with LazyLogging {
     val name = classOf[WebhookProvider].getCanonicalName
 
     val specificationSource = if (settings.selfSpecification) {
-      val specification = scala.io.Source.fromResource("webhook-specification.yaml").getLines.mkString("\n")
+      val specification = scala.io.Source.fromResource("webhook-specification.yaml").getLines().mkString("\n")
       Source.single(
         ServiceEvent.ServiceUp(
           Service("restui:webhook", "Webhook provider", specification, Map(Metadata.File -> "webhook-specification.yaml"))))

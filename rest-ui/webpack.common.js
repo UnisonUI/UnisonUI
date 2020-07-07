@@ -14,14 +14,8 @@ module.exports = {
   },
   optimization: {
     splitChunks: {
-      chunks: 'all',
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-          name: 'react',
-          chunks: 'all'
-        }
-      }
+      automaticNameDelimiter: '-',
+      chunks: 'all'
     }
   },
   module: {
@@ -29,18 +23,19 @@ module.exports = {
       {
         test: /\.((png)|(svg)|(gif))(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'file-loader',
-        options: { name: 'images/[name]-[sha512:hash:hex:7].[ext]', publicPath: '/statics/' }
+        options: { name: 'images/[name].[sha512:hash:hex:10].[ext]', publicPath: '/statics/' }
       },
       {
         test: /\.((eot)|(woff)|(woff2)|(ttf))(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'file-loader',
-        options: { name: 'fonts/[name]-[sha512:hash:hex:7].[ext]', publicPath: '/statics/' }
+        options: { name: 'fonts/[name].[sha512:hash:hex:10].[ext]', publicPath: '/statics/' }
       },
       { test: /\.json$/, loader: 'json-loader' },
       {
         loader: 'babel-loader',
         test: /\.jsx?$/,
         options: {
+          retainLines: true,
           cacheDirectory: true
         }
       },

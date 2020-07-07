@@ -24,6 +24,7 @@ object Projects {
       })
 
   val restUiCore = createModule("rest-ui-core", "core")
+    .settings(resolvers += "jitpack".at("https://jitpack.io"))
 
   val restUi = createModule("rest-ui", "rest-ui")
     .settings(mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh")

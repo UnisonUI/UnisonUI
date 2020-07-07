@@ -3,12 +3,16 @@ package restui.server.service
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.stream.scaladsl.SourceQueueWithComplete
 import restui.models._
+import restui.specifications.Validator
 
 class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with ActorLogging {
   import ServiceActor._
   override def receive: Receive = handleReceive(Map.empty)
 
   private def handleReceive(services: Map[String, Service]): Receive = {
+    case (provider: String, ServiceEvent.ServiceUp(service)) if !Validator.isValid(service.file) =>
+      log.debug(s"Invalid specification from $provider")
+      sender() ! Ack
     case (provider: String, ServiceEvent.ServiceUp(service)) =>
       log.debug("{} got a new service", provider)
 

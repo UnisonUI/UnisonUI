@@ -28,7 +28,7 @@ class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender wi
 |
 |OK
 """.stripMargin)
-  override def afterAll: Unit =
+  override def afterAll(): Unit =
     TestKit.shutdownActorSystem(system)
   "Get a resource" when {
     "using an unix domain socket" in {
@@ -42,7 +42,7 @@ class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender wi
         )
         response <- client.get(Uri("/"))
         body     <- Unmarshaller.stringUnmarshaller(response.entity)
-        _        <- server.unbind
+        _        <- server.unbind()
       } yield {
         response.status shouldBe StatusCodes.OK
         body shouldBe "OK"
@@ -68,7 +68,7 @@ class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender wi
               Source.future(Unmarshaller.stringUnmarshaller(response.entity))
             }
             .runWith(Sink.seq)
-        _ <- server.unbind
+        _ <- server.unbind()
       } yield result shouldBe Seq("OK")
     }
     "there is an error" in {
@@ -92,7 +92,7 @@ class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender wi
     for {
       server <- Http().bindAndHandle(route, "localhost", 8080)
       result <- client.downloadFile("http://localhost:8080/file")
-      _      <- server.unbind
+      _      <- server.unbind()
     } yield result shouldBe "OK"
   }
 }

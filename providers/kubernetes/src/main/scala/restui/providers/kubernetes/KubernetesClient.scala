@@ -17,7 +17,7 @@ class KubernetesClient(private val settings: Settings)(implicit system: ActorSys
   implicit val executionContent: ExecutionContext = system.dispatcher
   private val BufferSize                          = 10
   private val (queue, source) =
-    Source.queue[ServiceEvent](BufferSize, OverflowStrategy.backpressure).toMat(BroadcastHub.sink[ServiceEvent])(Keep.both).run
+    Source.queue[ServiceEvent](BufferSize, OverflowStrategy.backpressure).toMat(BroadcastHub.sink[ServiceEvent])(Keep.both).run()
 
   private val serviceActorRef = system.actorOf(Props(classOf[ServiceActor], settings.labels, queue))
 
@@ -32,7 +32,7 @@ class KubernetesClient(private val settings: Settings)(implicit system: ActorSys
           .tick(1.second, settings.pollingInterval, ())
           .flatMapConcat { _ =>
             Source.futureSource {
-              k8s.listByNamespace[ServiceList].map { map =>
+              k8s.listByNamespace[ServiceList]().map { map =>
                 Source(map.view.mapValues(_.items).toList)
               }
             }.recover {

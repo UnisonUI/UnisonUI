@@ -16,7 +16,7 @@ import restui.providers.webhook.routes.Services
 
 class ServicesSpec extends AnyWordSpec with ScalatestRouteTest with Matchers with BeforeAndAfterAll with FailFastCirceSupport {
 
-  override def afterAll: Unit =
+  override def afterAll(): Unit =
     TestKit.shutdownActorSystem(system)
 
   private def createQueue: (SourceQueueWithComplete[ServiceEvent], TestProbe) = {
