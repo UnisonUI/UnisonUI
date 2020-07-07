@@ -12,6 +12,7 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
   private def handleReceive(services: Map[String, Service]): Receive = {
     case (provider: String, ServiceEvent.ServiceUp(service)) if !Validator.isValid(service.file) =>
       log.debug(s"Invalid specification from $provider")
+      sender() ! Ack
     case (provider: String, ServiceEvent.ServiceUp(service)) =>
       log.debug("{} got a new service", provider)
 
