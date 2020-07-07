@@ -10,13 +10,7 @@
     "@babel/preset-react"
   ],
   "plugins": [
-    [
-      "@babel/plugin-transform-runtime",
-      {
-        "regenerator": false,
-        "corejs": 3
-      }
-    ],
+    "@babel/plugin-transform-runtime",
     "@babel/plugin-syntax-dynamic-import"
   ]
 }
