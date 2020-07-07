@@ -14,14 +14,7 @@ module.exports = {
   },
   optimization: {
     splitChunks: {
-      chunks: 'all',
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-          name: 'react',
-          chunks: 'all'
-        }
-      }
+      chunks: 'all'
     }
   },
   module: {

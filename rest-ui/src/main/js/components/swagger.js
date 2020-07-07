@@ -1,8 +1,9 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
-import swaggerUIConstructor from 'swagger-ui'
 import NoService from './noService'
+
+import SwaggerUI from 'swagger-ui'
 
 const RestUILayoutPlugin = () => {
   return {
@@ -11,6 +12,7 @@ const RestUILayoutPlugin = () => {
     }
   }
 }
+
 class Swagger extends Component {
   constructor (props) {
     super(props)
@@ -25,7 +27,7 @@ class Swagger extends Component {
       url = `/services/${id}`
     }
 
-    const ui = swaggerUIConstructor({
+    const ui = SwaggerUI({
       url,
       docExpansion: 'list',
       plugins: [RestUILayoutPlugin]

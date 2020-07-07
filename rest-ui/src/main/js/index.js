@@ -1,8 +1,7 @@
-import loadable from '@loadable/component'
 import React from 'react'
 import ReactDOM from 'react-dom'
 
-const App = loadable(() => import('./components/ui'))
+import App from './components/ui'
 
 require('./css/main.css')
 require('./css/swagger-ui.css')
