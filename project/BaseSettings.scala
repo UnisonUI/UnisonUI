@@ -6,7 +6,7 @@ import sbtassembly.AssemblyPlugin.autoImport._
 import Dependencies._
 object BaseSettings {
 
-  val ScalaVersion = "2.13.2"
+  val ScalaVersion = "2.13.3"
 
   lazy val defaultSettings = Seq(
     startYear := Some(2020),
@@ -16,7 +16,7 @@ object BaseSettings {
     javacOptions ++= Seq("-source", "11"),
     fork in Test := true,
     cancelable in Global := true,
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.3.17" cross CrossVersion.full),
+    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.3.18" cross CrossVersion.full),
     scalacOptions += "-Yrangepos",
     test in assembly := {},
     scalacOptions in Compile ++= ScalacOptions.options,

@@ -4,21 +4,13 @@
       "@babel/preset-env",
       {
         "modules": false,
-        "useBuiltIns": "entry",
-        "corejs": 3,
         "targets": "> 0.5%, last 2 versions"
       }
     ],
     "@babel/preset-react"
   ],
   "plugins": [
-    [
-      "@babel/plugin-transform-runtime",
-      {
-        "regenerator": false,
-        "corejs": 3
-      }
-    ],
+    "@babel/plugin-transform-runtime",
     "@babel/plugin-syntax-dynamic-import"
   ]
 }
