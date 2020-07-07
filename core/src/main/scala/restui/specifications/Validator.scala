@@ -1,13 +1,15 @@
 package restui.specifications
 
-import io.circe.parser.{parse => parseJson}
-import io.circe.yaml.parser.{parse => parseYaml}
-import io.circe.schema.Schema
-import io.circe.{Error, Json}
 import scala.io.Source
 import scala.util.Try
 
-object Validator {
+import com.typesafe.scalalogging.LazyLogging
+import io.circe.parser.{parse => parseJson}
+import io.circe.schema.Schema
+import io.circe.yaml.parser.{parse => parseYaml}
+import io.circe.{Error, Json}
+
+object Validator extends LazyLogging {
   private val schema: Schema  = loadSchema("schema.json").get
   private val schema3: Schema = loadSchema("schema3.json").get
 
