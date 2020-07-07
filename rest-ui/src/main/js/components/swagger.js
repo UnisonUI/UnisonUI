@@ -2,7 +2,6 @@ import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
 import NoService from './noService'
-
 import SwaggerUI from 'swagger-ui'
 
 const RestUILayoutPlugin = () => {
