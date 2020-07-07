@@ -16,13 +16,13 @@ abstract class AsyncTestBase
     with BeforeAndAfterAll {
   implicit val ec: ExecutionContext = system.dispatcher
 
-  override def afterAll: Unit =
+  override def afterAll(): Unit =
     TestKit.shutdownActorSystem(system)
 }
 
 abstract class TestBase extends TestKit(ActorSystem("test")) with ImplicitSender with AnyWordSpecLike with Matchers with BeforeAndAfterAll {
   implicit val ec: ExecutionContext = system.dispatcher
 
-  override def afterAll: Unit =
+  override def afterAll(): Unit =
     TestKit.shutdownActorSystem(system)
 }

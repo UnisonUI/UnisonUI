@@ -22,7 +22,7 @@ class HttpServerSpec
     with BeforeAndAfterAll
     with FailFastCirceSupport {
 
-  override def afterAll: Unit =
+  override def afterAll(): Unit =
     TestKit.shutdownActorSystem(system)
 
   "Sending a service to the webhook server" should {

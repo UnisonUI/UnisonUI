@@ -26,7 +26,7 @@ class DockerClientSpec
   private val Id                    = "12345"
   private val ServiceName           = "test"
 
-  override def afterAll: Unit =
+  override def afterAll(): Unit =
     TestKit.shutdownActorSystem(system)
 
   private val settings                   = Settings("myDocker.sock", Labels("name", "port", "specification"))
@@ -138,7 +138,7 @@ class DockerClientSpec
           entity = HttpEntity(ContentTypes.`application/json`, event.asJson.noSpaces)
         )
       }))
-      .once
+      .once()
 
     (clientMock.get _)
       .expects(*)
@@ -147,9 +147,9 @@ class DockerClientSpec
           HttpResponse(
             entity = HttpEntity(ContentTypes.`application/json`, Container(labels, Some("localhost")).asJson.noSpaces)
           )))
-      .anyNumberOfTimes
+      .anyNumberOfTimes()
 
-    (clientMock.downloadFile _).expects("http://localhost:9999/openapi.yaml").returning(Future.successful("OK")).anyNumberOfTimes
+    (clientMock.downloadFile _).expects("http://localhost:9999/openapi.yaml").returning(Future.successful("OK")).anyNumberOfTimes()
 
     clientMock
 
