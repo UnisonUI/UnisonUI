@@ -4,10 +4,9 @@ import scala.annotation.tailrec
 
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.{`Accept-Encoding`, `Content-Encoding`, HttpEncoding, Range}
+import akka.http.scaladsl.model.headers.{`Accept-Encoding`, `Content-Encoding`, HttpEncoding, HttpEncodings, Range}
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.model.headers.HttpEncodings
 
 object Statics {
   private val classLoader    = Statics.getClass.getClassLoader
