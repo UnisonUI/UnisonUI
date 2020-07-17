@@ -3,6 +3,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
+const CompressionPlugin = require('compression-webpack-plugin')
 
 module.exports = {
   entry: {
@@ -23,12 +24,18 @@ module.exports = {
       {
         test: /\.((png)|(svg)|(gif))(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'file-loader',
-        options: { name: 'images/[name].[sha512:hash:hex:10].[ext]', publicPath: '/statics/' }
+        options: {
+          name: 'images/[name].[sha512:hash:hex:10].[ext]',
+          publicPath: '/statics/'
+        }
       },
       {
         test: /\.((eot)|(woff)|(woff2)|(ttf))(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'file-loader',
-        options: { name: 'fonts/[name].[sha512:hash:hex:10].[ext]', publicPath: '/statics/' }
+        options: {
+          name: 'fonts/[name].[sha512:hash:hex:10].[ext]',
+          publicPath: '/statics/'
+        }
       },
       { test: /\.json$/, loader: 'json-loader' },
       {
@@ -59,6 +66,24 @@ module.exports = {
     new HtmlWebPackPlugin({
       template: './src/main/js/index.html',
       filename: '../index.html'
+    }),
+    new CompressionPlugin({
+      filename: '[path].gz[query]',
+      algorithm: 'gzip',
+      threshold: 10240,
+      minRatio: 0.8,
+      deleteOriginalAssets: false
+    }),
+    new CompressionPlugin({
+      filename: '[path].br[query]',
+      algorithm: 'brotliCompress',
+      compressionOptions: {
+        // zlib’s `level` option matches Brotli’s `BROTLI_PARAM_QUALITY` option.
+        level: 11
+      },
+      threshold: 10240,
+      minRatio: 0.8,
+      deleteOriginalAssets: false
     })
   ]
 }
