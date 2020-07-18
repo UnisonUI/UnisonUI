@@ -12,7 +12,9 @@ Currently, RestUI can discover your API descriptions through `Docker`, `Kubernet
 
 ## Overview
 
-![overview](./docs/overview.gif "Overview")
+![Screenshot 1](./docs/screenshot-1.png "Screenshot 1")
+![Screenshot 2](./docs/screenshot-2.png "Screenshot 2")
+![Screenshot 3](./docs/screenshot-3.png "Screenshot 3")
 
 ## Build
 
