@@ -1,3 +1,13 @@
+## [0.5.4](https://github.com/MaethorNaur/restui/compare/v0.5.3...v0.5.4) (2020-07-18)
+
+
+### Features
+
+* 🎸 allow precompressed file to be served ([#92](https://github.com/MaethorNaur/restui/issues/92)) ([ea53fd6](https://github.com/MaethorNaur/restui/commit/ea53fd608d7d60141ec134e8b9d388df748b591f))
+* schema validator ([#91](https://github.com/MaethorNaur/restui/issues/91)) ([4ad6292](https://github.com/MaethorNaur/restui/commit/4ad62925e432f96ed76807b07e55704c25ad14be))
+
+
+
 ## [0.5.3](https://github.com/MaethorNaur/restui/compare/v0.5.2...v0.5.3) (2020-06-28)
 
 

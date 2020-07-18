@@ -13,7 +13,6 @@ object Release {
     releaseNextCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}",
     releaseProcess := Seq(
       checkSnapshotDependencies,
-      runTest,
       inquireVersions,
       setReleaseVersion,
       ReleaseStep(releaseStepTask(npmInstall)),
