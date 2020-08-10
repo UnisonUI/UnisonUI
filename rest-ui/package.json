@@ -61,7 +61,7 @@
     "terser-webpack-plugin": "^3.0.8",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
-    "webpack-merge": "^5.0.9"
+    "webpack-merge": "^5.1.1"
   },
   "resolutions": {
     "natives": "1.1.6"
