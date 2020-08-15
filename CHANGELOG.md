@@ -1,3 +1,7 @@
+## [0.5.5](https://github.com/MaethorNaur/restui/compare/v0.5.4...v0.5.5) (2020-08-15)
+
+
+
 ## [0.5.4](https://github.com/MaethorNaur/restui/compare/v0.5.3...v0.5.4) (2020-07-18)
 
 

@@ -37,7 +37,6 @@ module.exports = {
           publicPath: '/statics/'
         }
       },
-      { test: /\.json$/, loader: 'json-loader' },
       {
         loader: 'babel-loader',
         test: /\.jsx?$/,
