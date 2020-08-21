@@ -20,7 +20,7 @@ class HttpServer(private val endpointsActorRef: ActorRef, private val eventsSour
   implicit private val executionContext: ExecutionContext = actorSystem.dispatcher
 
   def bind(interface: String, port: Int): Future[Http.ServerBinding] =
-    Http().bindAndHandle(routes, interface, port)
+    Http().newServerAt(interface, port).bind(routes)
 
   private val exceptionHandler = ExceptionHandler {
     case exception =>

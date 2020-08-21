@@ -25,13 +25,13 @@ object Dependencies {
   }
 
   object Akka {
-    private val akkaVersion     = "2.6.6"
-    private val akkaHttpVersion = "10.1.12"
+    private val akkaVersion     = "2.6.8"
+    private val akkaHttpVersion = "10.2.0"
     private val alpakka         = "2.0.1"
     private val sl4j            = "com.typesafe.akka"  %% "akka-slf4j"                             % akkaVersion
     private val http            = "com.typesafe.akka"  %% "akka-http"                              % akkaHttpVersion
     private val stream          = "com.typesafe.akka"  %% "akka-stream"                            % akkaVersion
-    private val circe           = "de.heikoseeberger"  %% "akka-http-circe"                        % "1.33.0"
+    private val circe           = "de.heikoseeberger"  %% "akka-http-circe"                        % "1.34.0"
     private val httpTestKit     = "com.typesafe.akka"  %% "akka-http-testkit"                      % akkaHttpVersion % Test
     private val streamTestKit   = "com.typesafe.akka"  %% "akka-stream-testkit"                    % akkaVersion     % Test
     val unixDomain              = "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % alpakka
@@ -41,8 +41,8 @@ object Dependencies {
   }
 
   object Testing {
-    private val scalaTest = "org.scalatest" %% "scalatest" % "3.2.0" % Test
-    private val scalamock = "org.scalamock" %% "scalamock" % "4.4.0" % Test
+    private val scalaTest = "org.scalatest" %% "scalatest" % "3.2.1" % Test
+    private val scalamock = "org.scalamock" %% "scalamock" % "5.0.0" % Test
     val all               = Seq(scalaTest, scalamock)
   }
 
@@ -55,7 +55,7 @@ object Dependencies {
   lazy val providerDocker = libraryDependencies ++= common ++ Akka.all ++ Circe.all ++ Seq(Akka.unixDomain)
 
   lazy val providerKubernetes = libraryDependencies ++= common ++ Akka.all ++
-    Seq("io.skuber" %% "skuber" % "2.4.0")
+    Seq("io.skuber" %% "skuber" % "2.5.0")
 
   lazy val providerGit     = libraryDependencies ++= common ++ Akka.all ++ Circe.all
   lazy val providerWebhook = libraryDependencies ++= common ++ Akka.all ++ Circe.all

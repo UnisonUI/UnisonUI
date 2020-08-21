@@ -22,7 +22,7 @@ object HttpServer extends LazyLogging with Directives {
     val (queue, source) =
       Source.queue[ServiceEvent](BufferSize, OverflowStrategy.backpressure).toMat(BroadcastHub.sink[ServiceEvent])(Keep.both).run()
 
-    Http().bindAndHandle(routes(queue), interface, port).map { binding =>
+    Http().newServerAt(interface, port).bind(routes(queue)).map { binding =>
       val address = binding.localAddress
       logger.info(s"Webhook server online at http://${address.getHostName}:${address.getPort}/")
       source
