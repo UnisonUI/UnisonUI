@@ -3,6 +3,7 @@ package restui.providers.git.settings
 import scala.concurrent.duration._
 import scala.jdk.DurationConverters._
 
+import akka.http.scaladsl.model.Uri
 import com.typesafe.config.Config
 
 sealed trait VCS {
@@ -23,9 +24,20 @@ object GithubSettings {
     val apiToken        = githubConfig.getString("api-token")
     val pollingInterval = githubConfig.getDuration("polling-interval").toScala
     val apiUri          = githubConfig.getString("api-uri")
-    val repos           = RepositorySettings.getListOfRepositories(githubConfig, "repositories")
+    val repos           = RepositorySettings.getListOfRepositories(githubConfig, "repositories").map(correctURI)
     GithubSettings(apiToken, apiUri, pollingInterval, repos)
   }
+
+  private def correctURI: PartialFunction[RepositorySettings, RepositorySettings] = {
+    case repository @ RepositorySettings(Location.Uri(uri), _, _) =>
+      val path = Uri(uri).path
+      val correctedPath =
+        if (path.startsWithSlash) path.tail
+        else path
+      repository.copy(location = Location.Uri(correctedPath.toString))
+    case repository => repository
+  }
+
 }
 
 object GitSettings {
