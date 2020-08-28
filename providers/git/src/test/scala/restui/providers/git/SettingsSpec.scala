@@ -10,6 +10,13 @@ import restui.providers.git.settings._
 class SettingsSpec extends AnyWordSpec with Matchers {
   private val defaultConfig                      = ConfigFactory.defaultReference()
   private def loadConfig(config: String): Config = ConfigFactory.parseString(config).withFallback(defaultConfig)
+  private val longRepositories                   = """ repositories = [
+|       {
+|         location = "https://github.com/myOrg/Test"
+|         specification-paths = ["test/"]
+|       },
+|     ]
+|""".stripMargin
   private val repositories                       = """ repositories = [
 |       {
 |         location = "myOrg/Test"
@@ -58,8 +65,9 @@ class SettingsSpec extends AnyWordSpec with Matchers {
         Settings.from(config) shouldBe Settings(2.hours, Nil)
       }
 
-      "there is repos" in {
-        val config = loadConfig(s"""restui.provider.git {
+      "there is repos" when {
+        "using short uri" in {
+          val config = loadConfig(s"""restui.provider.git {
 |  cache-duration =  "2 hours"
 |  vcs {
 |    github {
@@ -68,23 +76,45 @@ class SettingsSpec extends AnyWordSpec with Matchers {
 |    }
 |  }
 |}""".stripMargin)
-        Settings.from(config) shouldBe Settings(
-          2.hours,
-          List(
-            GithubSettings(
-              "test",
-              "https://api.github.com/graphql",
-              1.hours,
-              RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/")) :: RepositorySettings(
-                Location.Regex("myOrg/.+"),
-                None,
-                Nil) :: RepositorySettings(Location.Uri("restui"), None, Nil) :: Nil
+          Settings.from(config) shouldBe Settings(
+            2.hours,
+            List(
+              GithubSettings(
+                "test",
+                "https://api.github.com/graphql",
+                1.hours,
+                RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/")) :: RepositorySettings(
+                  Location.Regex("myOrg/.+"),
+                  None,
+                  Nil) :: RepositorySettings(Location.Uri("restui"), None, Nil) :: Nil
+              )
             )
           )
-        )
+        }
+        "using long uri" in {
+          val config = loadConfig(s"""restui.provider.git {
+|  cache-duration =  "2 hours"
+|  vcs {
+|    github {
+|     api-token = "test"
+|     $longRepositories
+|    }
+|  }
+|}""".stripMargin)
+          Settings.from(config) shouldBe Settings(
+            2.hours,
+            List(
+              GithubSettings(
+                "test",
+                "https://api.github.com/graphql",
+                1.hours,
+                RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/")) :: Nil
+              )
+            )
+          )
+        }
       }
     }
-
     "load git" in {
       val config = loadConfig(s"""restui.provider.git {
 |  cache-duration =  "2 hours"
