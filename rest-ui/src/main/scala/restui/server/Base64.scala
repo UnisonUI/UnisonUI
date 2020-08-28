@@ -1,8 +1,9 @@
 package restui.server
 
-import scala.util.chaining._
-import java.{util => ju}
 import java.nio.charset.StandardCharsets
+import java.{util => ju}
+
+import scala.util.chaining._
 
 object Base64 {
   def encode(input: String): String =
@@ -14,4 +15,3 @@ object Base64 {
   def decode(input: String): String = new String(input.replace('_', '/').getBytes(StandardCharsets.UTF_8).pipe(ju.Base64.getDecoder.decode))
 
 }
-

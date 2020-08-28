@@ -5,8 +5,8 @@ import akka.stream.scaladsl.SourceQueueWithComplete
 import io.circe.Json
 import io.circe.yaml.syntax._
 import restui.models._
-import restui.specifications.{parse, Validator}
 import restui.server.Base64
+import restui.specifications.{parse, Validator}
 
 class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with ActorLogging {
   import ServiceActor._
