@@ -59,7 +59,6 @@ object GithubClient extends LazyLogging {
   private def executeRequest(githubClient: GithubClient, cursor: Option[String])(implicit
       system: ActorSystem,
       executionContext: ExecutionContext) = {
-    logger.info("{}", githubClient.settings)
     val request = createRequest(githubClient.settings, cursor)
     githubClient
       .requestExecutor(request)

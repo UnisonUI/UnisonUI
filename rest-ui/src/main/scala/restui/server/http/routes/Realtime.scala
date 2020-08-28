@@ -10,7 +10,5 @@ object Realtime {
   import akka.http.scaladsl.marshalling.sse.EventStreamMarshalling._
 
   def route(eventsSource: Source[ServerSentEvent, NotUsed]): Route =
-    path("events") {
-      get(complete(eventsSource))
-    }
+    (path("events") & get)(complete(eventsSource))
 }

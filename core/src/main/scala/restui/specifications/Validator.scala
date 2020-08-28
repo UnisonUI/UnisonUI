@@ -6,8 +6,7 @@ import scala.util.Try
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.parser.{parse => parseJson}
 import io.circe.schema.Schema
-import io.circe.yaml.parser.{parse => parseYaml}
-import io.circe.{Error, Json}
+import restui.specifications.parse
 
 object Validator extends LazyLogging {
   private val schema: Schema  = loadSchema("schema.json").get
@@ -24,6 +23,4 @@ object Validator extends LazyLogging {
       json   <- parse(input)
       result <- schema3.validate(json).toEither.left.flatMap(_ => schema.validate(json).toEither)
     } yield result).isRight
-
-  private def parse(input: String): Either[Error, Json] = parseYaml(input).left.flatMap(_ => parseJson(input))
 }

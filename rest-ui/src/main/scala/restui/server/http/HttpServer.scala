@@ -30,6 +30,6 @@ class HttpServer(private val endpointsActorRef: ActorRef, private val eventsSour
 
   private val routes =
     handleExceptions(exceptionHandler) {
-      Statics.route ~ Realtime.route(eventsSource) ~ Services.route(endpointsActorRef)
+      Statics.route ~ Realtime.route(eventsSource) ~ Services.route(endpointsActorRef) ~ Proxy.route
     }
 }
