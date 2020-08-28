@@ -48,7 +48,7 @@ object Dependencies {
 
   private lazy val common = Testing.all ++ Logging.all ++ Config.all
 
-  lazy val restUi = libraryDependencies ++= common ++ Akka.all
+  lazy val restUi = libraryDependencies ++= common ++ Akka.all ++ Circe.all
 
   lazy val restUiCore = libraryDependencies ++= common ++ Akka.akka ++ Circe.all ++ Seq(Circe.schema, Circe.parser)
 
