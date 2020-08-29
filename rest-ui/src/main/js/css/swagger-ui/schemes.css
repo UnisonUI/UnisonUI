@@ -26,20 +26,28 @@
   }
 
   .servers {
-    @mixin select label;
+    label {
+      @apply block;
+      @mixin select &;
+    }
     h4.message {
       @apply pb-8;
     }
 
     table {
-      tr {
-        width: 30em;
+      tr{
+        @apply w-full;
       }
       td {
-        @apply align-middle pt-2 pb-2;
+        @apply align-middle pt-2 pb-2 mt-4 h-16;
         @apply inline-block;
-        max-width: 15em;
+        width: 50%;
+
+        &:last-of-type {
+          @mixin select &;
+        }
         &:first-of-type {
+          max-width: inherit !important;
           @apply pr-8;
         }
         input {
