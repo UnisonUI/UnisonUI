@@ -1,5 +1,8 @@
 package restui.server.http.routes
 
+import java.nio.charset.StandardCharsets
+import java.{util => ju}
+
 import scala.concurrent.Future
 import scala.util.chaining._
 
@@ -9,8 +12,6 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.{Sink, Source}
-import java.nio.charset.StandardCharsets
-import java.{util => ju}
 
 object Proxy {
   def route(implicit actorSystem: ActorSystem): Route = handle(handler)
