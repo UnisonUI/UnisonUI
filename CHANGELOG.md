@@ -1,3 +1,14 @@
+# [0.6.0](https://github.com/MaethorNaur/restui/compare/v0.5.6...v0.6.0) (2020-08-29)
+
+
+### Features
+
+* 🎸 proxy servers to avoid cors related issues ([17e3873](https://github.com/MaethorNaur/restui/commit/17e38737d762a87cc2b42fc168e3d13b9859d9d2)), closes [#156](https://github.com/MaethorNaur/restui/issues/156)
+* 🎸 support short and long github uri ([#155](https://github.com/MaethorNaur/restui/issues/155)) ([9eccb8f](https://github.com/MaethorNaur/restui/commit/9eccb8fce85dc9ad13b30a77185970897080f499)), closes [#154](https://github.com/MaethorNaur/restui/issues/154)
+* 🎸 transform request on client-side ([b22e7ba](https://github.com/MaethorNaur/restui/commit/b22e7ba85e17cd6ac37e23ccd70701045772819d))
+
+
+
 ## [0.5.6](https://github.com/MaethorNaur/restui/compare/v0.5.5...v0.5.6) (2020-08-21)
 
 
