@@ -12,6 +12,18 @@ const RestUILayoutPlugin = () => {
   }
 }
 
+const CurlPlugin = function (system) {
+  return {
+    wrapComponents: {
+      curl: (Original, system) => props => {
+        const url = atob(props.request.get('url').substring(7))
+        props.request = props.request.set('url', url)
+        return <Original {...props} />
+      }
+    }
+  }
+}
+
 class Swagger extends Component {
   constructor (props) {
     super(props)
@@ -29,7 +41,13 @@ class Swagger extends Component {
     const ui = SwaggerUI({
       url,
       docExpansion: 'list',
-      plugins: [RestUILayoutPlugin]
+      plugins: [RestUILayoutPlugin, CurlPlugin],
+      requestInterceptor: r => {
+        if (r.url.startsWith('http')) {
+          r.url = `/proxy/${btoa(r.url)}`
+        }
+        return r
+      }
     })
 
     this.system = ui

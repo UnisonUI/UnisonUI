@@ -9,7 +9,8 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.{Sink, Source}
-import restui.server.Base64
+import java.nio.charset.StandardCharsets
+import java.{util => ju}
 
 object Proxy {
   def route(implicit actorSystem: ActorSystem): Route = handle(handler)
@@ -20,9 +21,8 @@ object Proxy {
 
   private def proxy(request: HttpRequest)(implicit actorSystem: ActorSystem): Future[HttpResponse] = {
     val proxyURL =
-      request.uri.path.tail.head.toString.pipe(Base64.decode)
-    val path = request.uri.path.tail.tail
-    val uri  = Uri(proxyURL)
+      request.uri.path.tail.toString.pipe(decode)
+    val uri = Uri(proxyURL)
     val port = uri.authority.port match {
       case 0 =>
         uri.scheme match {
@@ -31,6 +31,7 @@ object Proxy {
         }
       case port => port
     }
+
     val flow = uri.scheme match {
       case "http" =>
         Http().outgoingConnection(uri.authority.host.address, port)
@@ -38,21 +39,27 @@ object Proxy {
         Http().outgoingConnectionHttps(uri.authority.host.address, port)
     }
     request
-      .withUri(uri.withPath(uri.path ++ path))
+      .withUri(uri)
       .pipe(Source.single)
       .via(flow)
       .mapAsync(1) {
-        case HttpResponse(statusCode, headers, _, _) if statusCode.isRedirection =>
+        case response @ HttpResponse(statusCode, headers, _, _) if statusCode.isRedirection =>
           val urlEncoded =
             headers
               .find(_.is("location"))
               .map(_.value)
               .get
               .trim
-              .pipe(Base64.encode)
+              .pipe(encode)
           proxy(request.withUri(request.uri.withPath(Uri.Path(s"/$urlEncoded"))))
         case response => Future.successful(response)
       }
       .runWith(Sink.head)
   }
+  private def encode(input: String): String =
+    input
+      .getBytes(StandardCharsets.UTF_8)
+      .pipe(ju.Base64.getEncoder.encodeToString)
+
+  private def decode(input: String): String = new String(input.getBytes(StandardCharsets.UTF_8).pipe(ju.Base64.getDecoder.decode))
 }

@@ -2,11 +2,8 @@ package restui.server.service
 
 import akka.actor.{Actor, ActorLogging, Props}
 import akka.stream.scaladsl.SourceQueueWithComplete
-import io.circe.Json
-import io.circe.yaml.syntax._
 import restui.models._
-import restui.server.Base64
-import restui.specifications.{parse, Validator}
+import restui.specifications.Validator
 
 class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with ActorLogging {
   import ServiceActor._
@@ -26,8 +23,7 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
 
       if (isNewService(services, service) || serviceNameChanged)
         queue.offer(Event.ServiceUp(service.id, service.name, service.metadata))
-      val updatedService = rewriteForProxy(service)
-      context.become(handleReceive(services + (service.id -> updatedService)))
+      context.become(handleReceive(services + (service.id -> service)))
       sender() ! Ack
 
     case (provider: String, ServiceEvent.ServiceDown(serviceId)) =>
@@ -49,28 +45,6 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
     }
 
   private def isNewService(services: Map[String, Service], service: Service): Boolean = !services.contains(service.id)
-
-  private def rewriteForProxy(service: Service): Service = {
-    val json = parse(service.file).getOrElse(Json.obj())
-    val newJson =
-      json.hcursor
-        .downField("servers")
-        .withFocus(
-          _.mapArray(
-            _.map(
-              _.hcursor
-                .downField("url")
-                .withFocus(_.mapString { url =>
-                  val urlEncoded = Base64.encode(url)
-                  s"/proxy/$urlEncoded"
-                })
-                .top
-                .get)))
-        .top
-        .getOrElse(json)
-    service.copy(file = newJson.asYaml.spaces2)
-  }
-
 }
 
 object ServiceActor {
