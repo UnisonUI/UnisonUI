@@ -13,6 +13,10 @@ import io.circe.Json
 import restui.providers.git._
 import restui.providers.git.github.data._
 import restui.providers.git.settings.GithubSettings
+import java.io.StringWriter
+import java.io.PrintWriter
+import scala.concurrent.duration._
+import java.nio.charset.StandardCharsets
 
 final case class GithubClient(settings: GithubSettings, requestExecutor: RequestExecutor)
 
@@ -66,10 +70,19 @@ object GithubClient extends LazyLogging {
         response.entity.contentType match {
           case ContentTypes.`application/json` =>
             Unmarshal(response.entity).to[GrahpQL]
-          case _ => Unmarshal(response.entity).to[String].map(msg => Error(List(msg)))
+          case _ =>
+            response.entity.toStrict(5.seconds).map { body =>
+              val msg = body.data.decodeString(StandardCharsets.UTF_8)
+              Error(List(msg))
+            }
         }
       }
-      .recover(exception => Error(List(exception.getMessage)))
+      .recover { exception =>
+        val sw = new StringWriter()
+        val pw = new PrintWriter(sw)
+        exception.printStackTrace(pw)
+        Error(List(exception.getMessage, sw.toString()))
+      }
   }
 
   private def createRequest(github: GithubSettings, cursor: Option[String]): HttpRequest =
