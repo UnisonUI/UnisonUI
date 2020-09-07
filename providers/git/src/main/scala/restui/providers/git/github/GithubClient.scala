@@ -3,7 +3,7 @@ package restui.providers.git.github
 import scala.concurrent.ExecutionContext
 
 import akka.actor.ActorSystem
-import akka.http.scaladsl.model.headers.{`Content-Type`, Authorization, OAuth2BearerToken}
+import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpMethods, HttpRequest, RequestEntity}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.{Merge, Source => AkkaSource}
@@ -13,8 +13,6 @@ import io.circe.Json
 import restui.providers.git._
 import restui.providers.git.github.data._
 import restui.providers.git.settings.GithubSettings
-import akka.http.scaladsl.model.ContentType
-import akka.http.scaladsl.model.MediaType
 
 final case class GithubClient(settings: GithubSettings, requestExecutor: RequestExecutor)
 
@@ -65,7 +63,11 @@ object GithubClient extends LazyLogging {
     githubClient
       .requestExecutor(request)
       .flatMap { response =>
-        Unmarshal(response.entity).to[GrahpQL]
+        response.entity.contentType match {
+          case ContentTypes.`application/json` =>
+            Unmarshal(response.entity).to[GrahpQL]
+          case _ => Unmarshal(response.entity).to[String].map(msg => Error(List(msg)))
+        }
       }
       .recover(exception => Error(List(exception.getMessage)))
   }
@@ -74,7 +76,7 @@ object GithubClient extends LazyLogging {
     HttpRequest(
       uri = github.apiUri,
       method = HttpMethods.POST,
-      headers = `Content-Type`(ContentTypes.`application/json`) :: authenticationHeader(github.apiToken) :: Nil,
+      headers = authenticationHeader(github.apiToken) :: Nil,
       entity = createGraphqlBody(cursor)
     )
 
