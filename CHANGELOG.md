@@ -1,3 +1,12 @@
+## [0.6.3](https://github.com/MaethorNaur/restui/compare/v0.6.1...v0.6.3) (2020-09-07)
+
+
+### Bug Fixes
+
+* 🐛 display content of non json response ([3ebc399](https://github.com/MaethorNaur/restui/commit/3ebc399b4875fb3b7006342c131985fe3efa25df))
+
+
+
 ## [0.6.1](https://github.com/MaethorNaur/restui/compare/v0.6.0...v0.6.1) (2020-09-07)
 
 
