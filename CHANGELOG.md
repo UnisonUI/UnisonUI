@@ -1,3 +1,13 @@
+## [0.6.1](https://github.com/MaethorNaur/restui/compare/v0.6.0...v0.6.1) (2020-09-07)
+
+
+### Bug Fixes
+
+* 🐛 add content type for github api client ([8b8d86e](https://github.com/MaethorNaur/restui/commit/8b8d86eee2228226251d8bf1d21004e07cf1aec4))
+* 🐛 treat non json response from github as error ([66aa482](https://github.com/MaethorNaur/restui/commit/66aa482cca9ee89c304f30609137605b6ad4c1e4))
+
+
+
 # [0.6.0](https://github.com/MaethorNaur/restui/compare/v0.5.6...v0.6.0) (2020-08-29)
 
 
