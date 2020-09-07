@@ -309,6 +309,7 @@ read the OpenApi spec files specified in that file.
 Example:
 
 `.restui.yaml`
+
 ```yaml
 name: "Test"
 specifications:
@@ -316,7 +317,7 @@ specifications:
   - "/openapi/bar-service.yaml"
 ```
 
-YAML
+```yaml
 # Service's name.
 # If this field does not provide the service name will be inferred from the repository URL
 # Example: "https://github.com/MyOrg/MyRepo" -> "MyOrg/MyOrg"
