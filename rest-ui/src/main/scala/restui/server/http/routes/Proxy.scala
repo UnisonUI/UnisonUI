@@ -44,7 +44,7 @@ object Proxy {
       .pipe(Source.single)
       .via(flow)
       .mapAsync(1) {
-        case response @ HttpResponse(statusCode, headers, _, _) if statusCode.isRedirection =>
+        case HttpResponse(statusCode, headers, _, _) if statusCode.isRedirection =>
           val urlEncoded =
             headers
               .find(_.is("location"))

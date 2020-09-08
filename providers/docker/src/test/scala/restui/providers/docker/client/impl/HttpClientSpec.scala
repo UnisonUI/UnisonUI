@@ -90,7 +90,7 @@ class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender wi
     val route  = path("file")(get(httpComplete(StatusCodes.OK)))
     val client = new HttpClient("unix:///unknown")
     for {
-      server <- Http().bindAndHandle(route, "localhost", 8080)
+      server <- Http().newServerAt("localhost", 8080).bind(route)
       result <- client.downloadFile("http://localhost:8080/file")
       _      <- server.unbind()
     } yield result shouldBe "OK"
