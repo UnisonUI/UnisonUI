@@ -1,6 +1,10 @@
 package restui.providers.git.github
 
+import java.io.{PrintWriter, StringWriter}
+import java.nio.charset.StandardCharsets
+
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
@@ -13,10 +17,6 @@ import io.circe.Json
 import restui.providers.git._
 import restui.providers.git.github.data._
 import restui.providers.git.settings.GithubSettings
-import java.io.StringWriter
-import java.io.PrintWriter
-import scala.concurrent.duration._
-import java.nio.charset.StandardCharsets
 
 final case class GithubClient(settings: GithubSettings, requestExecutor: RequestExecutor)
 
