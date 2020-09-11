@@ -9,7 +9,7 @@ import akka.stream.scaladsl.{Broadcast, Flow => AkkaFlow, GraphDSL, Merge, Sourc
 import com.typesafe.scalalogging.LazyLogging
 import restui.Concurrency
 import restui.providers.git.Source
-import restui.providers.git.git.data.Repository
+import restui.providers.git.git.data.{Repository, UnnamedSpecification}
 import restui.providers.git.github.data.Node
 
 object Github extends LazyLogging {
@@ -29,7 +29,7 @@ object Github extends LazyLogging {
                     logger.debug(s"Matching repository: $name")
                     val uri          = Uri(url)
                     val uriWithToken = uri.withAuthority(uri.authority.copy(userinfo = githubClient.settings.apiToken))
-                    Repository(uriWithToken.toString, branch, repository.specificationPaths)
+                    Repository(uriWithToken.toString, branch, repository.specificationPaths.map(UnnamedSpecification(_)))
                   }
 
               }.collect { case Some(repository) => repository }
