@@ -47,6 +47,8 @@ src_managed/
 project/boot/
 project/plugins/project/
 project/metals.sbt
+project/project/metals.sbt
+project/project/project/metals.sbt
 .history
 .cache
 .lib/
