@@ -1,3 +1,12 @@
+## [0.6.4](https://github.com/MaethorNaur/restui/compare/v0.6.3...v0.6.4) (2020-09-13)
+
+
+### Features
+
+* 🎸 allow specific service name per file with git ([#183](https://github.com/MaethorNaur/restui/issues/183)) ([37c2fa1](https://github.com/MaethorNaur/restui/commit/37c2fa191a22bb03ea660a72a33a1cf0ef695e63))
+
+
+
 ## [0.6.3](https://github.com/MaethorNaur/restui/compare/v0.6.1...v0.6.3) (2020-09-07)
 
 
