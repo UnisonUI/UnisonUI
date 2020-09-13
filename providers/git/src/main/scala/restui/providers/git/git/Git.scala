@@ -17,7 +17,7 @@ import io.circe.yaml.parser
 import restui.Concurrency
 import restui.models.{Metadata, Service}
 import restui.providers.git._
-import restui.providers.git.git.data.{Repository, RestUI}
+import restui.providers.git.git.data._
 import restui.providers.git.process.{Process, ProcessArgs}
 import restui.providers.git.settings.{Location, RepositorySettings}
 
@@ -25,7 +25,7 @@ object Git extends LazyLogging {
   private val GitCmd        = "git"
   private val DefaultBranch = "master"
   private type RepositoryWithSha = (Repository, Option[String])
-  private type Files             = (Repository, List[Path])
+  private type Files             = (Repository, List[(Option[String], Path)])
   private type FilesWithSha      = (Files, Option[String])
 
   private val outboundFlow: Flow[FilesWithSha, Service] =
@@ -45,7 +45,7 @@ object Git extends LazyLogging {
                   .asScala
                   .to(LazyList)
                   .filter(Files.isRegularFile(_))
-                  .map(_.normalize)
+                  .map(path => None -> path.normalize)
                   .toList
                 repository -> localFiles
               }
@@ -81,7 +81,7 @@ object Git extends LazyLogging {
       cacheDuration,
       AkkaSource(repositories.collect {
         case RepositorySettings(Location.Uri(uri), branch, specificationPaths) =>
-          Repository(uri, branch.getOrElse(DefaultBranch), specificationPaths)
+          Repository(uri, branch.getOrElse(DefaultBranch), specificationPaths.map(UnnamedSpecification(_)))
       })
     )
 
@@ -127,7 +127,7 @@ object Git extends LazyLogging {
     execute("diff" :: "--name-only" :: sha1 :: "HEAD" :: Nil, repository.directory).flatMapConcat {
       case Right(files) =>
         val repoPath = repository.directory.get.toPath
-        AkkaSource.single(repository -> files.map(file => repoPath.resolve(Paths.get(file)).normalize))
+        AkkaSource.single(repository -> files.map(file => None -> repoPath.resolve(Paths.get(file)).normalize))
       case Left(exception) =>
         logger.warn(s"Error during changed: $exception")
         AkkaSource.empty[Files]
@@ -151,12 +151,19 @@ object Git extends LazyLogging {
         None
     }
 
-  private def filterSpecificationsFiles(repo: Repository, files: List[Path]): List[Path] = {
-    val repoPath           = repo.directory.get.toPath
-    val specificationPaths = repo.specificationPaths.map(repoPath.resolve(_).normalize)
-    files.filter { file =>
-      specificationPaths.exists { specificationPath =>
-        file.startsWith(specificationPath)
+  private def filterSpecificationsFiles(repo: Repository, files: List[(Option[String], Path)]): List[(Option[String], Path)] = {
+    val repoPath = repo.directory.get.toPath
+    val specificationPaths = repo.specificationPaths.map {
+      case UnnamedSpecification(path)     => None       -> repoPath.resolve(path).normalize
+      case NamedSpecification(name, path) => Some(name) -> repoPath.resolve(path).normalize
+    }
+    files.collect {
+      Function.unlift {
+        case (_, file) =>
+          specificationPaths.find {
+            case (_, specificationPath) =>
+              file.startsWith(specificationPath)
+          }.map { case (name, _) => name -> file }
       }
     }
   }
@@ -167,10 +174,10 @@ object Git extends LazyLogging {
     AkkaSource(files)
       .flatMapMerge(Concurrency.AvailableCore, loadFile(_).async)
       .map {
-        case (path, file) =>
+        case (maybeName, path, content) =>
           val uri         = akka.http.scaladsl.model.Uri(repo.uri)
           val nameFromUri = uri.path.toString.substring(1)
-          val serviceName = repo.serviceName.getOrElse(nameFromUri)
+          val serviceName = maybeName.getOrElse(repo.serviceName.getOrElse(nameFromUri))
           val filePath    = repo.directory.get.toPath.relativize(path).toString
           val id          = s"$nameFromUri:$filePath"
           val provider    = uri.authority.host.address.split('.').head
@@ -179,18 +186,20 @@ object Git extends LazyLogging {
               Metadata.Provider -> provider,
               Metadata.File     -> filePath
             )
-          Service(id, serviceName, file, metadata)
+          Service(id, serviceName, content, metadata)
       }
       .async
 
   }
 
-  private def loadFile(path: Path): Source[(Path, String)] =
+  private def loadFile(file: (Option[String], Path)): Source[(Option[String], Path, String)] = {
+    val (name, path) = file
     Try(new String(Files.readAllBytes(path), StandardCharsets.UTF_8)) match {
       case Success(content) =>
-        AkkaSource.single(path -> content)
+        AkkaSource.single((name, path, content))
       case Failure(exception) =>
         logger.warn(s"Error while reading $path", exception)
-        AkkaSource.empty[(Path, String)]
+        AkkaSource.empty[(Option[String], Path, String)]
     }
+  }
 }

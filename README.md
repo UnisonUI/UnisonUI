@@ -315,6 +315,8 @@ name: "Test"
 specifications:
   - "foo-service.yaml"
   - "/openapi/bar-service.yaml"
+  - name: "Name used for this file"
+    path: "foobar.yaml"
 ```
 
 ```yaml
@@ -323,6 +325,10 @@ specifications:
 # Example: "https://github.com/MyOrg/MyRepo" -> "MyOrg/MyOrg"
 name = "service name"
 # List of OpenApi spec files or directories
+# This list can be a mixed of string (path)
+# or an object:
+#   name: Name of this service
+#   path: Path of files
 specifications = []
 ```
 

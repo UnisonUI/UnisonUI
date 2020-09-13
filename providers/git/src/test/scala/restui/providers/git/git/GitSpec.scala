@@ -9,7 +9,7 @@ import akka.testkit.TestProbe
 import base.TestBase
 import org.scalatest.Inside
 import restui.models.{Service}
-import restui.providers.git.git.data.Repository
+import restui.providers.git.git.data._
 class GitSpec extends TestBase with Inside {
 
   private val duration = 50.millis
@@ -36,7 +36,7 @@ class GitSpec extends TestBase with Inside {
     "there is a failure with a git command" in {
       val fixture = new StubRepository {}
       val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
-      val repo    = Repository(fixture.repo.toAbsolutePath.toString, "i-do-not-exists", List("test"), Some(tempDir))
+      val repo    = Repository(fixture.repo.toAbsolutePath.toString, "i-do-not-exists", List(UnnamedSpecification("test")), Some(tempDir))
 
       val probe = TestProbe()
       Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
@@ -50,7 +50,7 @@ class GitSpec extends TestBase with Inside {
         "there is no matching files" in {
           val fixture = new StubRepository {}
           val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
-          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List("test"), Some(tempDir))
+          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List(UnnamedSpecification("test")), Some(tempDir))
 
           val probe = TestProbe()
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
@@ -63,7 +63,7 @@ class GitSpec extends TestBase with Inside {
           val fixture = new StubRepository {}
           fixture.commit("test", "test")
           val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
-          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List("test"), Some(tempDir))
+          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List(UnnamedSpecification("test")), Some(tempDir))
 
           val probe = TestProbe()
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
@@ -77,7 +77,7 @@ class GitSpec extends TestBase with Inside {
           val fixture = new StubRepository {}
           fixture.commit("test", "test")
           val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
-          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List("test"), Some(tempDir))
+          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List(UnnamedSpecification("test")), Some(tempDir))
 
           val probe = TestProbe()
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
