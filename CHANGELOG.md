@@ -1,3 +1,12 @@
+## [0.6.6](https://github.com/MaethorNaur/restui/compare/v0.6.5...v0.6.6) (2020-09-14)
+
+
+### Bug Fixes
+
+* 🐛 fix swagger ui react bug ([553c99d](https://github.com/MaethorNaur/restui/commit/553c99dcb0c26dea78e9e78b075a9c6b8ee6acc3))
+
+
+
 ## [0.6.5](https://github.com/MaethorNaur/restui/compare/v0.6.4...v0.6.5) (2020-09-14)
 
 
