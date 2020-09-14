@@ -1,3 +1,12 @@
+## [0.6.5](https://github.com/MaethorNaur/restui/compare/v0.6.4...v0.6.5) (2020-09-14)
+
+
+### Bug Fixes
+
+* 🐛 env var not resolved properly ([89bf64c](https://github.com/MaethorNaur/restui/commit/89bf64c69b37f7dda2d0704be5a13ddcb6dcf369))
+
+
+
 ## [0.6.4](https://github.com/MaethorNaur/restui/compare/v0.6.3...v0.6.4) (2020-09-13)
 
 
