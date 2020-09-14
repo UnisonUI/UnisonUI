@@ -22,5 +22,5 @@ object Configuration extends LazyLogging {
           logger.warn("Failed to load the default configuration, attempting to load the reference configuration", throwable)
           defaultConfig
       }.toOption
-    }.getOrElse(defaultConfig)
+    }.getOrElse(defaultConfig).resolve
 }
