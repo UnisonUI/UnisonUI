@@ -117,7 +117,7 @@ export default class App extends Component {
         )
       })
     } else {
-      items.push(<h1 key="0">No services available</h1>)
+      items.push(<h1 key="0" style={{padding: '0.5em'}}>No services available</h1>)
     }
     return items
   }
