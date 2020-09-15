@@ -1,3 +1,12 @@
+## [0.6.7](https://github.com/MaethorNaur/restui/compare/v0.6.6...v0.6.7) (2020-09-15)
+
+
+### Bug Fixes
+
+* 🐛 purgecss removed the css ([ce994ca](https://github.com/MaethorNaur/restui/commit/ce994ca2470213c8f7e5d5a06086209aa9175c46))
+
+
+
 ## [0.6.6](https://github.com/MaethorNaur/restui/compare/v0.6.5...v0.6.6) (2020-09-14)
 
 
