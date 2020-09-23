@@ -1,24 +1,27 @@
+import loadable from '@loadable/component'
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
 import NoService from './noService'
 import SwaggerUI from 'swagger-ui-react'
 
-const RestUILayoutPlugin = () => {
+const theme = () => {
+  return { syntaxHighlight: { activated: true, theme: 'obsidian' } }
+}
+
+const RestUILayoutPlugin = system => {
   return {
     components: {
       InfoUrl: () => null
-    }
-  }
-}
-
-const CurlPlugin = function (system) {
-  return {
+    },
     wrapComponents: {
       curl: (Original, system) => props => {
         const url = atob(props.request.get('url').substring(7))
         const request = props.request.set('url', url)
         return <Original request={request} getConfigs={props.getConfigs} />
+      },
+      highlightCode: (Original, system) => props => {
+        return <Original {...props} getConfigs={theme} />
       }
     }
   }
@@ -39,7 +42,7 @@ class Swagger extends Component {
           <SwaggerUI
             url={'/services/' + id}
             requestInterceptor={requestInterceptor}
-            plugins={[RestUILayoutPlugin, CurlPlugin]}
+            plugins={[RestUILayoutPlugin]}
           />
         ) : (
           <NoService />

@@ -67,14 +67,14 @@ module.exports = {
       filename: '../index.html'
     }),
     new CompressionPlugin({
-      filename: '[path].gz[query]',
+      filename: '[path][base].gz[query]',
       algorithm: 'gzip',
       threshold: 10240,
       minRatio: 0.8,
       deleteOriginalAssets: false
     }),
     new CompressionPlugin({
-      filename: '[path].br[query]',
+      filename: '[path][base].br[query]',
       algorithm: 'brotliCompress',
       compressionOptions: {
         // zlib’s `level` option matches Brotli’s `BROTLI_PARAM_QUALITY` option.
