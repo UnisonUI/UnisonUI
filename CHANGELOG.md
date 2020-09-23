@@ -1,3 +1,17 @@
+# [0.7.0](https://github.com/MaethorNaur/restui/compare/v0.6.7...v0.7.0) (2020-09-23)
+
+
+### Bug Fixes
+
+* 🐛 themes had a weird behaviour ([8c7d0b2](https://github.com/MaethorNaur/restui/commit/8c7d0b2ad5ab344f40ed7e7deb26584015e9e7b7))
+
+
+### Features
+
+* 🎸 automatically reload the page when the content change ([807837c](https://github.com/MaethorNaur/restui/commit/807837c4e7bee5edeafa0463c1c17cb6572d91c6))
+
+
+
 ## [0.6.7](https://github.com/MaethorNaur/restui/compare/v0.6.6...v0.6.7) (2020-09-15)
 
 
