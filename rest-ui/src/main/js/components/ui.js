@@ -55,36 +55,47 @@ export default class App extends Component {
   }
 
   handleEndpoint (data) {
-    let services
-    if (data.event === 'serviceUp') {
-      services = this.state.services
-      if (!services[data.name]) {
-        services[data.name] = []
-      }
+    let services = this.state.services
+    switch (data.event) {
+      case 'serviceUp':
+        if (!services[data.name]) {
+          services[data.name] = []
+        }
 
-      if (!services[data.name].find(item => item.id === data.id)) {
-        services[data.name].push({
-          id: data.id,
-          name: data.name,
-          metadata: data.metadata
-        })
-      } else {
-        services[data.name] = services[data.name].map(service => {
-          if (service.id !== data.id) return service
-          else return { id: data.id, name: data.name, metadata: data.metadata }
-        })
-      }
-    } else {
-      services = Object.entries(this.state.services).reduce(
-        (obj, [name, services]) => {
-          const filteredServices = services.filter(item => item.id !== data.id)
-          if (filteredServices.length) {
-            obj[name] = filteredServices
-          }
-          return obj
-        },
-        {}
-      )
+        if (!services[data.name].find(item => item.id === data.id)) {
+          services[data.name].push({
+            id: data.id,
+            name: data.name,
+            metadata: data.metadata
+          })
+        } else {
+          services[data.name] = services[data.name].map(service => {
+            if (service.id !== data.id) return service
+            else {
+              return { id: data.id, name: data.name, metadata: data.metadata }
+            }
+          })
+        }
+        break
+      case 'serviceDown':
+        services = Object.entries(this.state.services).reduce(
+          (obj, [name, services]) => {
+            const filteredServices = services.filter(
+              item => item.id !== data.id
+            )
+            if (filteredServices.length) {
+              obj[name] = filteredServices
+            }
+            return obj
+          },
+          {}
+        )
+        break
+      case 'serviceChanged':
+        if (`#/${data.id}` == history.location.hash) {
+          return history.go(0)
+        }
+        break
     }
     this.setState({ services })
     this.search(document.getElementById('search').value)
@@ -117,7 +128,11 @@ export default class App extends Component {
         )
       })
     } else {
-      items.push(<h1 key="0" style={{ padding: '0.5em' }}>No services available</h1>)
+      items.push(
+        <h1 key="0" style={{ padding: '0.5em' }}>
+          No services available
+        </h1>
+      )
     }
     return items
   }
@@ -147,9 +162,7 @@ export default class App extends Component {
   }
 
   getNavLinkClass (services) {
-    return services.some(
-      service => history.location.hash === `#/${service.id}`
-    )
+    return services.some(service => history.location.hash === `#/${service.id}`)
       ? 'active'
       : ''
   }

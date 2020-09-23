@@ -15,15 +15,19 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
       sender() ! Ack
     case (provider: String, ServiceEvent.ServiceUp(service)) =>
       log.debug("{} got a new service", provider)
-
-      val serviceNameChanged = hasServiceNameChanged(services, service)
+      val serviceWithHash    = computeSha1(service)
+      val serviceNameChanged = hasServiceNameChanged(services, serviceWithHash)
 
       if (serviceNameChanged)
-        queue.offer(Event.ServiceDown(service.id))
+        queue.offer(Event.ServiceDown(serviceWithHash.id))
 
-      if (isNewService(services, service) || serviceNameChanged)
-        queue.offer(Event.ServiceUp(service.id, service.name, service.metadata))
-      context.become(handleReceive(services + (service.id -> service)))
+      if (isNewService(services, serviceWithHash) || serviceNameChanged)
+        queue.offer(Event.ServiceUp(serviceWithHash.id, serviceWithHash.name, serviceWithHash.metadata))
+
+      if (hasContentChanged(services, serviceWithHash))
+        queue.offer(Event.ServiceContentChanged(serviceWithHash.id))
+
+      context.become(handleReceive(services + (serviceWithHash.id -> serviceWithHash)))
       sender() ! Ack
 
     case (provider: String, ServiceEvent.ServiceDown(serviceId)) =>
@@ -44,7 +48,18 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
         id == service.id && currentService.name != service.name
     }
 
+  private def computeSha1(service: Service): Service = {
+    val md       = java.security.MessageDigest.getInstance("SHA-1")
+    val sha1Hash = md.digest(service.file.getBytes("UTF-8")).map("%02x".format(_)).mkString
+    service.copy(hash = sha1Hash)
+  }
+
   private def isNewService(services: Map[String, Service], service: Service): Boolean = !services.contains(service.id)
+
+  private def hasContentChanged(services: Map[String, Service], service: Service): Boolean =
+    services.exists {
+      case (id, Service(_, _, _, _, hash)) => id == service.id && hash != service.hash
+    }
 }
 
 object ServiceActor {
