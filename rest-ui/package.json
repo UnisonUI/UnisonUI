@@ -59,7 +59,7 @@
     "tailwindcss": "^1.8.10",
     "tailwindcss-neumorphism": "^0.1.0",
     "terser-webpack-plugin": "^4.2.2",
-    "webpack": "^4.44.1",
+    "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
     "webpack-merge": "^5.1.4"
   },
