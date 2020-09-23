@@ -92,7 +92,7 @@ export default class App extends Component {
         )
         break
       case 'serviceChanged':
-        if (`#/${data.id}` == history.location.hash) {
+        if (`#/${data.id}` === history.location.hash) {
           return history.go(0)
         }
         break
