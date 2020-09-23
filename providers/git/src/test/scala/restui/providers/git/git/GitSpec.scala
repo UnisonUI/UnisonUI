@@ -69,7 +69,7 @@ class GitSpec extends TestBase with Inside {
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
           val result = probe.expectMsgType[Service]
           inside(result) {
-            case Service(_, _, file, _) =>
+            case Service(_, _, file, _, _) =>
               file shouldBe "test"
           }
         }
@@ -83,14 +83,14 @@ class GitSpec extends TestBase with Inside {
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
 
           inside(probe.expectMsgType[Service]) {
-            case Service(_, _, file, _) =>
+            case Service(_, _, file, _, _) =>
               file shouldBe "test"
           }
 
           fixture.commit("test", "test2")
 
           inside(probe.expectMsgType[Service]) {
-            case Service(_, _, file, _) =>
+            case Service(_, _, file, _, _) =>
               file shouldBe "test2"
           }
 
