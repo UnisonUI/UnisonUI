@@ -1,4 +1,3 @@
-import loadable from '@loadable/component'
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
