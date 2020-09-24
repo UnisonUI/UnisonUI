@@ -2,7 +2,7 @@ package restui.providers.git.git
 
 import java.io.File
 import java.nio.charset.StandardCharsets
-import java.nio.file.{FileSystemException, Files, Path}
+import java.nio.file.{FileSystemException, Files, Path, Paths}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.jdk.CollectionConverters._
@@ -31,7 +31,7 @@ object Git extends LazyLogging {
   private type FilesWithShaWithEvent = (FileEvents, Option[String])
 
   private val outboundFlow: Flow[FilesWithShaWithEvent, ServiceEvent] =
-    AkkaFlow[FilesWithShaWithEvent].flatMapMerge(Concurrency.AvailableCore, { case (files, _) => retrieveSpecificationFiles(files) })
+    AkkaFlow[FilesWithShaWithEvent].flatMapConcat { case (files, _) => retrieveSpecificationFiles(files) }
 
   private val cloneOrFetch: Flow[RepositoryWithSha, FilesWithSha] =
     AkkaFlow[RepositoryWithSha].flatMapMerge(
@@ -41,23 +41,32 @@ object Git extends LazyLogging {
           val source = hash match {
             case None =>
               cloneRepository(repository).map { repository =>
-                repository -> listFiles(repository)
+                val localFiles = Files
+                  .walk(repository.directory.get.toPath)
+                  .iterator
+                  .asScala
+                  .to(LazyList)
+                  .filter(Files.isRegularFile(_))
+                  .map(path => None -> path.normalize)
+                  .toList
+                repository -> localFiles
+
               }
-            case Some(_) => pullRepository(repository).map(repository => repository -> listFiles(repository))
+            case Some(sha1) => pullRepository(repository).flatMapConcat(changedFiles(_, sha1))
           }
           source.map(_ -> hash)
       }
     )
 
-  private def listFiles(repository: Repository): List[(Option[String], Path)] =
-    Files
-      .walk(repository.directory.get.toPath)
-      .iterator
-      .asScala
-      .to(LazyList)
-      .filter(Files.isRegularFile(_))
-      .map(path => None -> path.normalize)
-      .toList
+  private def changedFiles(repository: Repository, sha1: String): Source[Files] =
+    execute("diff" :: "--name-only" :: sha1 :: "HEAD" :: Nil, repository.directory).flatMapConcat {
+      case Right(files) =>
+        val repoPath = repository.directory.get.toPath
+        AkkaSource.single(repository -> files.map(file => None -> repoPath.resolve(Paths.get(file)).normalize))
+      case Left(exception) =>
+        logger.warn(s"Error during changed: $exception")
+        AkkaSource.empty[Files]
+    }
 
   private val findSpecificationFiles: Flow[FilesWithSha, FilesWithShaWithEvent] = AkkaFlow[FilesWithSha].map {
     case ((repository, files), sha1) =>
@@ -187,7 +196,7 @@ object Git extends LazyLogging {
     val nameFromUri = uri.path.toString.substring(1)
 
     AkkaSource(files)
-      .flatMapMerge(Concurrency.AvailableCore, loadFile(_).async)
+      .flatMapConcat(loadFile(_).async)
       .map {
         case Right((maybeName, path, content)) =>
           val serviceName = maybeName.getOrElse(repo.serviceName.getOrElse(nameFromUri))

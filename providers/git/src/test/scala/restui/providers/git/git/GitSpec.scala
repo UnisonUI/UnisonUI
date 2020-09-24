@@ -8,11 +8,14 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.testkit.TestProbe
 import base.TestBase
 import org.scalatest.Inside
-import restui.models.{Service, ServiceEvent}
+import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.git.git.data._
 class GitSpec extends TestBase with Inside {
 
   private val duration = 50.millis
+  private val specs    = """specifications:
+           |  - "test2"
+           |""".stripMargin
   trait StubRepository {
     import sys.process._
     val repo       = Files.createTempDirectory("restui-git-test")
@@ -25,6 +28,17 @@ class GitSpec extends TestBase with Inside {
       val file = Files.write(repo.resolve(path), text.getBytes())
       Process(Seq("git", "add", file.toAbsolutePath.toString), repo.toFile()).!(hideStdErr)
       Process(Seq("git", "commit", "-m", "new file"), repo.toFile()).!(hideStdErr)
+    }
+
+    def rm(path: String): Unit = {
+      Process(Seq("git", "rm", repo.resolve(path).toAbsolutePath.toString), repo.toFile()).!(hideStdErr)
+      Process(Seq("git", "commit", "-m", "rm file"), repo.toFile()).!(hideStdErr)
+    }
+
+    def mv(path: String, newPath: String): Unit = {
+      Process(Seq("git", "mv", repo.resolve(path).toAbsolutePath.toString, repo.resolve(newPath).toAbsolutePath.toString), repo.toFile())
+        .!(hideStdErr)
+      Process(Seq("git", "commit", "-m", "mv file"), repo.toFile()).!(hideStdErr)
     }
 
     def sha1(branch: String): String =
@@ -73,6 +87,7 @@ class GitSpec extends TestBase with Inside {
               file shouldBe "test"
           }
         }
+
         "a new file is present" in {
           val fixture = new StubRepository {}
           fixture.commit("test", "test")
@@ -95,8 +110,66 @@ class GitSpec extends TestBase with Inside {
           }
 
         }
-      }
 
+        "a file has been deleted" in {
+          val fixture = new StubRepository {}
+          fixture.commit("test", "test")
+          val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
+          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List(UnnamedSpecification("test")), Some(tempDir))
+
+          val probe = TestProbe()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+
+          fixture.rm("test")
+          inside(probe.expectMsgType[ServiceEvent]) {
+            case ServiceEvent.ServiceUp(Service(_, _, file, _, _)) =>
+              file shouldBe "test"
+          }
+          probe.expectMsgType[ServiceEvent.ServiceDown]
+        }
+
+        "the specifications changed" in {
+          val fixture = new StubRepository {}
+          fixture.commit("test", "test")
+          val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
+          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List(UnnamedSpecification("test")), Some(tempDir))
+
+          val probe = TestProbe()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+
+          fixture.rm("test")
+          fixture.commit(".restui.yaml", specs)
+          inside(probe.expectMsgType[ServiceEvent]) {
+            case ServiceEvent.ServiceUp(Service(_, _, file, _, _)) =>
+              file shouldBe "test"
+          }
+          probe.expectMsgType[ServiceEvent.ServiceDown]
+        }
+
+        "the file has been renamed" in {
+          val fixture = new StubRepository {}
+          fixture.commit("test", "test")
+          val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
+          val repo    = Repository(fixture.repo.toAbsolutePath.toString, "master", List(UnnamedSpecification("test")), Some(tempDir))
+
+          val probe = TestProbe()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+
+          fixture.commit(".restui.yaml", specs)
+          fixture.mv("test", "test2")
+          inside(probe.expectMsgType[ServiceEvent]) {
+            case ServiceEvent.ServiceUp(Service(_, _, _, metadata, _)) =>
+              metadata should contain(Metadata.File -> "test")
+          }
+
+          probe.expectMsgType[ServiceEvent.ServiceDown]
+          inside(probe.expectMsgType[ServiceEvent]) {
+            case ServiceEvent.ServiceUp(Service(_, _, _, metadata, _)) =>
+              metadata should contain(Metadata.File -> "test2")
+          }
+
+        }
+      }
     }
   }
 
