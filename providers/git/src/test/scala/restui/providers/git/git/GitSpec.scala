@@ -136,13 +136,13 @@ class GitSpec extends TestBase with Inside {
 
           val probe = TestProbe()
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
-
-          fixture.rm("test")
-          fixture.commit(".restui.yaml", specs)
           inside(probe.expectMsgType[ServiceEvent]) {
             case ServiceEvent.ServiceUp(Service(_, _, file, _, _)) =>
               file shouldBe "test"
           }
+
+          fixture.commit(".restui.yaml", specs)
+
           probe.expectMsgType[ServiceEvent.ServiceDown]
         }
 
