@@ -120,11 +120,13 @@ class GitSpec extends TestBase with Inside {
           val probe = TestProbe()
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
 
-          fixture.rm("test")
           inside(probe.expectMsgType[ServiceEvent]) {
             case ServiceEvent.ServiceUp(Service(_, _, file, _, _)) =>
               file shouldBe "test"
           }
+
+          fixture.rm("test")
+
           probe.expectMsgType[ServiceEvent.ServiceDown]
         }
 
@@ -155,14 +157,16 @@ class GitSpec extends TestBase with Inside {
           val probe = TestProbe()
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
 
-          fixture.commit(".restui.yaml", specs)
-          fixture.mv("test", "test2")
           inside(probe.expectMsgType[ServiceEvent]) {
             case ServiceEvent.ServiceUp(Service(_, _, _, metadata, _)) =>
               metadata should contain(Metadata.File -> "test")
           }
 
+          fixture.commit(".restui.yaml", specs)
+          fixture.mv("test", "test2")
+
           probe.expectMsgType[ServiceEvent.ServiceDown]
+
           inside(probe.expectMsgType[ServiceEvent]) {
             case ServiceEvent.ServiceUp(Service(_, _, _, metadata, _)) =>
               metadata should contain(Metadata.File -> "test2")
