@@ -21,7 +21,7 @@ if (process.env.NODE_ENV === 'production') {
       'node_modules/swagger-ui/**/*.js',
       'node_modules/swagger-ui-react/**/*.js'
     ],
-    whitelistPatterns: [/swagger-ui/, /opblock/, /opblock-summary/],
+    safelist: [/swagger-ui/, /opblock/, /opblock-summary/],
     defaultExtractor: content => content.match(/[A-Za-z0-9-_:/]+/g) || []
   }
 }
