@@ -8,7 +8,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.testkit.TestProbe
 import base.TestBase
 import org.scalatest.Inside
-import restui.models.{Service}
+import restui.models.{Service, ServiceEvent}
 import restui.providers.git.git.data._
 class GitSpec extends TestBase with Inside {
 
@@ -67,9 +67,9 @@ class GitSpec extends TestBase with Inside {
 
           val probe = TestProbe()
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
-          val result = probe.expectMsgType[Service]
+          val result = probe.expectMsgType[ServiceEvent]
           inside(result) {
-            case Service(_, _, file, _, _) =>
+            case ServiceEvent.ServiceUp(Service(_, _, file, _, _)) =>
               file shouldBe "test"
           }
         }
@@ -82,15 +82,15 @@ class GitSpec extends TestBase with Inside {
           val probe = TestProbe()
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
 
-          inside(probe.expectMsgType[Service]) {
-            case Service(_, _, file, _, _) =>
+          inside(probe.expectMsgType[ServiceEvent]) {
+            case ServiceEvent.ServiceUp(Service(_, _, file, _, _)) =>
               file shouldBe "test"
           }
 
           fixture.commit("test", "test2")
 
-          inside(probe.expectMsgType[Service]) {
-            case Service(_, _, file, _, _) =>
+          inside(probe.expectMsgType[ServiceEvent]) {
+            case ServiceEvent.ServiceUp(Service(_, _, file, _, _)) =>
               file shouldBe "test2"
           }
 
