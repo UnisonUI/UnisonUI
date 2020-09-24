@@ -1,6 +1,7 @@
 package restui.providers.git.git
 
 import java.io.File
+import java.nio.file.Path
 
 import cats.syntax.functor._
 import io.circe.generic.auto._
@@ -12,10 +13,19 @@ package object data {
                               specificationPaths: List[Specification],
                               directory: Option[File] = None,
                               serviceName: Option[String] = None)
-  trait Specification
+
+  trait Specification extends Product with Serializable {
+    val path: String
+  }
   final case class UnnamedSpecification(path: String)             extends Specification
   final case class NamedSpecification(name: String, path: String) extends Specification
   final case class RestUI(name: Option[String], specifications: List[Specification])
+
+  trait GitFileEvent extends Product with Serializable
+  object GitFileEvent {
+    final case class Deleted(path: Path)                             extends GitFileEvent
+    final case class Upserted(maybeName: Option[String], path: Path) extends GitFileEvent
+  }
 
   object RestUI {
     implicit val decoder: Decoder[RestUI] = (cursor: HCursor) =>
