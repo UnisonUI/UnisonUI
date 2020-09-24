@@ -1,3 +1,12 @@
+## [0.7.1](https://github.com/MaethorNaur/restui/compare/v0.7.0...v0.7.1) (2020-09-24)
+
+
+### Bug Fixes
+
+* 🐛 detect removed files from the restui list with git ([4d036ad](https://github.com/MaethorNaur/restui/commit/4d036ad117fcdf71a6a46234871ea5068ae3e79c))
+
+
+
 # [0.7.0](https://github.com/MaethorNaur/restui/compare/v0.6.7...v0.7.0) (2020-09-23)
 
 
