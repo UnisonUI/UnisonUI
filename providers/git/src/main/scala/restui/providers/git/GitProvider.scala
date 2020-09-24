@@ -26,7 +26,7 @@ class GitProvider extends Provider with LazyLogging {
     VCS
       .source(settings, Http().singleRequest(_))
       .mapMaterializedValue(_ => NotUsed)
-      .map(service => name -> ServiceEvent.ServiceUp(service))
+      .map(event => name -> event)
   }
 
 }
