@@ -25,7 +25,7 @@ class GithubSpec extends TestBase with Inside with Inspectors {
       GithubSettings("MyAwesomeUser",
                      "MyAwesomeUser",
                      pollingInterval = 800.millis,
-                     repos = RepositorySettings(Location.Uri("MyAwesomeUser/MyAwesomeRepo")) :: Nil)
+                     repos = RepositorySettings(Location.Uri("MyAwesomeUser/MyAwesomeRepo"), useProxy = false) :: Nil)
     val client = GithubClient(github, executor)
 
     val probe = TestProbe()
@@ -38,10 +38,11 @@ class GithubSpec extends TestBase with Inside with Inspectors {
 
     forAll(results) { result =>
       inside(result) {
-        case GitRepository(uri, branch, _, specification, ref) =>
+        case GitRepository(uri, branch, _, specification, ref, useProxy) =>
           uri shouldBe "https://MyAwesomeUser@github.com/MyAwesomeUser/MyAwesomeRepo"
           branch shouldBe "master"
           specification shouldBe empty
+          useProxy shouldBe false
           ref should not be Symbol("defined")
       }
     }

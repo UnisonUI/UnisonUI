@@ -34,7 +34,12 @@ export default class App extends Component {
     axios.get('/services').then(res => {
       const services = res.data
         .map(event => {
-          return { id: event.id, name: event.name, metadata: event.metadata }
+          return {
+            id: event.id,
+            name: event.name,
+            metadata: event.metadata,
+            useProxy: event.useProxy
+          }
         })
         .reduce((obj, service) => {
           if (!obj[service.name]) {
@@ -66,13 +71,19 @@ export default class App extends Component {
           services[data.name].push({
             id: data.id,
             name: data.name,
-            metadata: data.metadata
+            metadata: data.metadata,
+            useProxy: data.useProxy
           })
         } else {
           services[data.name] = services[data.name].map(service => {
             if (service.id !== data.id) return service
             else {
-              return { id: data.id, name: data.name, metadata: data.metadata }
+              return {
+                id: data.id,
+                name: data.name,
+                metadata: data.metadata,
+                useProxy: data.useProxy
+              }
             }
           })
         }
@@ -168,6 +179,11 @@ export default class App extends Component {
   }
 
   render () {
+    const service = Object.values(this.state.services)
+      .flat()
+      .find(service => history.location.hash === `#/${service.id}`)
+    let useProxy = false
+    if (service) useProxy = service.useProxy
     return (
       <div id="outer-container" style={{ height: '100%' }}>
         <Konami
@@ -185,7 +201,7 @@ export default class App extends Component {
             {this.getServices()}
           </Menu>
           <main id="page-wrap">
-            <SwaggerWithRouter />
+            <SwaggerWithRouter useProxy={useProxy} />
           </main>
         </Router>
       </div>

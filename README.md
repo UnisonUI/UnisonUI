@@ -95,6 +95,7 @@ restui {
       port  = "restui.specification.endpoint.port" // Label specifying the port on which the OpenApi spec is available.
       service-name = "restui.specification.endpoint.service-name" // Label specifying the service name for RestUI.
       specification-path = "restui.specification.endpoint.specification-path" // Label of the path where the OpenApi spec file is.
+      use-proxy = "restui.specification.endpoint.use-proxy" // Label of use to enable the usage of the proxy.
     }
 
   }
@@ -108,6 +109,7 @@ restui {
       port  = "restui.specification.endpoint.port" // Label specifying the port on which the OpenApi spec is available.
       protocol = "restui.specification.endpoint.protocol" // Label specifying which protocol the OpenApi spec is exposed.
       specification-path = "restui.specification.endpoint.specification-path" // Label of the path where the OpenApi spec file is.
+      use-proxy = "restui.specification.endpoint.use-proxy" // Label of use to enable the usage of the proxy.
     }
   }
 
@@ -300,6 +302,7 @@ The object follows this schema:
   specification-paths = [] // List of OpenApi spec files or directories containing those kind of files
                      // inside your repository. Those paths are overrided by the restui configuration file inside
                      // of your repository.
+  use-proxy = no // Just enable the proxy or not for this repository
 }
 ```
 
@@ -312,23 +315,27 @@ Example:
 
 ```yaml
 name: "Test"
+useProxy: false
 specifications:
   - "foo-service.yaml"
   - "/openapi/bar-service.yaml"
   - name: "Name used for this file"
     path: "foobar.yaml"
+    useProxy: true
 ```
 
 ```yaml
 # Service's name.
 # If this field does not provide the service name will be inferred from the repository URL
 # Example: "https://github.com/MyOrg/MyRepo" -> "MyOrg/MyOrg"
-name = "service name"
+# name = "service name"
+# useProxy activate the proxy for the interface. Otherwise your service might needs to activate CORS
 # List of OpenApi spec files or directories
 # This list can be a mixed of string (path)
 # or an object:
 #   name: Name of this service
 #   path: Path of files
+#   useProxy: activate the proxy for the interface. Otherwise your service might needs to activate CORS
 specifications = []
 ```
 

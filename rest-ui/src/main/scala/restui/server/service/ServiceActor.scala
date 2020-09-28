@@ -22,7 +22,7 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
         queue.offer(Event.ServiceDown(serviceWithHash.id))
 
       if (isNewService(services, serviceWithHash) || serviceNameChanged)
-        queue.offer(Event.ServiceUp(serviceWithHash.id, serviceWithHash.name, serviceWithHash.metadata))
+        queue.offer(Event.ServiceUp(serviceWithHash.id, serviceWithHash.name, serviceWithHash.useProxy, serviceWithHash.metadata))
 
       if (hasContentChanged(services, serviceWithHash))
         queue.offer(Event.ServiceContentChanged(serviceWithHash.id))
@@ -58,7 +58,7 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
 
   private def hasContentChanged(services: Map[String, Service], service: Service): Boolean =
     services.exists {
-      case (id, Service(_, _, _, _, hash)) => id == service.id && hash != service.hash
+      case (id, Service(_, _, _, _, _, hash)) => id == service.id && hash != service.hash
     }
 }
 

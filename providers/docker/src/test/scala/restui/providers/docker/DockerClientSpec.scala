@@ -29,7 +29,7 @@ class DockerClientSpec
   override def afterAll(): Unit =
     TestKit.shutdownActorSystem(system)
 
-  private val settings                   = Settings("myDocker.sock", Labels("name", "port", "specification"))
+  private val settings                   = Settings("myDocker.sock", Labels("name", "port", "specification", "useProxy"))
   private val MatchingContainerLabels    = Map("name" -> ServiceName, "port" -> "9999", "specification" -> "/openapi.yaml")
   private val NonMatchingContainerLabels = Map("name" -> ServiceName)
 

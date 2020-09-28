@@ -6,14 +6,17 @@ import scala.jdk.CollectionConverters._
 
 import com.typesafe.config.{Config, ConfigFactory}
 
-final case class RepositorySettings(location: Location, branch: Option[String] = None, specificationPaths: List[String] = Nil)
+final case class RepositorySettings(location: Location,
+                                    branch: Option[String] = None,
+                                    specificationPaths: List[String] = Nil,
+                                    useProxy: Boolean)
 
 object RepositorySettings {
 
   def getListOfRepositories(config: Config, path: String): List[RepositorySettings] =
     if (config.hasPath(path))
       config.getAnyRefList(path).asScala.toList.map {
-        case location: String          => RepositorySettings(Location.fromString(location))
+        case location: String          => RepositorySettings(Location.fromString(location), useProxy = false)
         case config: ju.Map[String, _] => fromConfig(ConfigFactory.parseMap(config))
       }
     else Nil
@@ -26,7 +29,8 @@ object RepositorySettings {
     val specificationPaths =
       if (config.hasPath("specification-paths")) config.getStringList("specification-paths").asScala.toList
       else Nil
-    RepositorySettings(location, branch, specificationPaths)
+    val useProxy = config.hasPath("use-proxy") && config.getBoolean("use-proxy")
+    RepositorySettings(location, branch, specificationPaths, useProxy)
   }
 }
 sealed trait Location {

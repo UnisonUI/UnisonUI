@@ -1,6 +1,7 @@
 package restui.providers.kubernetes
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
 import akka.http.scaladsl.Http
@@ -23,9 +24,9 @@ class ServiceActor(settingsLabels: Labels, queue: SourceQueueWithComplete[Servic
         case None =>
           val filteredServices = newServices.filter(service => getLabels(service.metadata.labels).isDefined)
           filteredServices.flatMap(createEndpoint).foreach {
-            case (id, serviceName, specificationPath, file) =>
+            case (id, serviceName, specificationPath, file, useProxy) =>
               val metadata = Map(Metadata.Provider -> "kubernetes", Metadata.File -> specificationPath, Namespace -> namespace)
-              downloadFile(Service(id, serviceName, file, metadata))
+              downloadFile(Service(id, serviceName, file, metadata, useProxy = useProxy))
           }
           context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
         case Some(services) =>
@@ -33,11 +34,11 @@ class ServiceActor(settingsLabels: Labels, queue: SourceQueueWithComplete[Servic
           val removed          = services.filter(service => !filteredServices.contains(service))
           val added            = filteredServices.filter(service => !services.contains(service))
 
-          removed.flatMap(createEndpoint).foreach { case (id, _, _, _) => queue.offer(ServiceEvent.ServiceDown(id)) }
+          removed.flatMap(createEndpoint).foreach { case (id, _, _, _, _) => queue.offer(ServiceEvent.ServiceDown(id)) }
           added.flatMap(createEndpoint).foreach {
-            case (id, serviceName, specificationPath, file) =>
+            case (id, serviceName, specificationPath, file, useProxy) =>
               val metadata = Map(Metadata.Provider -> "kubernetes", Metadata.File -> specificationPath, Namespace -> namespace)
-              downloadFile(Service(id, serviceName, file, metadata))
+              downloadFile(Service(id, serviceName, file, metadata, useProxy = useProxy))
           }
 
           context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
@@ -62,9 +63,10 @@ class ServiceActor(settingsLabels: Labels, queue: SourceQueueWithComplete[Servic
 
   private def createEndpoint(service: KubernetesService): Option[ServiceFoundWithFile] =
     getLabels(service.metadata.labels).map {
-      case Labels(protocol, port, specificationPath) =>
-        val address = s"$protocol://${service.copySpec.clusterIP}:$port$specificationPath"
-        (service.uid, service.name, specificationPath, address)
+      case Labels(protocol, port, specificationPath, useProxy) =>
+        val address       = s"$protocol://${service.copySpec.clusterIP}:$port$specificationPath"
+        val useProxyValue = Try(useProxy.toBoolean).getOrElse(false)
+        (service.uid, service.name, specificationPath, address, useProxyValue)
     }
 
   private def getLabels(labels: Map[String, String]): Option[Labels] =
@@ -72,12 +74,13 @@ class ServiceActor(settingsLabels: Labels, queue: SourceQueueWithComplete[Servic
       port <- labels.get(settingsLabels.port)
       specificationPath = labels.get(settingsLabels.specificationPath).getOrElse("/specification.yaml")
       protocol          = labels.get(settingsLabels.protocol).getOrElse("http")
-    } yield Labels(protocol, port, specificationPath)
+      useProxy          = labels.get(settingsLabels.useProxy).getOrElse("false")
+    } yield Labels(protocol, port, specificationPath, useProxy)
 
 }
 
 object ServiceActor {
-  private type ServiceFoundWithFile = (String, String, String, String)
+  private type ServiceFoundWithFile = (String, String, String, String, Boolean)
   private val Namespace = "namespace"
   case object Init
   case object Complete
