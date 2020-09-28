@@ -20,7 +20,7 @@ package object data {
   }
   final case class UnnamedSpecification(path: String)                                        extends Specification
   final case class NamedSpecification(name: String, path: String, useProxy: Option[Boolean]) extends Specification
-  final case class RestUI(name: Option[String], specifications: List[Specification], useProxy: Boolean)
+  final case class RestUI(name: Option[String], specifications: List[Specification], useProxy: Option[Boolean])
 
   trait GitFileEvent extends Product with Serializable
   object GitFileEvent {
@@ -33,7 +33,7 @@ package object data {
       for {
         name           <- cursor.get[Option[String]]("name")
         specifications <- cursor.get[List[Specification]]("specifications")
-        useProxy       <- cursor.getOrElse[Boolean]("useProxy")(false)
+        useProxy       <- cursor.get[Option[Boolean]]("useProxy")
       } yield RestUI(name, specifications, useProxy)
   }
 

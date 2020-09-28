@@ -67,13 +67,15 @@ object Git extends LazyLogging {
 
   private val findSpecificationFiles: Flow[FilesWithSha, FilesWithShaWithEvent] = AkkaFlow[FilesWithSha].map {
     case ((repository, files), sha1) =>
-      val repositoryWithNewPath = findRestUIConfig(repository.directory.get.toPath).fold(repository) {
-        case RestUI(serviceName, specificationPaths, useProxy) =>
-          repository.copy(specificationPaths = specificationPaths, serviceName = serviceName, useProxy = useProxy)
-      }
+      val (repositoryWithNewPath, rootUseProxy) =
+        findRestUIConfig(repository.directory.get.toPath).fold(repository -> Option.empty[Boolean]) {
+          case RestUI(serviceName, specificationPaths, useProxy) =>
+            repository.copy(specificationPaths = specificationPaths, serviceName = serviceName) -> useProxy
+        }
+
       val repoPath = repository.directory.get.toPath
 
-      val toAdd = filterSpecificationsFiles(repositoryWithNewPath, files)
+      val toAdd = filterSpecificationsFiles(repositoryWithNewPath, files, rootUseProxy)
       val toDelete = repository.specificationPaths.filter { spec =>
         !repositoryWithNewPath.specificationPaths.exists(newSpec => newSpec.path == spec.path)
       }.map { spec =>
@@ -164,11 +166,13 @@ object Git extends LazyLogging {
         None
     }
 
-  private def filterSpecificationsFiles(repo: Repository, files: List[(Option[String], Path)]): List[GitFileEvent] = {
+  private def filterSpecificationsFiles(repo: Repository,
+                                        files: List[(Option[String], Path)],
+                                        rootUseProxy: Option[Boolean]): List[GitFileEvent] = {
     val repoPath = repo.directory.get.toPath
     val specificationPaths = repo.specificationPaths.map {
-      case UnnamedSpecification(path)               => (None, repoPath.resolve(path).normalize, None)
-      case NamedSpecification(name, path, useProxy) => (Some(name), repoPath.resolve(path).normalize, useProxy)
+      case UnnamedSpecification(path)               => (None, repoPath.resolve(path).normalize, rootUseProxy)
+      case NamedSpecification(name, path, useProxy) => (Some(name), repoPath.resolve(path).normalize, useProxy.orElse(rootUseProxy))
     }
     files.collect {
       Function.unlift {

@@ -19,6 +19,6 @@ class RestUISpec extends AnyFlatSpec with Matchers {
       .valueOr(throw _)
     restui shouldBe RestUI(Some("test"),
                            UnnamedSpecification("file.yaml") :: NamedSpecification("another service", "other.yaml", None) :: Nil,
-                           false)
+                           None)
   }
 }

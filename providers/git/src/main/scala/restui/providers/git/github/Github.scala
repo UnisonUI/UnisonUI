@@ -29,7 +29,10 @@ object Github extends LazyLogging {
                     logger.debug(s"Matching repository: $name")
                     val uri          = Uri(url)
                     val uriWithToken = uri.withAuthority(uri.authority.copy(userinfo = githubClient.settings.apiToken))
-                    Repository(uriWithToken.toString, branch, repository.specificationPaths.map(UnnamedSpecification(_)))
+                    Repository(uriWithToken.toString,
+                               branch,
+                               repository.specificationPaths.map(UnnamedSpecification(_)),
+                               useProxy = repository.useProxy)
                   }
 
               }.collect { case Some(repository) => repository }
