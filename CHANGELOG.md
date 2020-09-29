@@ -1,3 +1,21 @@
+# [0.8.0](https://github.com/MaethorNaur/restui/compare/v0.7.2...v0.8.0) (2020-09-29)
+
+
+### Features
+
+* 🎸 enable disable proxy from config  ([266c8f0](https://github.com/MaethorNaur/restui/commit/266c8f0e0381fa248997746572ed38b3d2a3a5a5))
+
+
+
+## [0.7.2](https://github.com/MaethorNaur/restui/compare/v0.7.1...v0.7.2) (2020-09-24)
+
+
+### Bug Fixes
+
+* 🐛 restore css is prod mode ([058eb6b](https://github.com/MaethorNaur/restui/commit/058eb6b8b54f06e42c54096c744e94af9b80081f))
+
+
+
 ## [0.7.1](https://github.com/MaethorNaur/restui/compare/v0.7.0...v0.7.1) (2020-09-24)
 
 
