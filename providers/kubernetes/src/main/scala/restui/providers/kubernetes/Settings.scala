@@ -8,6 +8,7 @@ import com.typesafe.config.Config
 final case class Settings(pollingInterval: FiniteDuration, labels: Labels)
 final case class Labels(protocol: String, port: String, specificationPath: String, useProxy: String)
 
+// $COVERAGE-OFF$
 object Settings {
   private val Namespace = "restui.provider.kubernetes"
   def from(config: Config): Settings = {
