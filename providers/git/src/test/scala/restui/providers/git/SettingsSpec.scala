@@ -83,10 +83,11 @@ class SettingsSpec extends AnyWordSpec with Matchers {
                 "test",
                 "https://api.github.com/graphql",
                 1.hours,
-                RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/")) :: RepositorySettings(
+                RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/"), false) :: RepositorySettings(
                   Location.Regex("myOrg/.+"),
                   None,
-                  Nil) :: RepositorySettings(Location.Uri("restui"), None, Nil) :: Nil
+                  Nil,
+                  false) :: RepositorySettings(Location.Uri("restui"), None, Nil, false) :: Nil
               )
             )
           )
@@ -108,7 +109,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
                 "test",
                 "https://api.github.com/graphql",
                 1.hours,
-                RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/")) :: Nil
+                RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/"), false) :: Nil
               )
             )
           )
@@ -128,10 +129,11 @@ class SettingsSpec extends AnyWordSpec with Matchers {
         2.hours,
         List(
           GitSettings(
-            RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/")) :: RepositorySettings(
+            RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/"), false) :: RepositorySettings(
               Location.Regex("myOrg/.+"),
               None,
-              Nil) :: RepositorySettings(Location.Uri("restui"), None, Nil) :: Nil)
+              Nil,
+              false) :: RepositorySettings(Location.Uri("restui"), None, Nil, false) :: Nil)
         )
       )
     }

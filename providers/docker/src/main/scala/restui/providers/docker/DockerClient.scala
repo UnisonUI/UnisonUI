@@ -1,6 +1,7 @@
 package restui.providers.docker
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 import akka.NotUsed
 import akka.actor.ActorSystem
@@ -59,8 +60,8 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
   private def handleServiceUp(id: String): Source[ServiceEvent, NotUsed] =
     container(id).async.flatMapConcat { container =>
       findEndpoint(container.labels, container.ip).fold(Source.empty[ServiceEvent]) {
-        case (serviceName, address) =>
-          downloadFile(id, serviceName, address).async
+        case (serviceName, address, useProxy) =>
+          downloadFile(id, serviceName, address, useProxy).async
       }
     }
 
@@ -79,7 +80,7 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
         }
     }.mapMaterializedValue(_ => NotUsed)
 
-  private def downloadFile(id: String, serviceName: String, uri: String): Source[ServiceEvent, NotUsed] =
+  private def downloadFile(id: String, serviceName: String, uri: String, useProxy: Boolean): Source[ServiceEvent, NotUsed] =
     Source.futureSource {
       client
         .downloadFile(uri)
@@ -91,7 +92,7 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
 
           Source.single(
             ServiceEvent.ServiceUp(
-              Service(id, serviceName, content, metadata)
+              Service(id, serviceName, content, metadata, useProxy = useProxy)
             )
           )
         }
@@ -105,17 +106,19 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
     for {
       labels    <- findMatchingLabels(labels)
       ipAddress <- maybeIpAddress
-    } yield (labels.serviceName, s"http://$ipAddress:${labels.port.toInt}${labels.specificationPath}")
+      useProxy = Try(labels.useProxy.toBoolean).getOrElse(false)
+    } yield (labels.serviceName, s"http://$ipAddress:${labels.port.toInt}${labels.specificationPath}", useProxy)
 
   private def findMatchingLabels(labels: Map[String, String]): Option[Labels] =
     for {
       serviceName <- labels.get(settings.labels.serviceName)
       port        <- labels.get(settings.labels.port)
+      useProxy          = labels.getOrElse(settings.labels.useProxy, "false")
       specificationPath = labels.getOrElse(settings.labels.specificationPath, "/specification.yaml")
-    } yield Labels(serviceName, port, specificationPath)
+    } yield Labels(serviceName, port, specificationPath, useProxy)
 }
 
 object DockerClient {
-  private type ServiceNameWithAddress = (String, String)
+  private type ServiceNameWithAddress = (String, String, Boolean)
   private val MaximumFrameSize: Int = 10000
 }

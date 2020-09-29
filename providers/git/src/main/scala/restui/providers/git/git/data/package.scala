@@ -12,19 +12,20 @@ package object data {
                               branch: String,
                               specificationPaths: List[Specification],
                               directory: Option[File] = None,
-                              serviceName: Option[String] = None)
+                              serviceName: Option[String] = None,
+                              useProxy: Boolean = false)
 
   trait Specification extends Product with Serializable {
     val path: String
   }
-  final case class UnnamedSpecification(path: String)             extends Specification
-  final case class NamedSpecification(name: String, path: String) extends Specification
-  final case class RestUI(name: Option[String], specifications: List[Specification])
+  final case class UnnamedSpecification(path: String)                                        extends Specification
+  final case class NamedSpecification(name: String, path: String, useProxy: Option[Boolean]) extends Specification
+  final case class RestUI(name: Option[String], specifications: List[Specification], useProxy: Option[Boolean])
 
   trait GitFileEvent extends Product with Serializable
   object GitFileEvent {
-    final case class Deleted(path: Path)                             extends GitFileEvent
-    final case class Upserted(maybeName: Option[String], path: Path) extends GitFileEvent
+    final case class Deleted(path: Path)                                                        extends GitFileEvent
+    final case class Upserted(maybeName: Option[String], path: Path, useProxy: Option[Boolean]) extends GitFileEvent
   }
 
   object RestUI {
@@ -32,7 +33,8 @@ package object data {
       for {
         name           <- cursor.get[Option[String]]("name")
         specifications <- cursor.get[List[Specification]]("specifications")
-      } yield RestUI(name, specifications)
+        useProxy       <- cursor.get[Option[Boolean]]("useProxy")
+      } yield RestUI(name, specifications, useProxy)
   }
 
   object Specification {
@@ -47,8 +49,9 @@ package object data {
   object NamedSpecification {
     implicit val decoder: Decoder[NamedSpecification] = (cursor: HCursor) =>
       for {
-        name <- cursor.get[String]("name")
-        path <- cursor.get[String]("path")
-      } yield NamedSpecification(name, path)
+        name     <- cursor.get[String]("name")
+        path     <- cursor.get[String]("path")
+        useProxy <- cursor.get[Option[Boolean]]("useProxy")
+      } yield NamedSpecification(name, path, useProxy)
   }
 }

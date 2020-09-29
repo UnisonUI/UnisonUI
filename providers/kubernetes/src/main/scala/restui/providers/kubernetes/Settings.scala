@@ -6,8 +6,9 @@ import scala.jdk.DurationConverters._
 import com.typesafe.config.Config
 
 final case class Settings(pollingInterval: FiniteDuration, labels: Labels)
-final case class Labels(protocol: String, port: String, specificationPath: String)
+final case class Labels(protocol: String, port: String, specificationPath: String, useProxy: String)
 
+// $COVERAGE-OFF$
 object Settings {
   private val Namespace = "restui.provider.kubernetes"
   def from(config: Config): Settings = {
@@ -15,6 +16,7 @@ object Settings {
     val port              = config.getString(s"$Namespace.labels.port")
     val specificationPath = config.getString(s"$Namespace.labels.specification-path")
     val protocol          = config.getString(s"$Namespace.labels.protocol")
-    Settings(pollingInterval.toScala, Labels(protocol, port, specificationPath))
+    val useProxy          = config.getString(s"$Namespace.labels.use-proxy")
+    Settings(pollingInterval.toScala, Labels(protocol, port, specificationPath, useProxy))
   }
 }
