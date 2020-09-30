@@ -43,5 +43,8 @@ jobs:
     - name: action-slack
       uses: 8398a7/action-slack@v3.7.0
       with:
-        # Specify success or failure or cancelled or custom.
-        status: commit
+        status: ${{ job.status }}
+        fields: message,commit,author
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
