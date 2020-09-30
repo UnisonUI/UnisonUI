@@ -4,10 +4,10 @@ import java.nio.file.Files
 
 import akka.stream.scaladsl.{Sink, Source}
 import base.TestBase
-import org.scalatest.EitherValues
+import org.scalatest.Inside
 import restui.providers.git.process.Process
 
-class ProcessSpec extends TestBase with EitherValues {
+class ProcessSpec extends TestBase with Inside {
   "Executing an existing command" when {
 
     "not providing a current directory" in {
@@ -15,7 +15,9 @@ class ProcessSpec extends TestBase with EitherValues {
         |2""".stripMargin :: Nil)
       Source.single(args).via(Process.execute).runWith(Sink.seq).map { result =>
         result should have length 1
-        result.head.right.value shouldBe List("1", "2")
+        inside(result.head) {
+          case Right(list) => list shouldBe List("1", "2")
+        }
       }
     }
 
@@ -26,7 +28,9 @@ class ProcessSpec extends TestBase with EitherValues {
         result should have length 1
         val path = tempDir.getCanonicalPath()
         tempDir.delete()
-        result.head.right.value shouldBe List(path)
+        inside(result.head) {
+          case Right(list) => list shouldBe List(path)
+        }
       }
     }
   }
@@ -34,7 +38,9 @@ class ProcessSpec extends TestBase with EitherValues {
     val args = ProcessArgs("i_do_not_exists" :: Nil)
     Source.single(args).via(Process.execute).runWith(Sink.seq).map { result =>
       result should have length 1
-      result.head.left.value shouldBe ""
+      inside(result.head) {
+        case Left(value) => value shouldBe ""
+      }
     }
   }
 }

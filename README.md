@@ -1,6 +1,6 @@
 # RestUI
 
-[![CircleCI](https://circleci.com/gh/MaethorNaur/restui.svg?style=svg)](https://circleci.com/gh/MaethorNaur/restui)
+[![Github Actions](https://github.com/MaethorNaur/restui/workflows/Scala%20CI/badge.svg)](https://github.com/MaethorNaur/restui/actions)
 [![codecov](https://codecov.io/gh/MaethorNaur/restui/branch/master/graph/badge.svg)](https://codecov.io/gh/MaethorNaur/restui)
 [![CodeFactor](https://www.codefactor.io/repository/github/maethornaur/restui/badge)](https://www.codefactor.io/repository/github/maethornaur/restui)
 
@@ -349,9 +349,9 @@ You will need to allow:
 ### Docker
 
 ```sh
-docker pull maethornaur/rest-ui
+docker pull ghc.io/maethornaur/restui
 
-docker run -p 8080:8080 maethornaur/rest-ui
+docker run -p 8080:8080 ghc.io/maethornaur/restui
 
 ```
 
