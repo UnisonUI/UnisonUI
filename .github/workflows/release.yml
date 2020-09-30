@@ -40,16 +40,30 @@ jobs:
         path: rest-ui/node_modules
         key: ${{ runner.os }}-node-${{ hashFiles('rest-ui/package.*') }}
         restore-keys: ${{ runner.os }}-node-
-
+    - name: Restore conventional changelog cache
+      uses: actions/cache@v2
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-conventional-changelog
+        restore-keys: ${{ runner.os }}-conventional-changelog
+    - name: install conventional changelog
+      run: |
+        npm install conventional-changelog-cli
+        conventional-changelog  -r 1 -p angular -o release.md
     - name: build
       run: sbt "project rest-ui; npmInstall; webpackProdTask; docker:publish"
+    - name: Conventional Changelog Action
+      uses: TriPSs/conventional-changelog-action@v3
+      with:
+        github-token: ${{ secrets.github_token }}
     - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body_path: release.md
+        draft: false
+        prerelease: false
