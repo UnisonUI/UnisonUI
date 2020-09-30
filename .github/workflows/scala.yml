@@ -41,8 +41,11 @@ jobs:
     - name: Codecov
       uses: codecov/codecov-action@v1.0.13
     - name: action-slack
-      uses: 8398a7/action-slack@v3.7.0
+      uses: 8398a7/action-slack@v3
       with:
+        author_name: Github action
+        mention: 'here'
+        if_mention: failure
         status: ${{ job.status }}
         fields: message,commit,author
       env:
