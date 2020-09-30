@@ -349,9 +349,9 @@ You will need to allow:
 ### Docker
 
 ```sh
-docker pull ghc.io/maethornaur/restui
+docker pull ghcr.io/maethornaur/restui
 
-docker run -p 8080:8080 ghc.io/maethornaur/restui
+docker run -p 8080:8080 ghcr.io/maethornaur/restui
 
 ```
 
