@@ -26,7 +26,7 @@ class ServiceActor(settingsLabels: Labels, queue: SourceQueueWithComplete[Servic
           filteredServices.flatMap(createEndpoint).foreach {
             case (id, serviceName, specificationPath, file, useProxy) =>
               val metadata = Map(Metadata.Provider -> "kubernetes", Metadata.File -> specificationPath, Namespace -> namespace)
-              downloadFile(Service(id, serviceName, file, metadata, useProxy = useProxy))
+              downloadFile(Service.OpenApi(id, serviceName, file, metadata, useProxy = useProxy))
           }
           context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
         case Some(services) =>
@@ -38,7 +38,7 @@ class ServiceActor(settingsLabels: Labels, queue: SourceQueueWithComplete[Servic
           added.flatMap(createEndpoint).foreach {
             case (id, serviceName, specificationPath, file, useProxy) =>
               val metadata = Map(Metadata.Provider -> "kubernetes", Metadata.File -> specificationPath, Namespace -> namespace)
-              downloadFile(Service(id, serviceName, file, metadata, useProxy = useProxy))
+              downloadFile(Service.OpenApi(id, serviceName, file, metadata, useProxy = useProxy))
           }
 
           context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
@@ -49,18 +49,23 @@ class ServiceActor(settingsLabels: Labels, queue: SourceQueueWithComplete[Servic
   }
 
   private def downloadFile(service: Service): Future[Unit] =
-    Http()
-      .singleRequest(HttpRequest(uri = service.file))
-      .flatMap { response =>
-        Unmarshaller.stringUnmarshaller(response.entity)
-      }
-      .flatMap { content =>
-        queue.offer(ServiceEvent.ServiceUp(service.copy(file = content))).map(_ => ())
-      }
-      .recover { throwable =>
-        log.warning("There was an error while download the file {}", throwable)
-      }
-
+    service match {
+      case openapi: Service.OpenApi =>
+        Http()
+          .singleRequest(HttpRequest(uri = openapi.file))
+          .flatMap { response =>
+            Unmarshaller.stringUnmarshaller(response.entity)
+          }
+          .flatMap { content =>
+            queue.offer(ServiceEvent.ServiceUp(openapi.copy(file = content))).map(_ => ())
+          }
+          .recover { throwable =>
+            log.warning("There was an error while download the file {}", throwable)
+          }
+      case _ =>
+        log.warning("Not supported yet")
+        Future.successful(())
+    }
   private def createEndpoint(service: KubernetesService): Option[ServiceFoundWithFile] =
     getLabels(service.metadata.labels).map {
       case Labels(protocol, port, specificationPath, useProxy) =>

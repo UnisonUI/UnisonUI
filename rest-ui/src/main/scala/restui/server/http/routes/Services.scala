@@ -21,14 +21,14 @@ object Services {
       val response =
         (serviceActorRef ? GetAll)
           .mapTo[List[Service]]
-          .map(_.map { case Service(id, name, _, metadata, useProxy, _) => Event.ServiceUp(id, name, useProxy, metadata) })
+          .map(_.map { case Service.OpenApi(id, name, _, metadata, useProxy, _) => Event.ServiceUp(id, name, useProxy, metadata) })
       complete(response)
     } ~ (path("services" / Remaining) & get) { service =>
       val response = (serviceActorRef ? Get(service))
         .mapTo[Option[Service]]
         .map {
           case None => StatusCodes.NotFound -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, s"$service is not registered")
-          case Some(Service(_, _, content, _, _, _)) =>
+          case Some(Service.OpenApi(_, _, content, _, _, _)) =>
             StatusCodes.OK -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, content)
 
         }

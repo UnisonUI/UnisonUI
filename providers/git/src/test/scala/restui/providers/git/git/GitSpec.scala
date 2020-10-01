@@ -86,7 +86,7 @@ class GitSpec extends TestBase with Inside {
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
           val result = probe.expectMsgType[ServiceEvent]
           inside(result) {
-            case ServiceEvent.ServiceUp(Service(_, _, file, _, _, _)) =>
+            case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
               file shouldBe "test"
           }
         }
@@ -101,14 +101,14 @@ class GitSpec extends TestBase with Inside {
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
 
           inside(probe.expectMsgType[ServiceEvent]) {
-            case ServiceEvent.ServiceUp(Service(_, _, file, _, _, _)) =>
+            case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
               file shouldBe "test"
           }
 
           fixture.commit("test", "test2")
 
           inside(probe.expectMsgType[ServiceEvent]) {
-            case ServiceEvent.ServiceUp(Service(_, _, file, _, _, _)) =>
+            case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
               file shouldBe "test2"
           }
 
@@ -124,7 +124,7 @@ class GitSpec extends TestBase with Inside {
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
 
           inside(probe.expectMsgType[ServiceEvent]) {
-            case ServiceEvent.ServiceUp(Service(_, _, file, _, _, _)) =>
+            case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
               file shouldBe "test"
           }
 
@@ -142,7 +142,7 @@ class GitSpec extends TestBase with Inside {
           val probe = TestProbe()
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
           inside(probe.expectMsgType[ServiceEvent]) {
-            case ServiceEvent.ServiceUp(Service(_, _, file, _, _, _)) =>
+            case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
               file shouldBe "test"
           }
 
@@ -161,7 +161,7 @@ class GitSpec extends TestBase with Inside {
           Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
 
           inside(probe.expectMsgType[ServiceEvent]) {
-            case ServiceEvent.ServiceUp(Service(_, _, _, metadata, _, _)) =>
+            case ServiceEvent.ServiceUp(Service.OpenApi(_, _, _, metadata, _, _)) =>
               metadata should contain(Metadata.File -> "test")
           }
 
@@ -171,7 +171,7 @@ class GitSpec extends TestBase with Inside {
           probe.expectMsgType[ServiceEvent.ServiceDown]
 
           inside(probe.expectMsgType[ServiceEvent]) {
-            case ServiceEvent.ServiceUp(Service(_, _, _, metadata, _, _)) =>
+            case ServiceEvent.ServiceUp(Service.OpenApi(_, _, _, metadata, _, _)) =>
               metadata should contain(Metadata.File -> "test2")
           }
 

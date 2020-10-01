@@ -92,7 +92,7 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
 
           Source.single(
             ServiceEvent.ServiceUp(
-              Service(id, serviceName, content, metadata, useProxy = useProxy)
+              Service.OpenApi(id, serviceName, content, metadata, useProxy = useProxy)
             )
           )
         }

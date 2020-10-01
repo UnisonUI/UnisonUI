@@ -208,7 +208,7 @@ object Git extends LazyLogging {
               Metadata.Provider -> provider,
               Metadata.File     -> filePath
             )
-          ServiceEvent.ServiceUp(Service(id, serviceName, content, metadata, useProxy))
+          ServiceEvent.ServiceUp(Service.OpenApi(id, serviceName, content, metadata, useProxy))
         case Left(path) =>
           val filePath = repo.directory.get.toPath.relativize(path).toString
           val id       = s"$nameFromUri:$filePath"

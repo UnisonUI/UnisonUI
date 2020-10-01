@@ -30,7 +30,7 @@ class HttpServerSpec
       val probe = TestProbe()
 
       val body            = WebhookService("test", "content")
-      val expectedService = Service("webhook:test", "test", "content", Map(Metadata.Provider -> "webhook", Metadata.File -> "test"))
+      val expectedService = Service.OpenApi("webhook:test", "test", "content", Map(Metadata.Provider -> "webhook", Metadata.File -> "test"))
       for {
         source <- HttpServer.start("localhost", 3000)
         _ = source.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()

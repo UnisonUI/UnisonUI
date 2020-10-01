@@ -25,7 +25,7 @@ object Services extends Directives with FailFastCirceSupport {
         import service._
         val id = s"webhook:$name"
         val serviceEvent = ServiceEvent.ServiceUp(
-          ModelService(id, name, specification, metadata ++ Map(Metadata.File -> name, Metadata.Provider -> "webhook")))
+          ModelService.OpenApi(id, name, specification, metadata ++ Map(Metadata.File -> name, Metadata.Provider -> "webhook")))
         val response = queue.offer(serviceEvent).flatMap {
           case QueueOfferResult.Failure(ex) => Future.failed(ex)
           case _                            => Future.successful(StatusCodes.NoContent)

@@ -11,7 +11,7 @@ class EventSpec extends AnyFlatSpec with Matchers with TableDrivenPropertyChecks
     val properties = Table(
       ("event", "json"),
       (Event.ServiceUp("id", "test", false, Map("key" -> "value")),
-       """{"event":"serviceUp","id":"id","name":"test","metadata":{"key":"value"},"useProxy":false}"""),
+       """{"event":"serviceUp","id":"id","name":"test","metadata":{"key":"value"},"useProxy":false,"type":"openapi"}"""),
       (Event.ServiceDown("id"), """{"event":"serviceDown","id":"id"}""")
     )
 
@@ -23,7 +23,7 @@ class EventSpec extends AnyFlatSpec with Matchers with TableDrivenPropertyChecks
     val properties = Table(
       ("event", "json"),
       (List(Event.ServiceUp("id", "test", false, Map("key" -> "value"))),
-       """[{"event":"serviceUp","id":"id","name":"test","metadata":{"key":"value"},"useProxy":false}]""")
+       """[{"event":"serviceUp","id":"id","name":"test","metadata":{"key":"value"},"useProxy":false,"type":"openapi"}]""")
     )
 
     forAll(properties) { (events, json) =>

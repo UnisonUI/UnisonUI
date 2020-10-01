@@ -10,7 +10,7 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
   override def receive: Receive = handleReceive(Map.empty)
 
   private def handleReceive(services: Map[String, Service]): Receive = {
-    case (provider: String, ServiceEvent.ServiceUp(service)) if !Validator.isValid(service.file) =>
+    case (provider: String, ServiceEvent.ServiceUp(service: Service.OpenApi)) if !Validator.isValid(service.file) =>
       log.debug(s"Invalid specification from $provider")
       sender() ! Ack
     case (provider: String, ServiceEvent.ServiceUp(service)) =>
@@ -20,9 +20,8 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
 
       if (serviceNameChanged)
         queue.offer(Event.ServiceDown(serviceWithHash.id))
-
       if (isNewService(services, serviceWithHash) || serviceNameChanged)
-        queue.offer(Event.ServiceUp(serviceWithHash.id, serviceWithHash.name, serviceWithHash.useProxy, serviceWithHash.metadata))
+        queue.offer(serviceWithHash.toEvent)
 
       if (hasContentChanged(services, serviceWithHash))
         queue.offer(Event.ServiceContentChanged(serviceWithHash.id))
@@ -43,22 +42,34 @@ class ServiceActor(queue: SourceQueueWithComplete[Event]) extends Actor with Act
   }
 
   private def hasServiceNameChanged(services: Map[String, Service], service: Service): Boolean =
-    services.exists {
-      case (id, currentService) =>
-        id == service.id && currentService.name != service.name
+    service match {
+      case openapiService: Service.OpenApi =>
+        services.exists {
+          case (id, currentService: Service.OpenApi) =>
+            id == service.id && currentService.name != openapiService.name
+          case _ => false
+        }
+      case _ => false
     }
 
-  private def computeSha1(service: Service): Service = {
-    val md       = java.security.MessageDigest.getInstance("SHA-1")
-    val sha1Hash = md.digest(service.file.getBytes("UTF-8")).map("%02x".format(_)).mkString
-    service.copy(hash = sha1Hash)
-  }
+  private def computeSha1(service: Service): Service =
+    service match {
+      case openapi: Service.OpenApi =>
+        val md       = java.security.MessageDigest.getInstance("SHA-1")
+        val sha1Hash = md.digest(openapi.file.getBytes("UTF-8")).map("%02x".format(_)).mkString
+        openapi.copy(hash = sha1Hash)
+    }
 
   private def isNewService(services: Map[String, Service], service: Service): Boolean = !services.contains(service.id)
 
   private def hasContentChanged(services: Map[String, Service], service: Service): Boolean =
-    services.exists {
-      case (id, Service(_, _, _, _, _, hash)) => id == service.id && hash != service.hash
+    service match {
+      case serviceOpenapi: Service.OpenApi =>
+        services.exists {
+          case (id, Service.OpenApi(_, _, _, _, _, hash)) => id == service.id && hash != serviceOpenapi.hash
+          case _                                          => false
+        }
+      case _ => false
     }
 }
 

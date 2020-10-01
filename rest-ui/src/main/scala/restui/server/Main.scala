@@ -34,7 +34,7 @@ object Main extends App with LazyLogging {
     val specification = scala.io.Source.fromResource("specification.yaml").getLines().mkString("\n")
     Source.single(
       Main.getClass.getCanonicalName -> ServiceEvent.ServiceUp(
-        Service("restui:restui", "RestUI", specification, Map(Metadata.File -> "specification.yaml"))))
+        Service.OpenApi("restui:restui", "RestUI", specification, Map(Metadata.File -> "specification.yaml"))))
   } else Source.empty[(String, ServiceEvent)]
 
   ProvidersLoader
