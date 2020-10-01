@@ -54,10 +54,6 @@ jobs:
         conventional-changelog  -r 2 -p angular | tail -n +5 > release.md
     - name: build
       run: sbt "project rest-ui; npmInstall; webpackProdTask; docker:publish"
-    - name: Conventional Changelog Action
-      uses: TriPSs/conventional-changelog-action@v3
-      with:
-        github-token: ${{ secrets.github_token }}
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
