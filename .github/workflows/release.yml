@@ -51,7 +51,7 @@ jobs:
     - name: install conventional changelog
       run: |
         npm install conventional-changelog-cli
-        conventional-changelog  -r 2 -p angular | tail -n +5 > release.md
+        node_modules/.bin/conventional-changelog  -r 2 -p angular | tail -n +5 > release.md
     - name: build
       run: sbt "project rest-ui; npmInstall; webpackProdTask; docker:publish"
     - name: Create Release
