@@ -2,13 +2,13 @@ package restui.protobuf.grpc
 
 import scala.concurrent.{ExecutionContext, Future}
 
+import akka.Done
 import akka.actor.ClassicActorSystemProvider
 import akka.grpc.GrpcClientSettings
 import akka.grpc.internal.{ClientState, NettyClientUtils, ScalaUnaryRequestBuilder}
 import io.circe.Json
 import io.grpc.MethodDescriptor
 import restui.protobuf.data._
-import akka.Done
 
 class Client(service: Service, settings: GrpcClientSettings)(implicit sys: ClassicActorSystemProvider) {
   private implicit val executionContext: ExecutionContext = sys.classicSystem.dispatcher
