@@ -1,7 +1,6 @@
 package restui.models
 import io.circe.syntax._
 import io.circe.{Encoder, Json}
-import restui.protobuf.data.Schema
 
 sealed trait Event extends Product with Serializable {
   val id: String
@@ -14,8 +13,7 @@ object Event {
 
   object Service {
     final case class OpenApi(id: String, name: String, useProxy: Boolean, metadata: Map[String, String] = Map.empty) extends Service
-    final case class Grpc(id: String, name: String, servers: List[String], schema: Schema, metadata: Map[String, String] = Map.empty)
-        extends Service
+    final case class Grpc(id: String, name: String, metadata: Map[String, String] = Map.empty)                       extends Service
 
     implicit val encoder: Encoder[Service] = Encoder.instance {
       case OpenApi(id, name, useProxy, metadata) =>
@@ -27,14 +25,12 @@ object Event {
           "useProxy" -> Json.fromBoolean(useProxy),
           "type"     -> Json.fromString("openapi")
         )
-      case Grpc(id, name, servers, schema, metadata) =>
+      case Grpc(id, name, metadata) =>
         Json.obj(
           "event"    -> Json.fromString("serviceUp"),
           "id"       -> Json.fromString(id),
           "name"     -> Json.fromString(name),
           "metadata" -> Json.obj(metadata.view.mapValues(Json.fromString).toSeq: _*),
-          "schema"   -> schema.asJson,
-          "servers"  -> servers.asJson,
           "type"     -> Json.fromString("grpc")
         )
     }

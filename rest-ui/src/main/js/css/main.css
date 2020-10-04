@@ -102,7 +102,21 @@ main {
     }
  
   }
+  .title {
+    .name {
+      @apply mr-4;
+    }
 
+    .type {
+      @apply rounded-full font-semibold text-xs px-2 tracking-wide inline-block capitalize;
+      &[data-type="openapi"] {
+        @apply bg-teal-200 text-teal-800;
+      }
+      &[data-type="grpc"] {
+        @apply bg-blue-200 text-blue-800;
+      }
+    }
+  }
 }
 
 h1.bm-item {

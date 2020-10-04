@@ -18,15 +18,15 @@ export default class ServiceLink extends Component {
           to={`/${services[0].id}`}
           onClick={this.props.closeMenu}
         >
-          {services[0].name}
+          <Title name={services[0].name} type={services[0].type} />
         </NavLink>
       )
     } else {
       services.sort((a, b) => a.name.localeCompare(b.name))
       const items = services.map(service => (
-        <div key={service.id} className="text-sm ml-4">
+        <div key={service.id} className="text-sm ml-4 mb-2">
           <NavLink to={`/${service.id}`} onClick={this.props.closeMenu}>
-            {service.metadata.file}
+            <Title name={service.metadata.file} type={service.type} />
           </NavLink>
         </div>
       ))
@@ -37,5 +37,16 @@ export default class ServiceLink extends Component {
         </div>
       )
     }
+  }
+}
+
+class Title extends Component {
+  render () {
+    return (
+      <div className="title">
+        <span className="name">{this.props.name}</span>
+        <span className="type" data-type={this.props.type}>{this.props.type}</span>
+      </div>
+    )
   }
 }

@@ -21,17 +21,17 @@ object ServiceActor {
 
         case Add(provider, ServiceEvent.ServiceUp(service)) =>
           context.log.debug("{} got a new service", provider)
-          val serviceWithHash    = computeSha1(service)
-          val serviceNameChanged = hasServiceNameChanged(services, serviceWithHash)
 
-          if (serviceNameChanged)
-            queue.offer(Event.ServiceDown(serviceWithHash.id))
-          if (isNewService(services, serviceWithHash) || serviceNameChanged)
-            queue.offer(Event.ServiceUp(serviceWithHash.toEvent))
+          val serviceNameChanged = hasServiceNameChanged(services, service)
 
-          if (hasContentChanged(services, serviceWithHash))
-            queue.offer(Event.ServiceContentChanged(serviceWithHash.id))
-          apply(queue, services + (serviceWithHash.id -> serviceWithHash))
+          if (serviceNameChanged) queue.offer(Event.ServiceDown(service.id))
+
+          if (isNewService(services, service) || serviceNameChanged)
+            queue.offer(Event.ServiceUp(service.toEvent))
+
+          if (hasContentChanged(services, service)) queue.offer(Event.ServiceContentChanged(service.id))
+
+          apply(queue, services + (service.id -> service))
 
         case Add(provider, ServiceEvent.ServiceDown(serviceId)) =>
           queue.offer(Event.ServiceDown(serviceId))
@@ -58,24 +58,10 @@ object ServiceActor {
       case _ => false
     }
 
-  private def computeSha1(service: Service): Service =
-    service match {
-      case openapi: Service.OpenApi =>
-        val md       = java.security.MessageDigest.getInstance("SHA-1")
-        val sha1Hash = md.digest(openapi.file.getBytes("UTF-8")).map("%02x".format(_)).mkString
-        openapi.copy(hash = sha1Hash)
-      case _ => service
-    }
-
   private def isNewService(services: Map[String, Service], service: Service): Boolean = !services.contains(service.id)
 
   private def hasContentChanged(services: Map[String, Service], service: Service): Boolean =
-    service match {
-      case serviceOpenapi: Service.OpenApi =>
-        services.exists {
-          case (id, Service.OpenApi(_, _, _, _, _, hash)) => id == service.id && hash != serviceOpenapi.hash
-          case _                                          => false
-        }
-      case _ => false
+    services.exists {
+      case (id, currentService) => id == service.id && service.hash != currentService.hash
     }
 }

@@ -38,7 +38,8 @@ export default class App extends Component {
             id: event.id,
             name: event.name,
             metadata: event.metadata,
-            useProxy: event.useProxy
+            useProxy: event.useProxy,
+            type: event.type
           }
         })
         .reduce((obj, service) => {
@@ -72,7 +73,8 @@ export default class App extends Component {
             id: data.id,
             name: data.name,
             metadata: data.metadata,
-            useProxy: data.useProxy
+            useProxy: data.useProxy,
+            type: data.type
           })
         } else {
           services[data.name] = services[data.name].map(service => {
@@ -82,7 +84,8 @@ export default class App extends Component {
                 id: data.id,
                 name: data.name,
                 metadata: data.metadata,
-                useProxy: data.useProxy
+                useProxy: data.useProxy,
+            type: data.type
               }
             }
           })
