@@ -1,4 +1,4 @@
-package restui.protobuf.grpc
+package restui.grpc
 
 import scala.concurrent.{ExecutionContext, Future}
 

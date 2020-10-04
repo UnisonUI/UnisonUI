@@ -203,10 +203,13 @@ class GitSpec extends TestBase with Inside {
             }
 
             fixture.commit(".restui.yaml", grpcSpecs)
-            val path    = Paths.get("src/test/resources/helloworld.proto")
-            val newPath = fixture.repo.resolve("helloworld.proto")
-            Files.copy(path, newPath)
-            fixture.commit(newPath)
+            for {
+              file <- "helloworld.proto" :: "helloworld.protoset" :: Nil
+              path    = Paths.get(s"src/test/resources/$file")
+              newPath = fixture.repo.resolve(file)
+              _       = Files.copy(path, newPath)
+              _       = fixture.commit(newPath)
+            } yield ()
 
             inside(probe.expectMessageType[ServiceEvent]) {
               case ServiceEvent.ServiceUp(Service.Grpc(_, _, schema, servers, _)) =>

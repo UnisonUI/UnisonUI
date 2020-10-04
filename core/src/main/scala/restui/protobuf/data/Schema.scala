@@ -1,12 +1,10 @@
 package restui.protobuf.data
 
-import java.io.File
 import java.nio.file.{Files, Path}
 import java.{util => ju}
 
 import scala.collection.immutable.HashSet
 import scala.jdk.CollectionConverters._
-import scala.sys.process._
 import scala.util.chaining._
 import scala.util.control.Exception.allCatch
 
@@ -18,12 +16,17 @@ import com.google.protobuf.{ByteString, MessageOrBuilder}
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.syntax._
 import io.circe.{Encoder, Json}
+import restui.protobuf.ProtobufCompiler
 
 final case class Schema(messages: Map[String, MessageSchema] = Map.empty,
                         enums: Map[String, EnumSchema] = Map.empty,
                         services: Map[String, Service] = Map.empty,
                         rootKey: Option[String] = None) { val root: Option[MessageSchema] = rootKey.flatMap(messages.get(_)) }
 object Schema extends LazyLogging {
+  implicit class SchemaOps(path: Path)(implicit val protobufCompiler: ProtobufCompiler) {
+    def toSchema: Either[Throwable, Schema] = Schema.fromFile(path)
+  }
+
   implicit val encoder: Encoder[Schema] = (schema: Schema) =>
     Json.obj(
       "messages" -> schema.messages.values.asJson,
@@ -31,32 +34,17 @@ object Schema extends LazyLogging {
       "services" -> schema.services.values.asJson
     )
 
-  private val hideStdErr = ProcessLogger(_ => ())
-  def fromFile(file: Path): Either[Throwable, Schema] =
+  def fromFile(file: Path)(implicit protobufCompiler: ProtobufCompiler): Either[Throwable, Schema] =
     for {
-      tempFile <- compile(file)
+      tempFile <- protobufCompiler.compile(file)
       result <-
         tempFile.toPath
           .pipe(Files.readAllBytes)
           .pipe(fromBytes)
-      _ <- allCatch.either(tempFile.delete())
+      _ <- protobufCompiler.clean(tempFile)
     } yield result
 
-  private def compile(file: Path): Either[Throwable, File] =
-    allCatch.either {
-      val tempFile = File.createTempFile("restui", ".protoset")
-      Seq("protoc",
-          s"-o${tempFile.getAbsolutePath()}",
-          "--include_imports",
-          "-I",
-          file.toAbsolutePath.getParent.toString,
-          file.toAbsolutePath.toString)
-        .pipe(Process(_))
-        .!!(hideStdErr)
-      tempFile
-    }
-
-  def fromBytes(input: Array[Byte]): Either[Throwable, Schema] =
+  private def fromBytes(input: Array[Byte]): Either[Throwable, Schema] =
     allCatch.either {
       val descriptor      = FileDescriptorSet.parseFrom(input)
       val fileDescriptors = extraxtFileDescriptors(descriptor.getFileList().asScala.toList)

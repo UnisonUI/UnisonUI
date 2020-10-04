@@ -1,24 +1,31 @@
 package restui.protobuf.data
 
-import java.nio.file.Paths
+import java.io.File
+import java.nio.file.{Path, Paths}
 
 import scala.util.control.Exception.allCatch
 
+import cats.syntax.either._
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.Json
 import io.circe.parser.parse
 import io.circe.syntax._
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import restui.protobuf.Reader._
-import restui.protobuf.Writer._
-
+import restui.protobuf.ProtobufCompiler
+import restui.protobuf.data.Schema._
+import restui.protobuf.marshal.Reader._
+import restui.protobuf.marshal.Writer._
 class SchemaSpec extends AnyFlatSpec with Matchers with LazyLogging {
+  implicit val compiler: ProtobufCompiler = new ProtobufCompiler {
+    override def compile(path: Path): Either[Throwable, File] = new File(s"${path.toAbsolutePath().toString}set").asRight[Throwable]
+    override def clean(file: File): Either[Throwable, Unit]   = ().asRight
+  }
   it should "yes" in {
     // implicit val a = ActorSystem()
     // val s          = GrpcClientSettings.connectToServiceAt("127.0.0.1", 50051).withTls(false)
     for {
-      schema <- Schema.fromFile(Paths.get("src/test/resources/helloworld.proto"))
+      schema <- Paths.get("src/test/resources/helloworld.proto").toSchema
       input = parse("""{"name":"test"}""").getOrElse(Json.Null)
       is    = schema.services("helloworld.Greeter").methods.head.inputType
       bytes <- allCatch.either(is.write(input))

@@ -1,15 +1,14 @@
-package restui.protobuf.grpc
+package restui.grpc
 
 import java.io.{ByteArrayInputStream, InputStream}
 
 import io.circe.Json
-import io.grpc.KnownLength
-import restui.protobuf.Reader._
-import restui.protobuf.Writer._
+import io.grpc.{KnownLength, MethodDescriptor}
 import restui.protobuf.data.Schema
+import restui.protobuf.marshal.Reader._
+import restui.protobuf.marshal.Writer._
 
-class Marshaller(schema: Schema) extends io.grpc.MethodDescriptor.Marshaller[Json] {
+class Marshaller(schema: Schema) extends MethodDescriptor.Marshaller[Json] {
   override def parse(stream: InputStream): Json = schema.read(stream)
   override def stream(value: Json): InputStream = new ByteArrayInputStream(schema.write(value)) with KnownLength
-
 }

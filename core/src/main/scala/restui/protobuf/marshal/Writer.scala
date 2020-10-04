@@ -1,4 +1,4 @@
-package restui.protobuf
+package restui.protobuf.marshal
 import java.io.{ByteArrayOutputStream, OutputStream}
 import java.{util => ju}
 

@@ -16,7 +16,8 @@ import com.typesafe.scalalogging.LazyLogging
 import io.circe.generic.auto._
 import io.circe.yaml.parser
 import restui.models.{Metadata, Service, ServiceEvent}
-import restui.protobuf.data.Schema
+import restui.protobuf.ProtobufCompiler
+import restui.protobuf.data.Schema._
 import restui.providers.git._
 import restui.providers.git.git.data._
 import restui.providers.git.process.{Process, ProcessArgs}
@@ -31,7 +32,7 @@ object Git extends LazyLogging {
   private type FilesWithSha          = (Files, Option[String])
   private type FilesWithShaWithEvent = (FileEvents, Option[String])
 
-  private val outboundFlow: Flow[FilesWithShaWithEvent, ServiceEvent] =
+  private def outboundFlow(implicit protobufCompiler: ProtobufCompiler): Flow[FilesWithShaWithEvent, ServiceEvent] =
     AkkaFlow[FilesWithShaWithEvent].flatMapConcat { case (files, _) => retrieveSpecificationFiles(files) }
 
   private val cloneOrFetch: Flow[RepositoryWithSha, FilesWithSha] =
@@ -102,7 +103,8 @@ object Git extends LazyLogging {
       }
   }
 
-  def fromSettings(cacheDuration: FiniteDuration, repositories: Seq[RepositorySettings]): Source[ServiceEvent] =
+  def fromSettings(cacheDuration: FiniteDuration, repositories: Seq[RepositorySettings])(implicit
+      protobufCompiler: ProtobufCompiler): Source[ServiceEvent] =
     fromSource(
       cacheDuration,
       AkkaSource(repositories.collect {
@@ -111,7 +113,8 @@ object Git extends LazyLogging {
       })
     )
 
-  def fromSource(cacheDuration: FiniteDuration, repositories: Source[Repository]): Source[ServiceEvent] =
+  def fromSource(cacheDuration: FiniteDuration, repositories: Source[Repository])(implicit
+      protobufCompiler: ProtobufCompiler): Source[ServiceEvent] =
     AkkaSource.fromGraph(GraphDSL.create() { implicit builder =>
       import GraphDSL.Implicits._
 
@@ -198,7 +201,7 @@ object Git extends LazyLogging {
     }
   }
 
-  private def retrieveSpecificationFiles(repoWithFiles: FileEvents): Source[ServiceEvent] = {
+  private def retrieveSpecificationFiles(repoWithFiles: FileEvents)(implicit protobufCompiler: ProtobufCompiler): Source[ServiceEvent] = {
     val (repo, files) = repoWithFiles
 
     val uri         = akka.http.scaladsl.model.Uri(repo.uri)
@@ -239,7 +242,7 @@ object Git extends LazyLogging {
 
   }
 
-  private def loadFile(event: GitFileEvent): Source[LoadedContent] =
+  private def loadFile(event: GitFileEvent)(implicit protobufCompiler: ProtobufCompiler): Source[LoadedContent] =
     event match {
       case GitFileEvent.Deleted(path) =>
         AkkaSource.single(LoadedContent.Deleted(path))
@@ -252,7 +255,7 @@ object Git extends LazyLogging {
             AkkaSource.single(LoadedContent.Deleted(path))
         }
       case GitFileEvent.UpsertedGrpc(maybeName, path, servers) =>
-        Schema.fromFile(path) match {
+        path.toSchema match {
           case Right(schema) =>
             AkkaSource.single(LoadedContent.Grpc(maybeName, path, schema, servers))
           case Left(exception) =>

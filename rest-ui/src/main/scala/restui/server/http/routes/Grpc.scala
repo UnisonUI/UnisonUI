@@ -17,10 +17,11 @@ import akka.util.Timeout
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.Json
 import io.circe.generic.auto._
+import restui.grpc.Client
 import restui.models.Service
 import restui.protobuf.data.{Method, Service => ProtobufService}
-import restui.protobuf.grpc.Client
 import restui.server.service.ServiceActor
+
 object Grpc {
   final case class Input(server: String, data: Json)
   implicit val timeout: Timeout = 5.seconds
