@@ -13,7 +13,7 @@ import com.typesafe.scalalogging.LazyLogging
 import restui.server.http.routes._
 import restui.server.service.ServiceActor
 
-class HttpServer(private val endpointsActorRef: ActorRef[ServiceActor.Message], private val eventsSource: Source[ServerSentEvent, NotUsed])(
+class HttpServer(private val serviceActorRef: ActorRef[ServiceActor.Message], private val eventsSource: Source[ServerSentEvent, NotUsed])(
     implicit actorSystem: ActorSystem[_])
     extends Directives
     with LazyLogging {
@@ -31,6 +31,6 @@ class HttpServer(private val endpointsActorRef: ActorRef[ServiceActor.Message], 
 
   private val routes =
     handleExceptions(exceptionHandler) {
-      Statics.route ~ Realtime.route(eventsSource) ~ Services.route(endpointsActorRef) ~ Grpc.route(endpointsActorRef) ~ Proxy.route
+      Statics.route ~ Realtime.route(eventsSource) ~ Services.route(serviceActorRef) ~ Grpc.route(serviceActorRef) ~ Proxy.route
     }
 }

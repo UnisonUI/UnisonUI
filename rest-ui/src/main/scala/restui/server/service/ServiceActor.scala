@@ -8,18 +8,18 @@ import restui.specifications.Validator
 
 object ServiceActor {
   sealed trait Message
-  case class Add(from: ActorRef[Unit], provider: String, service: ServiceEvent) extends Message
-  case class Get(from: ActorRef[Option[Service]], serviceId: String)            extends Message
-  case class GetAll(from: ActorRef[List[Service]])                              extends Message
+  case class Add(provider: String, service: ServiceEvent)            extends Message
+  case class Get(from: ActorRef[Option[Service]], serviceId: String) extends Message
+  case class GetAll(from: ActorRef[List[Service]])                   extends Message
 
   def apply(queue: SourceQueueWithComplete[Event], services: Map[String, Service] = Map.empty): Behavior[Message] =
     Behaviors.receive { (context, message) =>
       message match {
-        case Add(sender, provider, ServiceEvent.ServiceUp(service: Service.OpenApi)) if !Validator.isValid(service.file) =>
+        case Add(provider, ServiceEvent.ServiceUp(service: Service.OpenApi)) if !Validator.isValid(service.file) =>
           context.log.debug(s"Invalid specification from $provider")
-          sender ! ()
           Behaviors.same
-        case Add(sender, provider, ServiceEvent.ServiceUp(service)) =>
+
+        case Add(provider, ServiceEvent.ServiceUp(service)) =>
           context.log.debug("{} got a new service", provider)
           val serviceWithHash    = computeSha1(service)
           val serviceNameChanged = hasServiceNameChanged(services, serviceWithHash)
@@ -31,13 +31,13 @@ object ServiceActor {
 
           if (hasContentChanged(services, serviceWithHash))
             queue.offer(Event.ServiceContentChanged(serviceWithHash.id))
-          sender ! ()
           apply(queue, services + (serviceWithHash.id -> serviceWithHash))
-        case Add(sender, provider, ServiceEvent.ServiceDown(serviceId)) =>
+
+        case Add(provider, ServiceEvent.ServiceDown(serviceId)) =>
           queue.offer(Event.ServiceDown(serviceId))
           context.log.debug("{} removed a service", provider)
-          sender ! ()
           apply(queue, services - serviceId)
+
         case Get(sender, serviceId) =>
           sender ! services.get(serviceId)
           Behaviors.same

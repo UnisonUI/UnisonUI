@@ -6,18 +6,16 @@ import scala.util.{Failure, Success}
 
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.javadsl.Behaviors
-import akka.actor.typed.scaladsl.AskPattern._
 import akka.stream.scaladsl.{Sink, Source}
-import akka.util.Timeout
 import com.typesafe.scalalogging.LazyLogging
+import restui.Configuration
 import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.ProvidersLoader
 import restui.server.http.HttpServer
 import restui.server.service._
-import restui.{Concurrency, Configuration}
+
 // $COVERAGE-OFF$
 object Main extends App with LazyLogging {
-  private implicit val timeout: Timeout           = 5.seconds
   private val Namespace: String                   = "restui.http"
   private val config                              = Configuration.config(args.headOption)
   implicit val system                             = ActorSystem(Behaviors.empty, "restui")
@@ -40,9 +38,9 @@ object Main extends App with LazyLogging {
   ProvidersLoader
     .load(config)
     .prepend(specificationSource)
-    .runWith(Sink.foreachAsync(Concurrency.AvailableCore) {
+    .runWith(Sink.foreach {
       case (provider, event) =>
-        serviceActor.ask(ServiceActor.Add(_, provider, event))
+        serviceActor ! ServiceActor.Add(provider, event)
     })
 
   httpServer.bind(interface, port).onComplete {
