@@ -81,26 +81,7 @@ package object data {
       case None        => Json.Null
       case Some(value) => value.asInstanceOf[Any].asJson
     }
-    implicit val typeEncoder: Encoder[FieldDescriptor.Type] = Encoder.instance {
-      case FieldDescriptor.Type.BOOL     => Json.fromString("bool")
-      case FieldDescriptor.Type.BYTES    => Json.fromString("bytes")
-      case FieldDescriptor.Type.DOUBLE   => Json.fromString("double")
-      case FieldDescriptor.Type.ENUM     => Json.fromString("enum")
-      case FieldDescriptor.Type.FIXED32  => Json.fromString("fixed32")
-      case FieldDescriptor.Type.FIXED64  => Json.fromString("fixed64")
-      case FieldDescriptor.Type.FLOAT    => Json.fromString("float")
-      case FieldDescriptor.Type.INT32    => Json.fromString("int32")
-      case FieldDescriptor.Type.INT64    => Json.fromString("int64")
-      case FieldDescriptor.Type.MESSAGE  => Json.fromString("message")
-      case FieldDescriptor.Type.SFIXED32 => Json.fromString("sfixed32")
-      case FieldDescriptor.Type.SFIXED64 => Json.fromString("sfixed64")
-      case FieldDescriptor.Type.SINT32   => Json.fromString("sint32")
-      case FieldDescriptor.Type.SINT64   => Json.fromString("sint64")
-      case FieldDescriptor.Type.STRING   => Json.fromString("string")
-      case FieldDescriptor.Type.UINT32   => Json.fromString("uint32")
-      case FieldDescriptor.Type.UINT64   => Json.fromString("uint64")
-      case FieldDescriptor.Type.GROUP    => Json.fromString("group")
-    }
+    implicit val typeEncoder: Encoder[FieldDescriptor.Type] = (fieldType: FieldDescriptor.Type) => Json.fromString(fieldType.name())
   }
 
   final case class Service(name: String, fullName: String, methods: List[Method])
