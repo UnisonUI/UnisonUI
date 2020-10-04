@@ -204,7 +204,7 @@ class GitSpec extends TestBase with Inside {
 
             fixture.commit(".restui.yaml", grpcSpecs)
             for {
-              file <- "helloworld.proto" :: "helloworld.protoset" :: Nil
+              file <- "helloworld.protoset" :: "helloworld.proto" :: Nil
               path    = Paths.get(s"src/test/resources/$file")
               newPath = fixture.repo.resolve(file)
               _       = Files.copy(path, newPath)
