@@ -3,7 +3,8 @@ import java.io.InputStream
 import java.nio.ByteBuffer
 import java.{util => ju}
 
-import scala.collection.mutable
+import scala.annotation.tailrec
+import scala.util.chaining._
 
 import cats.syntax.option._
 import com.google.protobuf.Descriptors.FieldDescriptor.Type
@@ -35,31 +36,44 @@ class Reader(private val schema: Schema) {
   private def read(input: CodedInputStream, messageSchema: Option[MessageSchema]): Json =
     messageSchema match {
       case Some(messageSchema) =>
-        val map = mutable.Map.empty[String, Json]
-        while (!input.isAtEnd) {
-          val tag   = input.readTag()
-          val id    = WireFormat.getTagFieldNumber(tag)
-          val field = messageSchema.fields(id)
-          val name  = field.name
-          field.label match {
-            case Label.Repeated =>
-              val list = mutable.ListBuffer.from(map.get(name).map(_.asArray.toVector.flatten).getOrElse(Nil))
-              if (field.packed) {
-                val bytesIn = CodedInputStream.newInstance(input.readByteBuffer())
-                while (!bytesIn.isAtEnd)
-                  list += readValue(bytesIn, field)
-              } else list += readValue(input, field)
-              map.put(name, Json.arr(list.toList: _*))
-            case _ => map.put(name, readValue(input, field))
-          }
-        }
+        val result = decodeInput(input, messageSchema)
         val defaults = messageSchema.fields.valuesIterator.toList.collect {
-          case Field(_, name, _, _, _, Some(default), _, _) if !map.contains(name) => name -> default.asInstanceOf[Any].asJson
+          case Field(_, name, _, _, _, Some(default), _, _) if !result.contains(name) => name -> default.asInstanceOf[Any].asJson
         }
-        Json.obj(map.toList ++ defaults: _*)
+        Json.obj(result.toList ++ defaults: _*)
 
       case None => Json.Null
     }
+
+  @tailrec
+  private def decodeInput(input: CodedInputStream, messageSchema: MessageSchema, map: Map[String, Json] = Map.empty): Map[String, Json] =
+    if (input.isAtEnd()) map
+    else {
+      val tag   = input.readTag()
+      val id    = WireFormat.getTagFieldNumber(tag)
+      val field = messageSchema.fields(id)
+      val name  = field.name
+      val value = field.label match {
+        case Label.Repeated =>
+          val list = map.get(name).map(_.asArray.toVector.flatten).getOrElse(Nil)
+          val result =
+            if (field.packed)
+              input
+                .readByteBuffer()
+                .pipe(CodedInputStream.newInstance)
+                .pipe(decodeList(_, field, list))
+            else list :+ readValue(input, field)
+          Json.arr(result: _*)
+        case _ => readValue(input, field)
+      }
+      decodeInput(input, messageSchema, map + (name -> value))
+    }
+
+  @tailrec
+  private def decodeList(input: CodedInputStream, field: Field, list: Seq[Json]): Seq[Json] =
+    if (input.isAtEnd) list
+    else
+      decodeList(input, field, list :+ readValue(input, field))
 
   private def readValue(in: CodedInputStream, field: Field): Json =
     field.`type` match {

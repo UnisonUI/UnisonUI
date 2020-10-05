@@ -37,21 +37,36 @@ class Writer(private val schema: Schema) {
       jsonObject   <- json.asObject.toVector
       (key, value) <- jsonObject.toVector
       field        <- fieldMap.get(key).toVector
-      _ = writeRepeat(output, field, value)
+      _ = writeField(output, field, value)
     } yield ()
   }
 
-  private def writeRepeat(output: CodedOutputStream, field: Field, value: Json): Unit = {
+  private def writeField(output: CodedOutputStream, field: Field, value: Json): Unit = {
     val wireTypeValue = wireType(field.`type`)
     field.label match {
       case Label.Repeated =>
-        if (field.packed) {}
+        writeRepeat(output, field, value, wireTypeValue)
       case _ =>
         if (!field.default.contains(value.as[Any])) {
           output.writeTag(field.id, wireTypeValue)
           writeValue(output, field, value)
         }
     }
+  }
+
+  private def writeRepeat(output: CodedOutputStream, field: Field, value: Json, wireTypeValue: Int): Unit = {
+    val list = value.asArray.toVector.flatten
+    if (field.packed) {
+      val byteArrayOutputStream = new ByteArrayOutputStream()
+      val bytesOut              = CodedOutputStream.newInstance(byteArrayOutputStream)
+      list.foreach(writeValue(bytesOut, field, _))
+      bytesOut.flush()
+      output.writeByteArray(field.id, byteArrayOutputStream.toByteArray())
+    } else
+      list.foreach { value =>
+        output.writeTag(field.id, wireTypeValue)
+        writeValue(output, field, value)
+      }
   }
 
   private def writeValue(out: CodedOutputStream, field: Field, value: Json): Unit =
