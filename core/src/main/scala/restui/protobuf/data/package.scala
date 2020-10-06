@@ -68,7 +68,7 @@ package object data {
         .obj(
           "id"      -> Json.fromInt(field.id),
           "name"    -> Json.fromString(field.name),
-          "name"    -> field.label.asJson,
+          "label"   -> field.label.asJson,
           "type"    -> field.`type`.asJson,
           "packed"  -> Json.fromBoolean(field.packed),
           "default" -> field.default.asJson,

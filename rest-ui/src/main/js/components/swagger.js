@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 import { withRouter } from 'react-router-dom'
-import NoService from './noService'
 import SwaggerUI from 'swagger-ui-react'
 
 const theme = () => {
@@ -46,15 +45,11 @@ class Swagger extends Component {
     }
     return (
       <div>
-        {id ? (
-          <SwaggerUI
-            url={'/services/' + id}
-            requestInterceptor={requestInterceptor}
-            plugins={plugins}
-          />
-        ) : (
-          <NoService />
-        )}
+        <SwaggerUI
+          url={'/services/' + id}
+          requestInterceptor={requestInterceptor}
+          plugins={plugins}
+        />
       </div>
     )
   }

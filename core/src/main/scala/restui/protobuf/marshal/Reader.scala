@@ -35,28 +35,28 @@ class Reader(private val schema: Schema) {
   private def read(input: CodedInputStream, messageSchema: Option[MessageSchema]): Json =
     messageSchema match {
       case Some(messageSchema) =>
-        val map = mutable.Map.empty[Int, Json]
+        val map = mutable.Map.empty[String, Json]
         while (!input.isAtEnd) {
           val tag   = input.readTag()
           val id    = WireFormat.getTagFieldNumber(tag)
           val field = messageSchema.fields(id)
+          val name  = field.name
           field.label match {
             case Label.Repeated =>
-              val list = mutable.ListBuffer.from(map.get(id).map(_.asArray.toVector.flatten).getOrElse(Nil))
+              val list = mutable.ListBuffer.from(map.get(name).map(_.asArray.toVector.flatten).getOrElse(Nil))
               if (field.packed) {
                 val bytesIn = CodedInputStream.newInstance(input.readByteBuffer())
                 while (!bytesIn.isAtEnd)
                   list += readValue(bytesIn, field)
               } else list += readValue(input, field)
-              map.put(id, Json.arr(list.toList: _*))
-            case _ => map.put(id, readValue(input, field))
+              map.put(name, Json.arr(list.toList: _*))
+            case _ => map.put(name, readValue(input, field))
           }
         }
-        val result = map.toList.map { case (index, value) => messageSchema.fields(index).name -> value }
         val defaults = messageSchema.fields.valuesIterator.toList.collect {
-          case Field(_, name, _, _, _, Some(default), _, _) if !result.contains(name) => name -> default.asInstanceOf[Any].asJson
+          case Field(_, name, _, _, _, Some(default), _, _) if !map.contains(name) => name -> default.asInstanceOf[Any].asJson
         }
-        Json.obj(result ++ defaults: _*)
+        Json.obj(map.toList ++ defaults: _*)
 
       case None => Json.Null
     }

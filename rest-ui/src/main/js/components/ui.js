@@ -7,7 +7,10 @@ import axios from 'axios'
 import * as cornify from '../cornified'
 
 import Konami from 'react-konami-code'
+import NoService from './noService'
+
 const SwaggerWithRouter = loadable(() => import('./swagger'))
+const GrpcWithRouter = loadable(() => import('./grpc'))
 const ServiceLink = loadable(() => import('./serviceLink'))
 const history = createBrowserHistory()
 
@@ -85,7 +88,7 @@ export default class App extends Component {
                 name: data.name,
                 metadata: data.metadata,
                 useProxy: data.useProxy,
-            type: data.type
+                type: data.type
               }
             }
           })
@@ -186,7 +189,11 @@ export default class App extends Component {
       .flat()
       .find(service => history.location.hash === `#/${service.id}`)
     let useProxy = false
-    if (service) useProxy = service.useProxy
+    let type = null
+    if (service) {
+      useProxy = service.useProxy
+      type = service.type
+    }
     return (
       <div id="outer-container" style={{ height: '100%' }}>
         <Konami
@@ -204,7 +211,15 @@ export default class App extends Component {
             {this.getServices()}
           </Menu>
           <main id="page-wrap">
-            <SwaggerWithRouter useProxy={useProxy} />
+            {service ? (
+              type === 'openapi' ? (
+                <SwaggerWithRouter useProxy={useProxy} />
+              ) : (
+                <GrpcWithRouter title={service.name} />
+              )
+            ) : (
+              <NoService />
+            )}
           </main>
         </Router>
       </div>
