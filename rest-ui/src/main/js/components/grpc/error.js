@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {Collapse} from './utils'
+import { Collapse } from './utils'
 
 export default class Error extends Component {
   constructor (props) {

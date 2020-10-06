@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 
-function xclass(...args) {
+function xclass (...args) {
   return args.filter(a => !!a).join(" ").trim()
 }
 
