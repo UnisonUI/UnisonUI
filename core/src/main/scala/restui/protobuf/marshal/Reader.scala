@@ -18,16 +18,12 @@ object Reader {
   implicit class ReaderOps(private val schema: Schema) {
     private val reader               = new Reader(schema)
     def read(buf: Array[Byte]): Json = reader.read(buf)
-    def read(buf: ByteBuffer): Json  = reader.read(buf)
     def read(buf: InputStream): Json = reader.read(buf)
   }
 }
 
 class Reader(private val schema: Schema) {
   def read(buf: Array[Byte]): Json =
-    read(CodedInputStream.newInstance(buf), schema.root)
-
-  def read(buf: ByteBuffer): Json =
     read(CodedInputStream.newInstance(buf), schema.root)
 
   def read(input: InputStream): Json =
@@ -41,7 +37,6 @@ class Reader(private val schema: Schema) {
           case Field(_, name, _, _, _, Some(default), _, _) if !result.contains(name) => name -> default.asInstanceOf[Any].asJson
         }
         Json.obj(result.toList ++ defaults: _*)
-
       case None => Json.Null
     }
 
