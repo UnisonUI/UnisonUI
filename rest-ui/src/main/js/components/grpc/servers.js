@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { Col } from './utils'
+
 export default class Servers extends Component {
   render () {
     return (
@@ -23,8 +24,4 @@ export default class Servers extends Component {
       </div>
     )
   }
-}
-
-class Server extends Component {
-  render () {}
 }

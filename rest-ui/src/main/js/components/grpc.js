@@ -25,7 +25,6 @@ class Grpc extends Component {
   }
 
   render () {
-    const id = this.props.location.pathname.substring(1)
     const loading = this.loadingWidget()
     return (
       <div>

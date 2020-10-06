@@ -5,7 +5,7 @@ import React, { Component } from 'react'
 
 SyntaxHighlighter.registerLanguage('json', json)
 
-export default const HighlightCode extends Component {
+export default class HighlightCode extends Component {
   render () {
     let { className, code } = this.props
     if (typeof code !== 'string') {

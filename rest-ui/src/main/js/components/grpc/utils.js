@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 
 function xclass (...args) {
-  return args.filter(a => !!a).join(" ").trim()
+  return args.filter(a => !!a).join(' ').trim()
 }
 
 export class Container extends React.Component {
@@ -49,9 +49,11 @@ export class Col extends React.Component {
     const classesAr = []
 
     for (const device in DEVICES) {
+      /* eslint-disable no-prototype-builtins */
       if (!DEVICES.hasOwnProperty(device)) {
         continue
       }
+      /* eslint-enable no-prototype-builtins */
       const deviceClass = DEVICES[device]
       if (device in this.props) {
         const val = this.props[device]
@@ -126,7 +128,7 @@ export class Collapse extends Component {
   }
 }
 
-const NoMargin = ({ children }) => <div className="no-margin"> {children} </div>
+const NoMargin = ({ children }) => <div className='no-margin'> {children} </div>
 
 NoMargin.propTypes = {
   children: PropTypes.node
