@@ -1,6 +1,5 @@
 package restui.protobuf.marshal
 import java.io.InputStream
-import java.nio.ByteBuffer
 import java.{util => ju}
 
 import scala.annotation.tailrec
