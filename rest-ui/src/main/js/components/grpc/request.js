@@ -54,14 +54,13 @@ class RequestEditor extends PureComponent {
   }
 
   render () {
-    const { errors } = this.props
     const { value } = this.state
 
     return (
       <div className="body-param">
         <textarea
           className='body-param__text'
-          title={errors.size ? errors.join(', ') : ''}
+          title=''
           value={value}
           onChange={this.onDomChange}
         />
