@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import HighlightCode from './highlight-code'
 import { Collapse } from './utils'
 import { ChevronDown, ChevronRight } from 'react-feather'
 
@@ -35,7 +34,6 @@ export default class Models extends Component {
           {this.props.spec.enums.map(value => (
             <Model key={`models-section-${value.name}`} schema={value} />
           ))}
-          <HighlightCode code={this.props.spec} />
         </Collapse>
       </section>
     )

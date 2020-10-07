@@ -5,24 +5,6 @@ function xclass (...args) {
   return args.filter(a => !!a).join(' ').trim()
 }
 
-export class Container extends React.Component {
-  render () {
-    const { fullscreen, full, ...rest } = this.props
-    if (fullscreen) return <section {...rest} />
-
-    const containerClass = 'swagger-container' + (full ? '-full' : '')
-    return (
-      <section {...rest} className={xclass(rest.className, containerClass)} />
-    )
-  }
-}
-
-Container.propTypes = {
-  fullscreen: PropTypes.bool,
-  full: PropTypes.bool,
-  className: PropTypes.string
-}
-
 const DEVICES = {
   mobile: '',
   tablet: '-tablet',
