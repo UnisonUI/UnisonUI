@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Link, Collapse } from './utils'
-import  Method  from './method'
+import Method from './method'
 import { ChevronDown, ChevronRight } from 'react-feather'
 
 export default class Services extends Component {
