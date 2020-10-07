@@ -3,6 +3,7 @@ import { createBrowserHistory } from 'history'
 import React, { Component } from 'react'
 import { HashRouter as Router } from 'react-router-dom'
 import Menu from 'react-burger-menu/lib/menus/push'
+import ServiceLink from './serviceLink'
 import axios from 'axios'
 import * as cornify from '../cornified'
 
@@ -11,7 +12,6 @@ import NoService from './noService'
 
 const SwaggerWithRouter = loadable(() => import('./swagger'))
 const GrpcWithRouter = loadable(() => import('./grpc'))
-const ServiceLink = loadable(() => import('./serviceLink'))
 const history = createBrowserHistory()
 
 export default class App extends Component {

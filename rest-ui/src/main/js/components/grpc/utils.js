@@ -1,6 +1,45 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 
+export const messageExample = (schema, method) => {
+  const result = {}
+  const fields = schema.messages.find(message => message.name === method).fields
+  for (const field of fields) {
+    let value =
+      field.default !== undefined
+        ? this.default
+        : (type => {
+          switch (type) {
+            case 'STRING':
+              return 'STRING'
+            case 'BYTES':
+              return btoa('BYTES')
+            case 'BOOL':
+              return true
+            case 'MESSAGE':
+              return messageExample(schema, field.schema)
+            case 'ENUM':
+              return schema.enums.find(e => e.name === field.schema).values[0]
+            case 'FLOAT':
+            case 'DOUBLE':
+              return 0.5
+            default:
+              return 42
+          }
+        })(field.type)
+    if (field.label === 'repeated') {
+      value = [value]
+    }
+    result[field.name] = value
+  }
+  return result
+}
+
+export const stringify = object => {
+  if (typeof object === 'string') return object
+  return JSON.stringify(object, null, 2)
+}
+
 function xclass (...args) {
   return args.filter(a => !!a).join(' ').trim()
 }
@@ -12,6 +51,11 @@ const DEVICES = {
   large: '-hd'
 }
 
+export const Link = ({ text }) => (
+  <a className="nostyle normal-case" onClick={e => e.preventDefault()}>
+    <span>{text}</span>
+  </a>
+)
 export class Col extends React.Component {
   render () {
     const {

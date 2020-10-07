@@ -23,7 +23,7 @@ export default class Layout extends Component {
         <Servers servers={servers} onChange={this.setServer} />
         <Row>
           <Col mobile={12} desktop={12}>
-            <Services schema={schema} server={this.state.server} />
+            <Services schema={schema} server={this.state.server} id={this.props.id} />
           </Col>
         </Row>
         <Row>

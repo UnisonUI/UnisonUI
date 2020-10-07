@@ -26,10 +26,11 @@ class Grpc extends Component {
 
   render () {
     const loading = this.loadingWidget()
+    const id = this.props.location.pathname.substring(1)
     return (
       <div>
         {!loading ? (
-          <Layout title={this.props.title} spec={this.state.spec} />
+          <Layout title={this.props.title} spec={this.state.spec} id={id} />
         ) : (
           loading
         )}
@@ -42,25 +43,25 @@ class Grpc extends Component {
     if (this.state.spec) return loadingMessage
     if (!this.state.error) {
       loadingMessage = (
-        <div className="info">
-          <div className="loading-container">
-            <div className="loading" />
+        <div className='info'>
+          <div className='loading-container'>
+            <div className='loading' />
           </div>
         </div>
       )
     } else {
       loadingMessage = (
-        <div className="info">
-          <div className="loading-container">
-            <h4 className="title">Failed to load gRPC definition.</h4>
+        <div className='info'>
+          <div className='loading-container'>
+            <h4 className='title'>Failed to load gRPC definition.</h4>
             <Error message={this.state.error} />
           </div>
         </div>
       )
     }
     return (
-      <div className="swagger-ui">
-        <div className="loading-container">{loadingMessage}</div>
+      <div className='swagger-ui'>
+        <div className='loading-container'>{loadingMessage}</div>
       </div>
     )
   }
