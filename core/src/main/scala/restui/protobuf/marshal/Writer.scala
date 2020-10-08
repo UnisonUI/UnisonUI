@@ -34,12 +34,20 @@ class Writer(private val schema: Schema) {
   }
 
   private def writeObject(json: Json, messageSchema: MessageSchema, output: CodedOutputStream): Either[Throwable, Unit] = {
-    val fieldMap = messageSchema.fields.map { case (_, field) => field.name -> field }
-    val fields = for {
-      jsonObject   <- json.asObject.toVector
-      (key, value) <- jsonObject.toVector
-      field        <- fieldMap.get(key).toVector
-    } yield (field, value)
+    val fieldMap  = messageSchema.fields.map { case (_, field) => field.name -> field }
+    val keyValues = json.asObject.toVector.flatMap(_.toVector)
+    val fields = if (messageSchema.isMap) for {
+      (key, value) <- keyValues
+      keyField     <- fieldMap.get("key").toVector
+      valueField   <- fieldMap.get("value").toVector
+      tuple        <- (keyField, Json.fromString(key)) :: (valueField, value) :: Nil
+    } yield tuple
+    else
+      for {
+        (key, value) <- keyValues
+        field        <- fieldMap.get(key).toVector
+      } yield (field, value)
+
     fields.traverse { case (field, value) => writeField(output, field, value) }.map(_ => ())
   }
 
@@ -57,19 +65,28 @@ class Writer(private val schema: Schema) {
   }
 
   private def writeRepeat(output: CodedOutputStream, field: Field, value: Json, wireTypeValue: Int): Either[Throwable, Unit] = {
-    val list = value.asArray.toVector.flatten
-    if (field.packed) {
-      val byteArrayOutputStream = new ByteArrayOutputStream()
-      val bytesOut              = CodedOutputStream.newInstance(byteArrayOutputStream)
-      val result                = list.traverse(writeValue(bytesOut, field, _)).map(_ => ())
-      bytesOut.flush()
-      output.writeByteArray(field.id, byteArrayOutputStream.toByteArray())
-      result
-    } else
-      list.traverse { value =>
-        output.writeTag(field.id, wireTypeValue)
-        writeValue(output, field, value)
-      }.map(_ => ())
+    val maybeList = field.schema match {
+      case Some(subSchema) if schema.messages.get(subSchema).exists(_.isMap) =>
+        if (value.isObject)
+          value.asObject.toVector.map(Json.fromJsonObject(_)).asRight
+        else DecodingFailure(s""""${field.name}" is expecting: ${field.`type`.name}""", Nil).asLeft
+      case _ => value.asArray.toVector.flatten.asRight
+    }
+
+    maybeList.flatMap { list =>
+      if (field.packed) {
+        val byteArrayOutputStream = new ByteArrayOutputStream()
+        val bytesOut              = CodedOutputStream.newInstance(byteArrayOutputStream)
+        val result                = list.traverse(writeValue(bytesOut, field, _)).map(_ => ())
+        bytesOut.flush()
+        output.writeByteArray(field.id, byteArrayOutputStream.toByteArray())
+        result
+      } else
+        list.traverse { value =>
+          output.writeTag(field.id, wireTypeValue)
+          writeValue(output, field, value)
+        }.map(_ => ())
+    }
   }
 
   private def writeValue(out: CodedOutputStream, field: Field, value: Json): Either[Throwable, Unit] =
@@ -102,13 +119,14 @@ class Writer(private val schema: Schema) {
         bytesOut.flush()
         out.writeByteArrayNoTag(baos.toByteArray)
         result
+
       case Type.GROUP => (new IllegalArgumentException("Unsupported type: GROUP")).asLeft[Unit]
     }).leftMap {
       case e: DecodingFailure => e.withMessage(s""""${field.name}" is expecting: ${field.`type`.name}""")
       case e                  => e
     }
-
 // $COVERAGE-OFF$
+
   private def wireType(fieldType: FieldDescriptor.Type): Int =
     (fieldType match {
       case Type.FLOAT    => WireFormat.FieldType.FLOAT

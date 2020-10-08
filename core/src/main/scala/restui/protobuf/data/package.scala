@@ -24,7 +24,15 @@ package object data {
       name: String,
       fields: Map[Int, Field],
       options: Option[Map[String, String]]
-  ) extends DescriptorSchema
+  ) extends DescriptorSchema {
+    val isMap: Boolean =
+      options.exists {
+        _.exists {
+          case ("google.protobuf.MessageOptions.map_entry", "true") => true
+          case _                                                    => false
+        }
+      }
+  }
 
   object MessageSchema {
     implicit val encoder: Encoder[MessageSchema] = (message: MessageSchema) =>
@@ -86,6 +94,7 @@ package object data {
 
   final case class Service(name: String, fullName: String, methods: List[Method])
   final case class Method(name: String, inputType: Schema, outputType: Schema)
+
   object Service {
     implicit val encoder: Encoder[Service] = (service: Service) =>
       Json.obj(
@@ -94,6 +103,7 @@ package object data {
         "methods"  -> service.methods.asJson
       )
   }
+
   object Method {
     implicit val encoder: Encoder[Method] = (method: Method) =>
       Json.obj(
