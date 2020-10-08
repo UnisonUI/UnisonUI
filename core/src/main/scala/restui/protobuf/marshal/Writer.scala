@@ -6,10 +6,9 @@ import cats.implicits._
 import com.google.protobuf.Descriptors.FieldDescriptor
 import com.google.protobuf.Descriptors.FieldDescriptor.Type
 import com.google.protobuf.{CodedOutputStream, WireFormat}
-import io.circe.Json
+import io.circe.{DecodingFailure, Json}
 import restui.protobuf.data._
 import restui.protobuf.json._
-import io.circe.DecodingFailure
 
 object Writer {
   implicit class WriterOps(private val schema: Schema) {
