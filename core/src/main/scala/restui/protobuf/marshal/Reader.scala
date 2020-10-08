@@ -6,13 +6,13 @@ import scala.annotation.tailrec
 import scala.util.chaining._
 
 import cats.implicits._
+import com.google.protobuf.Descriptors.FieldDescriptor
 import com.google.protobuf.Descriptors.FieldDescriptor.Type
 import com.google.protobuf.{CodedInputStream, WireFormat}
 import io.circe.Json
 import io.circe.syntax._
 import restui.protobuf.data._
 import restui.protobuf.json._
-import com.google.protobuf.Descriptors.FieldDescriptor
 
 object Reader {
   implicit class ReaderOps(private val schema: Schema) {
@@ -36,7 +36,6 @@ class Reader(private val schema: Schema) {
           result <- decodeInput(input, messageSchema).foldRight(Seq.empty[(String, Json)].asRight[Throwable]) {
             case (_, exception @ Left(_)) =>
               exception
-            case ((_, Left(exception)), _) => exception.asLeft
             case ((key, json), Right(acc)) =>
               json.map(value => acc :+ key -> value)
           }
