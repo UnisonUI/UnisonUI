@@ -36,8 +36,10 @@ jobs:
         mkdir target/test-reports
         cp core/target/test-reports/* target/test-reports || true
         cp rest-ui/target/test-reports/* target/test-reports || true
-        cp service-discovery/docker/target/test-reports/* target/test-reports || true
-        cp service-discovery/kubernetes/target/test-reports/* target/test-reports || true
+        cp providers/docker/target/test-reports/* target/test-reports || true
+        cp providers/kubernetes/target/test-reports/* target/test-reports || true
+        cp providers/git/target/test-reports/* target/test-reports || true
+        cp providers/webhook/target/test-reports/* target/test-reports || true
     - name: Codecov
       uses: codecov/codecov-action@v1.0.13
     - name: action-slack
