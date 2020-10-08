@@ -20,7 +20,7 @@ class Writer(private val schema: Schema) {
   def write(json: Json): Either[Throwable, Array[Byte]] =
     schema.root.fold(Array.empty[Byte].asRight[Throwable]) { root =>
       val byteArrayOutputStream = new ByteArrayOutputStream()
-      val result                = write(json, root, byteArrayOutputStream)
+      val result                = write(json.deepDropNullValues, root, byteArrayOutputStream)
       byteArrayOutputStream.close
       val bytes = byteArrayOutputStream.toByteArray()
       result.map(_ => bytes)
@@ -125,8 +125,8 @@ class Writer(private val schema: Schema) {
       case e: DecodingFailure => e.withMessage(s""""${field.name}" is expecting: ${field.`type`.name}""")
       case e                  => e
     }
-// $COVERAGE-OFF$
 
+// $COVERAGE-OFF$
   private def wireType(fieldType: FieldDescriptor.Type): Int =
     (fieldType match {
       case Type.FLOAT    => WireFormat.FieldType.FLOAT

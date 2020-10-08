@@ -12,6 +12,7 @@ import io.circe.Json
 import io.circe.syntax._
 import restui.protobuf.data._
 import restui.protobuf.json._
+import com.google.protobuf.Descriptors.FieldDescriptor
 
 object Reader {
   implicit class ReaderOps(private val schema: Schema) {
@@ -41,11 +42,23 @@ class Reader(private val schema: Schema) {
           }
           defaults = messageSchema.fields.valuesIterator.toList.collect {
             case Field(_, name, _, _, _, Some(default), _, _) if !result.exists(_._1 == name) => name -> default.asInstanceOf[Any].asJson
+            case field @ Field(_, name, _, _, _, _, _, _) if !result.exists(_._1 == name)     => name -> setDefault(field)
           }
         } yield Json.obj(result ++ defaults: _*)
       case None => Json.Null.asRight
     }
 
+  private def setDefault(field: Field): Json =
+    field.`type` match {
+      case FieldDescriptor.Type.BOOL => Json.fromBoolean(false)
+      case FieldDescriptor.Type.FIXED32 | FieldDescriptor.Type.SFIXED32 | FieldDescriptor.Type.SINT32 | FieldDescriptor.Type.INT32 |
+          FieldDescriptor.Type.FIXED64 | FieldDescriptor.Type.SFIXED64 | FieldDescriptor.Type.SINT64 | FieldDescriptor.Type.INT64 =>
+        Json.fromInt(0)
+      case FieldDescriptor.Type.FLOAT | FieldDescriptor.Type.DOUBLE => Json.fromDoubleOrNull(0.0)
+      case FieldDescriptor.Type.STRING | FieldDescriptor.Type.BYTES => Json.fromString("")
+      case FieldDescriptor.Type.ENUM                                => Json.fromString(schema.enums(field.schema.get).values(1))
+      case _                                                        => Json.Null
+    }
   @tailrec
   private def decodeInput(input: CodedInputStream,
                           messageSchema: MessageSchema,

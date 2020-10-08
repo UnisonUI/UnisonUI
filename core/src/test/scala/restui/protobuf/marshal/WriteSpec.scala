@@ -39,14 +39,28 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside with LazyLogging {
       "with a complex type" in {
         val result = for {
           schema <- Paths.get("src/test/resources/complex.proto").toSchema
-          input = parse("""{"myEnum":["VALUE1","VALUE2"],"myMap":{"k":"val"},"name":"test"}""").getOrElse(Json.Null)
+          input = parse("""{
+          |  "myEnum":["VALUE1","VALUE2"],
+          |  "myMap":{"k":"val"},
+          |  "name":"test",
+          |  "tree":{
+          |    "value": 0,
+          |    "root": true,
+          |    "children": [
+          |      {"value":1,"children":[]},
+          |      {"value":2,"children":[]}
+          |    ]
+          | }
+          |}""".stripMargin).getOrElse(Json.Null)
           bytes <- schema.copy(rootKey = "helloworld.Complex".some).write(input)
           r     <- schema.copy(rootKey = "helloworld.Complex".some).read(bytes)
           _ = logger.info("{}", r)
         } yield bytes
 
         inside(result) {
-          case Right(bytes) => bytes shouldBe Array(18, 2, 0, 1, 26, 8, 10, 1, 107, 18, 3, 118, 97, 108, 10, 4, 116, 101, 115, 116)
+          case Right(bytes) =>
+            bytes shouldBe Array(18, 2, 0, 1, 26, 8, 10, 1, 107, 18, 3, 118, 97, 108, 10, 4, 116, 101, 115, 116, 34, 12, 8, 0, 24, 1, 18, 2,
+              8, 1, 18, 2, 8, 2)
         }
       }
     }
