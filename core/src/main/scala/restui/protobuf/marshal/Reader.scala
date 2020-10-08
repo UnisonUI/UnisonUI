@@ -55,6 +55,7 @@ class Reader(private val schema: Schema) {
         case FieldDescriptor.Type.ENUM                                => Json.fromString(schema.enums(field.schema.get).values(1))
         case _                                                        => Json.Null
       }
+
   @tailrec
   private def decodeInput(input: CodedInputStream,
                           messageSchema: MessageSchema,
@@ -67,38 +68,40 @@ class Reader(private val schema: Schema) {
       val name  = field.name
       val value = field.label match {
         case Label.Repeated =>
-          val maybeList = map.get(name).map(_.map(_.asArray.toVector.flatten)).getOrElse(Seq.empty[Json].asRight)
-          val maybeResult =
-            if (field.packed)
-              input
-                .readByteBuffer()
-                .pipe(CodedInputStream.newInstance)
-                .pipe(decodeList(_, field, maybeList.fold(_ => Nil, _.map(_.asRight[Throwable]))))
-            else
-              (for {
-                list  <- maybeList
-                value <- readValue(input, field)
-              } yield list :+ value).fold(_ => Nil, _.map(_.asRight[Throwable]))
-          maybeResult.toList.sequence.map { list =>
-            field.schema.flatMap(schema.messages.get(_)) match {
-              case Some(subSchema) if subSchema.isMap =>
-                val obj = list.foldLeft(Seq.empty[(String, Json)]) {
-                  case (acc, json) =>
-                    val keyValues = json.asObject.toVector.flatMap(_.toVector).toMap
-                    (for {
-                      key   <- keyValues("key").asString
-                      value <- keyValues.get("value")
-                    } yield (key -> value)).fold(acc)(obj => acc :+ obj)
-                }
-                Json.obj(obj: _*)
-              case _ => Json.arr(list: _*)
-            }
-          }
+          map.get(name).map(_.map(_.asArray.toVector.flatten)).getOrElse(Seq.empty[Json].asRight).pipe(decodeRepeat(input, field, _))
         case _ => readValue(input, field)
       }
       decodeInput(input, messageSchema, map + (name -> value))
     }
 
+  private def decodeRepeat(input: CodedInputStream, field: Field, maybeList: Either[Throwable, Seq[Json]]): Either[Throwable, Json] = {
+    val maybeResult =
+      if (field.packed)
+        input
+          .readByteBuffer()
+          .pipe(CodedInputStream.newInstance)
+          .pipe(decodeList(_, field, maybeList.fold(_ => Nil, _.map(_.asRight[Throwable]))))
+      else
+        (for {
+          list  <- maybeList
+          value <- readValue(input, field)
+        } yield list :+ value).fold(_ => Nil, _.map(_.asRight[Throwable]))
+    maybeResult.toList.sequence.map { list =>
+      field.schema.flatMap(schema.messages.get(_)) match {
+        case Some(subSchema) if subSchema.isMap =>
+          val obj = list.foldLeft(Seq.empty[(String, Json)]) {
+            case (acc, json) =>
+              val keyValues = json.asObject.toVector.flatMap(_.toVector).toMap
+              (for {
+                key   <- keyValues("key").asString
+                value <- keyValues.get("value")
+              } yield (key -> value)).fold(acc)(obj => acc :+ obj)
+          }
+          Json.obj(obj: _*)
+        case _ => Json.arr(list: _*)
+      }
+    }
+  }
   @tailrec
   private def decodeList(input: CodedInputStream, field: Field, list: Seq[Either[Throwable, Json]]): Seq[Either[Throwable, Json]] =
     if (input.isAtEnd) list
