@@ -33,12 +33,7 @@ class Reader(private val schema: Schema) {
     messageSchema match {
       case Some(messageSchema) =>
         for {
-          result <- decodeInput(input, messageSchema).foldRight(Seq.empty[(String, Json)].asRight[Throwable]) {
-            case (_, exception @ Left(_)) =>
-              exception
-            case ((key, json), Right(acc)) =>
-              json.map(value => acc :+ key -> value)
-          }
+          result <- decodeInput(input, messageSchema).toList.traverse { case (key, json) => json.map(key -> _) }
           defaults = messageSchema.fields.valuesIterator.toList.collect {
             case Field(_, name, _, _, _, Some(default), _, _) if !result.exists(_._1 == name) => name -> default.asInstanceOf[Any].asJson
             case field @ Field(_, name, _, _, _, _, _, _) if !result.exists(_._1 == name)     => name -> setDefault(field)
@@ -48,16 +43,18 @@ class Reader(private val schema: Schema) {
     }
 
   private def setDefault(field: Field): Json =
-    field.`type` match {
-      case FieldDescriptor.Type.BOOL => Json.fromBoolean(false)
-      case FieldDescriptor.Type.FIXED32 | FieldDescriptor.Type.SFIXED32 | FieldDescriptor.Type.SINT32 | FieldDescriptor.Type.INT32 |
-          FieldDescriptor.Type.FIXED64 | FieldDescriptor.Type.SFIXED64 | FieldDescriptor.Type.SINT64 | FieldDescriptor.Type.INT64 =>
-        Json.fromInt(0)
-      case FieldDescriptor.Type.FLOAT | FieldDescriptor.Type.DOUBLE => Json.fromDoubleOrNull(0.0)
-      case FieldDescriptor.Type.STRING | FieldDescriptor.Type.BYTES => Json.fromString("")
-      case FieldDescriptor.Type.ENUM                                => Json.fromString(schema.enums(field.schema.get).values(1))
-      case _                                                        => Json.Null
-    }
+    if (field.label == Label.Repeated && !field.schema.flatMap(schema.messages.get(_)).exists(_.isMap)) Json.arr()
+    else
+      field.`type` match {
+        case FieldDescriptor.Type.BOOL => Json.fromBoolean(false)
+        case FieldDescriptor.Type.FIXED32 | FieldDescriptor.Type.SFIXED32 | FieldDescriptor.Type.SINT32 | FieldDescriptor.Type.INT32 |
+            FieldDescriptor.Type.FIXED64 | FieldDescriptor.Type.SFIXED64 | FieldDescriptor.Type.SINT64 | FieldDescriptor.Type.INT64 =>
+          Json.fromInt(0)
+        case FieldDescriptor.Type.FLOAT | FieldDescriptor.Type.DOUBLE => Json.fromDoubleOrNull(0.0)
+        case FieldDescriptor.Type.STRING | FieldDescriptor.Type.BYTES => Json.fromString("")
+        case FieldDescriptor.Type.ENUM                                => Json.fromString(schema.enums(field.schema.get).values(1))
+        case _                                                        => Json.Null
+      }
   @tailrec
   private def decodeInput(input: CodedInputStream,
                           messageSchema: MessageSchema,
@@ -82,28 +79,21 @@ class Reader(private val schema: Schema) {
                 list  <- maybeList
                 value <- readValue(input, field)
               } yield list :+ value).fold(_ => Nil, _.map(_.asRight[Throwable]))
-          maybeResult
-            .foldLeft(Seq.empty[Json].asRight[Throwable]) { (acc, elem) =>
-              for {
-                list <- acc
-                e    <- elem
-              } yield (list :+ e)
+          maybeResult.toList.sequence.map { list =>
+            field.schema.flatMap(schema.messages.get(_)) match {
+              case Some(subSchema) if subSchema.isMap =>
+                val obj = list.foldLeft(Seq.empty[(String, Json)]) {
+                  case (acc, json) =>
+                    val keyValues = json.asObject.toVector.flatMap(_.toVector).toMap
+                    (for {
+                      key   <- keyValues("key").asString
+                      value <- keyValues.get("value")
+                    } yield (key -> value)).fold(acc)(obj => acc :+ obj)
+                }
+                Json.obj(obj: _*)
+              case _ => Json.arr(list: _*)
             }
-            .map { list =>
-              field.schema.flatMap(schema.messages.get(_)) match {
-                case Some(subSchema) if subSchema.isMap =>
-                  val obj = list.foldLeft(Seq.empty[(String, Json)]) {
-                    case (acc, json) =>
-                      val keyValues = json.asObject.toVector.flatMap(_.toVector).toMap
-                      (for {
-                        key   <- keyValues("key").asString
-                        value <- keyValues.get("value")
-                      } yield (key -> value)).fold(acc)(obj => acc :+ obj)
-                  }
-                  Json.obj(obj: _*)
-                case _ => Json.arr(list: _*)
-              }
-            }
+          }
         case _ => readValue(input, field)
       }
       decodeInput(input, messageSchema, map + (name -> value))
