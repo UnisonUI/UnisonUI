@@ -4,7 +4,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 import akka.NotUsed
-import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse, Uri}
 import akka.http.scaladsl.settings.ConnectionPoolSettings
@@ -14,9 +14,9 @@ import com.typesafe.scalalogging.LazyLogging
 import restui.providers.docker.client.transport.DockerSock
 import restui.providers.docker.client.{HttpClient => HttpClientInterface}
 
-class HttpClient(private val uri: String)(implicit actorSystem: ActorSystem) extends HttpClientInterface with LazyLogging {
+class HttpClient(private val uri: String)(implicit actorSystem: ActorSystem[_]) extends HttpClientInterface with LazyLogging {
 
-  implicit val executionContext: ExecutionContext = actorSystem.dispatcher
+  implicit val executionContext: ExecutionContext = actorSystem.executionContext
 
   private val settings = ConnectionPoolSettings(actorSystem)
 

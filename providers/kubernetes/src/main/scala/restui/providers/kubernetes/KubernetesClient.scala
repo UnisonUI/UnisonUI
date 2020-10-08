@@ -4,7 +4,8 @@ import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
 import akka.NotUsed
-import akka.actor.{ActorSystem, Props}
+import akka.actor.Props
+import akka.actor.typed.ActorSystem
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{BroadcastHub, Keep, Sink, Source}
 import com.typesafe.scalalogging.LazyLogging
@@ -13,13 +14,14 @@ import skuber._
 import skuber.api.Configuration
 import skuber.json.format._
 
-class KubernetesClient(private val settings: Settings)(implicit system: ActorSystem) extends LazyLogging {
-  implicit val executionContent: ExecutionContext = system.dispatcher
-  private val BufferSize                          = 10
+class KubernetesClient(private val settings: Settings)(implicit system: ActorSystem[_]) extends LazyLogging {
+  private implicit val executionContent: ExecutionContext = system.executionContext
+  private val classicSystem: akka.actor.ActorSystem       = system.classicSystem
+  private val BufferSize                                  = 10
   private val (queue, source) =
     Source.queue[ServiceEvent](BufferSize, OverflowStrategy.backpressure).toMat(BroadcastHub.sink[ServiceEvent])(Keep.both).run()
 
-  private val serviceActorRef = system.actorOf(Props(classOf[ServiceActor], settings.labels, queue))
+  private val serviceActorRef = classicSystem.actorOf(Props(classOf[ServiceActor], settings.labels, queue))
 
   def listCurrentAndFutureServices: Source[ServiceEvent, NotUsed] =
     Configuration.inClusterConfig match {
@@ -27,7 +29,7 @@ class KubernetesClient(private val settings: Settings)(implicit system: ActorSys
         logger.warn("Couldn't connect to the Kubernetes cluster", e)
         Source.empty
       case Success(configuration) =>
-        val k8s = k8sInit(configuration)
+        val k8s = k8sInit(configuration)(classicSystem)
         Source
           .tick(1.second, settings.pollingInterval, ())
           .flatMapConcat { _ =>

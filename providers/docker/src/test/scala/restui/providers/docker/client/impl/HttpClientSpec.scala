@@ -2,24 +2,19 @@ package restui.providers.docker.client.impl
 
 import java.nio.file.Files
 
-import scala.concurrent.ExecutionContext
-
-import akka.actor.ActorSystem
+import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives.{complete => httpComplete, _}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.stream.alpakka.unixdomainsocket.scaladsl.UnixDomainSocket
 import akka.stream.scaladsl.{Flow, Sink, Source}
-import akka.testkit.{ImplicitSender, TestKit}
 import akka.util.ByteString
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 
-class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender with AsyncWordSpecLike with Matchers with BeforeAndAfterAll {
-  implicit val ec: ExecutionContext = system.dispatcher
-  private val httpResponse          = ByteString("""HTTP/1.1 200 OK
+class HttpClientSpec extends ScalaTestWithActorTestKit with AsyncWordSpecLike with Matchers {
+  private val httpResponse = ByteString("""HTTP/1.1 200 OK
 |Content-Type: text/plain; charset=UTF-8
 |Content-Length: 2
 |Server: Test
@@ -28,8 +23,6 @@ class HttpClientSpec extends TestKit(ActorSystem("test")) with ImplicitSender wi
 |
 |OK
 """.stripMargin)
-  override def afterAll(): Unit =
-    TestKit.shutdownActorSystem(system)
   "Get a resource" when {
     "using an unix domain socket" in {
       val sockFile = Files.createTempFile("restui_unix", ".sock").toAbsolutePath()

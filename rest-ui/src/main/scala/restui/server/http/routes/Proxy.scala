@@ -6,7 +6,7 @@ import java.{util => ju}
 import scala.concurrent.Future
 import scala.util.chaining._
 
-import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
@@ -14,13 +14,13 @@ import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.{Sink, Source}
 
 object Proxy {
-  def route(implicit actorSystem: ActorSystem): Route = handle(handler)
-  private def handler(implicit actorSystem: ActorSystem): PartialFunction[HttpRequest, Future[HttpResponse]] = {
+  def route(implicit actorSystem: ActorSystem[_]): Route = handle(handler)
+  private def handler(implicit actorSystem: ActorSystem[_]): PartialFunction[HttpRequest, Future[HttpResponse]] = {
     case request @ HttpRequest(_, uri, _, _, _) if uri.path.startsWith(Uri.Path("/proxy/")) && !uri.path.tail.tail.tail.isEmpty =>
       proxy(request.withUri(request.uri.withPath(request.uri.path.tail.tail)))
   }
 
-  private def proxy(request: HttpRequest)(implicit actorSystem: ActorSystem): Future[HttpResponse] = {
+  private def proxy(request: HttpRequest)(implicit actorSystem: ActorSystem[_]): Future[HttpResponse] = {
     val proxyURL =
       request.uri.path.tail.toString.pipe(decode)
     val uri = Uri(proxyURL)

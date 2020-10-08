@@ -16,6 +16,7 @@ import com.typesafe.scalalogging.LazyLogging
 import io.circe.generic.auto._
 import io.circe.yaml.parser
 import restui.models.{Metadata, Service, ServiceEvent}
+import restui.protobuf.data.Schema
 import restui.providers.git._
 import restui.providers.git.git.data._
 import restui.providers.git.process.{Process, ProcessArgs}
@@ -67,15 +68,15 @@ object Git extends LazyLogging {
 
   private val findSpecificationFiles: Flow[FilesWithSha, FilesWithShaWithEvent] = AkkaFlow[FilesWithSha].map {
     case ((repository, files), sha1) =>
-      val (repositoryWithNewPath, rootUseProxy) =
-        findRestUIConfig(repository.directory.get.toPath).fold(repository -> Option.empty[Boolean]) {
-          case RestUI(serviceName, specificationPaths, useProxy) =>
-            repository.copy(specificationPaths = specificationPaths, serviceName = serviceName) -> useProxy
-        }
+      val (repositoryWithNewPath, rootUseProxy, grpcSettings) =
+        findRestUIConfig(repository.directory.get.toPath)
+          .fold((repository, Option.empty[Boolean], Map.empty[String, GrpcSetting])) {
+            case RestUI(serviceName, specificationPaths, grpcSettings, useProxy) =>
+              (repository.copy(specificationPaths = specificationPaths, serviceName = serviceName), useProxy, grpcSettings)
+          }
 
       val repoPath = repository.directory.get.toPath
-
-      val toAdd = filterSpecificationsFiles(repositoryWithNewPath, files, rootUseProxy)
+      val toAdd    = filterSpecificationsFiles(repositoryWithNewPath, files, grpcSettings, rootUseProxy)
       val toDelete = repository.specificationPaths.filter { spec =>
         !repositoryWithNewPath.specificationPaths.exists(newSpec => newSpec.path == spec.path)
       }.map { spec =>
@@ -168,6 +169,7 @@ object Git extends LazyLogging {
 
   private def filterSpecificationsFiles(repo: Repository,
                                         files: List[(Option[String], Path)],
+                                        grpcSettings: Map[String, GrpcSetting],
                                         rootUseProxy: Option[Boolean]): List[GitFileEvent] = {
     val repoPath = repo.directory.get.toPath
     val specificationPaths = repo.specificationPaths.map {
@@ -182,7 +184,15 @@ object Git extends LazyLogging {
               file.startsWith(specificationPath)
           }.map {
             case (name, _, useProxy) =>
-              GitFileEvent.Upserted(name, file, useProxy)
+              GitFileEvent.UpsertedOpenApi(name, file, useProxy)
+          }.orElse {
+            grpcSettings.find {
+              case (path, _) =>
+                path.pipe(repoPath.resolve).normalize.pipe(file.startsWith)
+            }.map {
+              case (_, GrpcSetting(name, servers)) =>
+                GitFileEvent.UpsertedGrpc(name, file, servers)
+            }
           }
       }
     }
@@ -197,7 +207,7 @@ object Git extends LazyLogging {
     AkkaSource(files)
       .flatMapConcat(loadFile(_).async)
       .map {
-        case Right((maybeName, path, content, maybeUseProxy)) =>
+        case LoadedContent.OpenApi(maybeName, path, content, maybeUseProxy) =>
           val serviceName = maybeName.getOrElse(repo.serviceName.getOrElse(nameFromUri))
           val filePath    = repo.directory.get.toPath.relativize(path).toString
           val id          = s"$nameFromUri:$filePath"
@@ -209,7 +219,18 @@ object Git extends LazyLogging {
               Metadata.File     -> filePath
             )
           ServiceEvent.ServiceUp(Service.OpenApi(id, serviceName, content, metadata, useProxy))
-        case Left(path) =>
+        case LoadedContent.Grpc(maybeName, path, schema, servers) =>
+          val serviceName = maybeName.getOrElse(repo.serviceName.getOrElse(nameFromUri))
+          val filePath    = repo.directory.get.toPath.relativize(path).toString
+          val id          = s"$nameFromUri:$filePath"
+          val provider    = uri.authority.host.address.split('.').head
+          val metadata =
+            Map(
+              Metadata.Provider -> provider,
+              Metadata.File     -> filePath
+            )
+          ServiceEvent.ServiceUp(Service.Grpc(id, serviceName, schema, servers, metadata))
+        case LoadedContent.Deleted(path) =>
           val filePath = repo.directory.get.toPath.relativize(path).toString
           val id       = s"$nameFromUri:$filePath"
           ServiceEvent.ServiceDown(id)
@@ -218,17 +239,26 @@ object Git extends LazyLogging {
 
   }
 
-  private def loadFile(event: GitFileEvent): Source[Either[Path, (Option[String], Path, String, Option[Boolean])]] =
+  private def loadFile(event: GitFileEvent): Source[LoadedContent] =
     event match {
       case GitFileEvent.Deleted(path) =>
-        AkkaSource.single(Left(path))
-      case GitFileEvent.Upserted(maybeName, path, useProxy) =>
+        AkkaSource.single(LoadedContent.Deleted(path))
+      case GitFileEvent.UpsertedOpenApi(maybeName, path, useProxy) =>
         Try(new String(Files.readAllBytes(path), StandardCharsets.UTF_8)) match {
           case Success(content) =>
-            AkkaSource.single(Right((maybeName, path, content, useProxy)))
+            AkkaSource.single(LoadedContent.OpenApi(maybeName, path, content, useProxy))
           case Failure(exception) =>
             logger.warn(s"Error while reading $path", exception)
-            AkkaSource.single(Left(path))
+            AkkaSource.single(LoadedContent.Deleted(path))
+        }
+      case GitFileEvent.UpsertedGrpc(maybeName, path, servers) =>
+        Schema.fromFile(path) match {
+          case Right(schema) =>
+            AkkaSource.single(LoadedContent.Grpc(maybeName, path, schema, servers))
+          case Left(exception) =>
+            logger.warn(s"Error while reading $path", exception)
+            AkkaSource.single(LoadedContent.Deleted(path))
+
         }
     }
 }

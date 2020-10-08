@@ -1,44 +1,52 @@
 package restui.models
 import io.circe.syntax._
 import io.circe.{Encoder, Json}
-
-sealed trait Type
-object Type {
-  case object OpenApi extends Type
-  case object Grpc    extends Type
-  implicit val encoder: Encoder[Type] = (serviceType: Type) =>
-    serviceType match {
-      case OpenApi => Json.fromString("openapi")
-      case Grpc    => Json.fromString("grpc")
-    }
-}
+import restui.protobuf.data.Schema
 
 sealed trait Event extends Product with Serializable {
   val id: String
 }
 
 object Event {
+  sealed trait Service extends Product with Serializable {
+    val id: String
+  }
 
-  final case class ServiceUp(id: String,
-                             name: String,
-                             useProxy: Boolean,
-                             metadata: Map[String, String] = Map.empty,
-                             serviceType: Type = Type.OpenApi)
-      extends Event
-  final case class ServiceDown(id: String)           extends Event
-  final case class ServiceContentChanged(id: String) extends Event
+  object Service {
+    final case class OpenApi(id: String, name: String, useProxy: Boolean, metadata: Map[String, String] = Map.empty) extends Service
+    final case class Grpc(id: String, name: String, servers: List[String], schema: Schema, metadata: Map[String, String] = Map.empty)
+        extends Service
 
-  implicit val encoder: Encoder[Event] = (event: Event) =>
-    event match {
-      case ServiceUp(id, name, useProxy, metadata, serviceType) =>
+    implicit val encoder: Encoder[Service] = Encoder.instance {
+      case OpenApi(id, name, useProxy, metadata) =>
         Json.obj(
           "event"    -> Json.fromString("serviceUp"),
           "id"       -> Json.fromString(id),
           "name"     -> Json.fromString(name),
           "metadata" -> Json.obj(metadata.view.mapValues(Json.fromString).toSeq: _*),
           "useProxy" -> Json.fromBoolean(useProxy),
-          "type"     -> serviceType.asJson
+          "type"     -> Json.fromString("openapi")
         )
+      case Grpc(id, name, servers, schema, metadata) =>
+        Json.obj(
+          "event"    -> Json.fromString("serviceUp"),
+          "id"       -> Json.fromString(id),
+          "name"     -> Json.fromString(name),
+          "metadata" -> Json.obj(metadata.view.mapValues(Json.fromString).toSeq: _*),
+          "schema"   -> schema.asJson,
+          "servers"  -> servers.asJson,
+          "type"     -> Json.fromString("grpc")
+        )
+    }
+  }
+
+  final case class ServiceUp(service: Service)       extends Event { override val id: String = service.id }
+  final case class ServiceDown(id: String)           extends Event
+  final case class ServiceContentChanged(id: String) extends Event
+
+  implicit val encoder: Encoder[Event] = (event: Event) =>
+    event match {
+      case ServiceUp(service: Service) => service.asJson
       case ServiceDown(id) =>
         Json.obj(
           "event" -> Json.fromString("serviceDown"),

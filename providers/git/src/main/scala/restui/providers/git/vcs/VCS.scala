@@ -2,7 +2,7 @@ package restui.providers.git.vcs
 
 import scala.concurrent.ExecutionContext
 
-import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.{Merge, Source => AkkaSource}
 import restui.models.ServiceEvent
 import restui.providers.git._
@@ -12,7 +12,7 @@ import restui.providers.git.settings.{GitSettings, GithubSettings, Settings}
 
 object VCS {
   def source(settings: Settings, requestExecutor: RequestExecutor)(implicit
-      actorSystem: ActorSystem,
+      actorSystem: ActorSystem[_],
       executionContext: ExecutionContext): Source[ServiceEvent] =
     settings.vcs.map {
       case githubSettings: GithubSettings =>

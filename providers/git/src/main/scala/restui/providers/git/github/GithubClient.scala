@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
-import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpMethods, HttpRequest, RequestEntity}
 import akka.http.scaladsl.unmarshalling.Unmarshal
@@ -41,11 +41,11 @@ object GithubClient extends LazyLogging {
 }
 """
 
-  def listRepositories(githubClient: GithubClient)(implicit system: ActorSystem, executionContext: ExecutionContext): Source[Node] =
+  def listRepositories(githubClient: GithubClient)(implicit system: ActorSystem[_], executionContext: ExecutionContext): Source[Node] =
     graphqlRecursiveSource(githubClient)
 
   private def graphqlRecursiveSource(githubClient: GithubClient, cursor: Option[String] = None)(implicit
-      system: ActorSystem,
+      system: ActorSystem[_],
       executionContext: ExecutionContext): Source[Node] =
     AkkaSource.future(executeRequest(githubClient, cursor)).flatMapConcat {
       case Error(error) =>
@@ -61,7 +61,7 @@ object GithubClient extends LazyLogging {
     }
 
   private def executeRequest(githubClient: GithubClient, cursor: Option[String])(implicit
-      system: ActorSystem,
+      system: ActorSystem[_],
       executionContext: ExecutionContext) = {
     val request = createRequest(githubClient.settings, cursor)
     githubClient

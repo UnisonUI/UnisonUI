@@ -6,7 +6,6 @@ import scala.concurrent.duration._
 
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpRequest, HttpResponse}
 import akka.stream.scaladsl.Sink
-import akka.testkit.TestProbe
 import base.TestBase
 import io.circe.syntax._
 import org.scalatest.{Inside, Inspectors}
@@ -28,11 +27,11 @@ class GithubSpec extends TestBase with Inside with Inspectors {
                      repos = RepositorySettings(Location.Uri("MyAwesomeUser/MyAwesomeRepo"), useProxy = false) :: Nil)
     val client = GithubClient(github, executor)
 
-    val probe = TestProbe()
+    val probe = testKit.createTestProbe[GitRepository]()
 
-    Github(client).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+    Github(client).to(Sink.foreach(e => probe.ref ! e)).run()
     val results = mutable.ListBuffer.empty[GitRepository]
-    results += probe.expectMsgType[GitRepository](1.second)
+    results += probe.expectMessageType[GitRepository](1.second)
     probe.expectNoMessage(200.millis)
     probe.expectNoMessage(1.second)
 

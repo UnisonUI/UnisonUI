@@ -1,20 +1,28 @@
 package restui.providers.git.git
 
-import java.nio.file.Files
+import java.nio.file.{Files, Path, Paths}
 
 import scala.concurrent.duration._
 
 import akka.stream.scaladsl.{Sink, Source}
-import akka.testkit.TestProbe
 import base.TestBase
 import org.scalatest.Inside
 import restui.models.{Metadata, Service, ServiceEvent}
+import restui.protobuf.data.Schema
 import restui.providers.git.git.data._
-class GitSpec extends TestBase with Inside {
 
-  private val duration = 50.millis
-  private val specs    = """specifications:
-           |  - "test2"
+class GitSpec extends TestBase with Inside {
+  private val duration  = 50.millis
+  private val specs     = """specifications:
+           |  - test2
+           |""".stripMargin
+  private val grpcSpecs = """specifications:
+           |  - test
+           |grpc:
+           | "helloworld.proto":
+           |    servers:
+           |      - address: 127.0.0.1
+           |        port: 8080
            |""".stripMargin
   trait StubRepository {
     import sys.process._
@@ -27,10 +35,14 @@ class GitSpec extends TestBase with Inside {
 
     commit("init", "init")
 
-    def commit(path: String, text: String): Unit = {
-      val file = Files.write(repo.resolve(path), text.getBytes())
+    def commit(file: Path): Unit = {
       Process(Seq("git", "add", file.toAbsolutePath.toString), repo.toFile()).!(hideStdErr)
       Process(Seq("git", "commit", "-m", "new file"), repo.toFile()).!(hideStdErr)
+    }
+
+    def commit(path: String, text: String): Unit = {
+      val file = Files.write(repo.resolve(path), text.getBytes())
+      commit(file)
     }
 
     def rm(path: String): Unit = {
@@ -55,8 +67,8 @@ class GitSpec extends TestBase with Inside {
       val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
       val repo    = Repository(s"file://${fixture.repo.toAbsolutePath}", "i-do-not-exists", List(UnnamedSpecification("test")), Some(tempDir))
 
-      val probe = TestProbe()
-      Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+      val probe = testKit.createTestProbe[ServiceEvent]()
+      Git.fromSource(duration, Source.single(repo)).to(Sink.foreach(e => probe.ref ! e)).run()
       probe.expectNoMessage()
     }
 
@@ -69,8 +81,8 @@ class GitSpec extends TestBase with Inside {
           val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
           val repo    = Repository(s"file://${fixture.repo.toAbsolutePath}", "master", List(UnnamedSpecification("test")), Some(tempDir))
 
-          val probe = TestProbe()
-          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+          val probe = testKit.createTestProbe[ServiceEvent]()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.foreach(e => probe.ref ! e)).run()
           probe.expectNoMessage()
         }
       }
@@ -82,9 +94,9 @@ class GitSpec extends TestBase with Inside {
           val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
           val repo    = Repository(s"file://${fixture.repo.toAbsolutePath}", "master", List(UnnamedSpecification("test")), Some(tempDir))
 
-          val probe = TestProbe()
-          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
-          val result = probe.expectMsgType[ServiceEvent]
+          val probe = testKit.createTestProbe[ServiceEvent]()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.foreach(e => probe.ref ! e)).run()
+          val result = probe.expectMessageType[ServiceEvent]
           inside(result) {
             case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
               file shouldBe "test"
@@ -97,17 +109,17 @@ class GitSpec extends TestBase with Inside {
           val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
           val repo    = Repository(s"file://${fixture.repo.toAbsolutePath}", "master", List(UnnamedSpecification("test")), Some(tempDir))
 
-          val probe = TestProbe()
-          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+          val probe = testKit.createTestProbe[ServiceEvent]()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.foreach(e => probe.ref ! e)).run()
 
-          inside(probe.expectMsgType[ServiceEvent]) {
+          inside(probe.expectMessageType[ServiceEvent]) {
             case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
               file shouldBe "test"
           }
 
           fixture.commit("test", "test2")
 
-          inside(probe.expectMsgType[ServiceEvent]) {
+          inside(probe.expectMessageType[ServiceEvent]) {
             case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
               file shouldBe "test2"
           }
@@ -120,17 +132,17 @@ class GitSpec extends TestBase with Inside {
           val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
           val repo    = Repository(s"file://${fixture.repo.toAbsolutePath}", "master", List(UnnamedSpecification("test")), Some(tempDir))
 
-          val probe = TestProbe()
-          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+          val probe = testKit.createTestProbe[ServiceEvent]()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.foreach(e => probe.ref ! e)).run()
 
-          inside(probe.expectMsgType[ServiceEvent]) {
+          inside(probe.expectMessageType[ServiceEvent]) {
             case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
               file shouldBe "test"
           }
 
           fixture.rm("test")
 
-          probe.expectMsgType[ServiceEvent.ServiceDown]
+          probe.expectMessageType[ServiceEvent.ServiceDown]
         }
 
         "the specifications changed" in {
@@ -139,16 +151,16 @@ class GitSpec extends TestBase with Inside {
           val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
           val repo    = Repository(s"file://${fixture.repo.toAbsolutePath}", "master", List(UnnamedSpecification("test")), Some(tempDir))
 
-          val probe = TestProbe()
-          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
-          inside(probe.expectMsgType[ServiceEvent]) {
+          val probe = testKit.createTestProbe[ServiceEvent]()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.foreach(e => probe.ref ! e)).run()
+          inside(probe.expectMessageType[ServiceEvent]) {
             case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
               file shouldBe "test"
           }
 
           fixture.commit(".restui.yaml", specs)
 
-          probe.expectMsgType[ServiceEvent.ServiceDown]
+          probe.expectMessageType[ServiceEvent.ServiceDown]
         }
 
         "the file has been renamed" in {
@@ -157,10 +169,10 @@ class GitSpec extends TestBase with Inside {
           val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
           val repo    = Repository(s"file://${fixture.repo.toAbsolutePath}", "master", List(UnnamedSpecification("test")), Some(tempDir))
 
-          val probe = TestProbe()
-          Git.fromSource(duration, Source.single(repo)).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+          val probe = testKit.createTestProbe[ServiceEvent]()
+          Git.fromSource(duration, Source.single(repo)).to(Sink.foreach(e => probe.ref ! e)).run()
 
-          inside(probe.expectMsgType[ServiceEvent]) {
+          inside(probe.expectMessageType[ServiceEvent]) {
             case ServiceEvent.ServiceUp(Service.OpenApi(_, _, _, metadata, _, _)) =>
               metadata should contain(Metadata.File -> "test")
           }
@@ -168,13 +180,45 @@ class GitSpec extends TestBase with Inside {
           fixture.commit(".restui.yaml", specs)
           fixture.mv("test", "test2")
 
-          probe.expectMsgType[ServiceEvent.ServiceDown]
+          probe.expectMessageType[ServiceEvent.ServiceDown]
 
-          inside(probe.expectMsgType[ServiceEvent]) {
+          inside(probe.expectMessageType[ServiceEvent]) {
             case ServiceEvent.ServiceUp(Service.OpenApi(_, _, _, metadata, _, _)) =>
               metadata should contain(Metadata.File -> "test2")
           }
 
+        }
+        "the files is a protobuf" when {
+          "it is mixed with OpenApi spec" in {
+            val fixture = new StubRepository {}
+            fixture.commit("test", "test")
+            val tempDir = Files.createTempDirectory("restui-git-test-clone").toFile
+            val repo    = Repository(s"file://${fixture.repo.toAbsolutePath}", "master", List(UnnamedSpecification("test")), Some(tempDir))
+
+            val probe = testKit.createTestProbe[ServiceEvent]()
+            Git.fromSource(duration, Source.single(repo)).to(Sink.foreach(e => probe.ref ! e)).run()
+            inside(probe.expectMessageType[ServiceEvent]) {
+              case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _, _)) =>
+                file shouldBe "test"
+            }
+
+            fixture.commit(".restui.yaml", grpcSpecs)
+            val path    = Paths.get("src/test/resources/helloworld.proto")
+            val newPath = fixture.repo.resolve("helloworld.proto")
+            Files.copy(path, newPath)
+            fixture.commit(newPath)
+
+            inside(probe.expectMessageType[ServiceEvent]) {
+              case ServiceEvent.ServiceUp(Service.Grpc(_, _, schema, servers, _)) =>
+                servers shouldBe Map("127.0.0.1:8080" -> Service.Grpc.Server("127.0.0.1", 8080, false))
+                inside(schema) {
+                  case Schema(messages, enums, services, None) =>
+                    messages should have size 2
+                    enums shouldBe Symbol("empty")
+                    services should have size 1
+                }
+            }
+          }
         }
       }
     }

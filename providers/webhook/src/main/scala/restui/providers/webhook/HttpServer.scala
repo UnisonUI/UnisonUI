@@ -3,7 +3,7 @@ package restui.providers.webhook
 import scala.concurrent.{ExecutionContext, Future}
 
 import akka.NotUsed
-import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, StatusCodes}
 import akka.http.scaladsl.server.{Directives, ExceptionHandler}
@@ -17,8 +17,8 @@ object HttpServer extends LazyLogging with Directives {
 
   private val BufferSize = 0
 
-  def start(interface: String, port: Int)(implicit actorSystem: ActorSystem): Future[Source[ServiceEvent, NotUsed]] = {
-    implicit val executionContext: ExecutionContext = actorSystem.dispatcher
+  def start(interface: String, port: Int)(implicit actorSystem: ActorSystem[_]): Future[Source[ServiceEvent, NotUsed]] = {
+    implicit val executionContext: ExecutionContext = actorSystem.executionContext
     val (queue, source) =
       Source.queue[ServiceEvent](BufferSize, OverflowStrategy.backpressure).toMat(BroadcastHub.sink[ServiceEvent])(Keep.both).run()
 

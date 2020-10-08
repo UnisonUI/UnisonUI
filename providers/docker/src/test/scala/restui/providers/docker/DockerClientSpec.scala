@@ -1,33 +1,21 @@
 package restui.providers.docker
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
-import akka.actor.ActorSystem
+import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import akka.stream.scaladsl.{Sink, Source}
-import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import io.circe.syntax._
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.docker.client.HttpClient
 import restui.providers.docker.client.models.{Container, Event, State}
 
-class DockerClientSpec
-    extends TestKit(ActorSystem("test"))
-    with ImplicitSender
-    with AnyWordSpecLike
-    with Matchers
-    with MockFactory
-    with BeforeAndAfterAll {
-  implicit val ec: ExecutionContext = system.dispatcher
-  private val Id                    = "12345"
-  private val ServiceName           = "test"
-
-  override def afterAll(): Unit =
-    TestKit.shutdownActorSystem(system)
+class DockerClientSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike with Matchers with MockFactory {
+  private val Id          = "12345"
+  private val ServiceName = "test"
 
   private val settings                   = Settings("myDocker.sock", Labels("name", "port", "specification", "useProxy"))
   private val MatchingContainerLabels    = Map("name" -> ServiceName, "port" -> "9999", "specification" -> "/openapi.yaml")
@@ -42,10 +30,10 @@ class DockerClientSpec
           .expects(*)
           .returning(Source.single(HttpResponse(status = StatusCodes.BadRequest)))
 
-        val probe = TestProbe()
-        new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+        val probe = testKit.createTestProbe[ServiceEvent]()
+        new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
 
-        probe.expectMsg("completed")
+        probe.expectNoMessage()
 
       }
 
@@ -59,10 +47,10 @@ class DockerClientSpec
                 entity = HttpEntity(ContentTypes.`application/json`, "{}")
               )))
 
-        val probe = TestProbe()
-        new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+        val probe = testKit.createTestProbe[ServiceEvent]()
+        new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
 
-        probe.expectMsg("completed")
+        probe.expectNoMessage()
 
       }
 
@@ -83,10 +71,10 @@ class DockerClientSpec
               HttpResponse(status = StatusCodes.BadRequest)
             )
           )
-        val probe = TestProbe()
-        new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+        val probe = testKit.createTestProbe[ServiceEvent]()
+        new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
 
-        probe.expectMsg("completed")
+        probe.expectNoMessage()
 
       }
     }
@@ -99,11 +87,11 @@ class DockerClientSpec
                       Event(Id, Some(State.Start), MatchingContainerLabels),
                       Event(Id, Some(State.Stop), MatchingContainerLabels)
                     ))
-        val probe = TestProbe()
-        new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+        val probe = testKit.createTestProbe[ServiceEvent]()
+        new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
 
-        probe.expectMsg(ServiceEvent.ServiceDown(Id))
-        probe.expectMsg(
+        probe.expectMessage(ServiceEvent.ServiceDown(Id))
+        probe.expectMessage(
           ServiceEvent.ServiceUp(
             Service.OpenApi(Id, ServiceName, "OK", Map(Metadata.Provider -> "docker", Metadata.File -> "openapi.yaml"))
           )
@@ -113,16 +101,16 @@ class DockerClientSpec
       "not find it" when {
         "there is a missing label" in {
           val clientMock = setupMock(NonMatchingContainerLabels, List(Event(Id, Some(State.Start), NonMatchingContainerLabels)))
-          val probe      = TestProbe()
-          new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
-          probe.expectMsg("completed")
+          val probe      = testKit.createTestProbe[ServiceEvent]()
+          new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
+          probe.expectNoMessage()
         }
 
         "there is no labels at all" in {
           val clientMock = setupMock(Map.empty, Nil)
-          val probe      = TestProbe()
-          new DockerClient(clientMock, settings).startStreaming.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
-          probe.expectMsg("completed")
+          val probe      = testKit.createTestProbe[ServiceEvent]()
+          new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
+          probe.expectNoMessage()
         }
       }
     }

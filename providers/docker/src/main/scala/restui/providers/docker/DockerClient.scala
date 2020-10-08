@@ -4,7 +4,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 import akka.NotUsed
-import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.{JsonFraming, Source}
@@ -16,9 +16,10 @@ import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.docker.client.HttpClient
 import restui.providers.docker.client.models.{Container, Event, State}
 
-class DockerClient(private val client: HttpClient, private val settings: Settings)(implicit val system: ActorSystem) extends LazyLogging {
+class DockerClient(private val client: HttpClient, private val settings: Settings)(implicit val system: ActorSystem[_])
+    extends LazyLogging {
   import DockerClient._
-  implicit val executionContent: ExecutionContext = system.dispatcher
+  implicit val executionContent: ExecutionContext = system.executionContext
 
   def startStreaming: Source[ServiceEvent, NotUsed] =
     events.collect {

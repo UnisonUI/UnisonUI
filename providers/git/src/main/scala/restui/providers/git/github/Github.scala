@@ -2,7 +2,7 @@ package restui.providers.git.github
 
 import scala.concurrent.ExecutionContext
 
-import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.Uri
 import akka.stream.SourceShape
 import akka.stream.scaladsl.{Broadcast, Flow => AkkaFlow, GraphDSL, Merge, Source => AkkaSource}
@@ -13,7 +13,7 @@ import restui.providers.git.git.data.{Repository, UnnamedSpecification}
 import restui.providers.git.github.data.Node
 
 object Github extends LazyLogging {
-  def apply(githubClient: GithubClient)(implicit system: ActorSystem, executionContext: ExecutionContext): Source[Repository] =
+  def apply(githubClient: GithubClient)(implicit system: ActorSystem[_], executionContext: ExecutionContext): Source[Repository] =
     AkkaSource.fromGraph(GraphDSL.create() { implicit builder =>
       import GraphDSL.Implicits._
       val init = builder.add(AkkaSource.single(List.empty[String]))

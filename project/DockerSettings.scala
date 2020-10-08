@@ -16,7 +16,7 @@ object DockerSettings {
     dockerEntrypoint := Seq("/opt/docker/entrypoint.sh", executableScriptName.value),
     dockerCommands ++= Seq(
       Cmd("USER", "root"),
-      Cmd("RUN", "apt-get update -y && apt-get install -y git"),
+      Cmd("RUN", "apt-get update -y && apt-get install -y git protobuf-compiler"),
       Cmd("USER", "1001:0")
     )
   )

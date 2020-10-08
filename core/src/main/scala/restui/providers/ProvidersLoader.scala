@@ -4,14 +4,14 @@ import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 import akka.NotUsed
-import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.{Merge, Source}
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
 import restui.models.ServiceEvent
 
 object ProvidersLoader extends LazyLogging {
-  def load(configuration: Config)(implicit system: ActorSystem): Source[(String, ServiceEvent), NotUsed] = {
+  def load(configuration: Config)(implicit system: ActorSystem[_]): Source[(String, ServiceEvent), NotUsed] = {
     val providers = configuration.getStringList("restui.providers").asScala.toList
 
     logger.debug("List of providers: {}", providers.mkString(", "))

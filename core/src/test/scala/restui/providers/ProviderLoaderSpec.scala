@@ -3,15 +3,14 @@ package restui.providers
 import scala.reflect.ClassTag
 
 import akka.NotUsed
-import akka.actor.ActorSystem
+import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
+import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.{Sink, Source}
-import akka.testkit.{TestKit, TestProbe}
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
 import restui.models.ServiceEvent
-
-class ProviderLoaderSpec extends TestKit(ActorSystem("test")) with AnyWordSpecLike with Matchers {
+class ProviderLoaderSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike with Matchers {
   private def setupProvider[T](implicit t: ClassTag[T]): (String, Config) = {
     val className = t.runtimeClass.getCanonicalName
     System.setProperty("restui.providers.0", className)
@@ -22,25 +21,25 @@ class ProviderLoaderSpec extends TestKit(ActorSystem("test")) with AnyWordSpecLi
   "Load a provider" when {
     "the provider start successfully" in {
       val (className, config) = setupProvider[StubProvider]
-      val probe               = TestProbe()
-      ProvidersLoader.load(config).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
-      probe.expectMsg(className -> ServiceEvent.ServiceDown("test"))
+      val probe               = testKit.createTestProbe[(String, ServiceEvent)]()
+      ProvidersLoader.load(config).to(Sink.foreach(e => probe.ref ! e)).run()
+      probe.expectMessage(className -> ServiceEvent.ServiceDown("test"))
     }
 
     "the provider don't start successfully" in {
       val (_, config) = setupProvider[FailedStubProvider]
-      val probe       = TestProbe()
-      ProvidersLoader.load(config).to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
-      probe.expectMsg("completed")
+      val probe       = testKit.createTestProbe[(String, ServiceEvent)]()
+      ProvidersLoader.load(config).to(Sink.foreach(e => probe.ref ! e)).run()
+      probe.expectNoMessage()
     }
 
   }
 }
 class StubProvider extends Provider {
-  override def start(actorSystem: ActorSystem, config: Config): Source[(String, ServiceEvent), NotUsed] =
+  override def start(actorSystem: ActorSystem[_], config: Config): Source[(String, ServiceEvent), NotUsed] =
     Source.single(classOf[StubProvider].getCanonicalName -> ServiceEvent.ServiceDown("test"))
 }
 
 class FailedStubProvider extends Provider {
-  override def start(actorSystem: ActorSystem, config: Config): Source[(String, ServiceEvent), NotUsed] = throw new Exception("test")
+  override def start(actorSystem: ActorSystem[_], config: Config): Source[(String, ServiceEvent), NotUsed] = throw new Exception("test")
 }
