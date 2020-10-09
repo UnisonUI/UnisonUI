@@ -69,11 +69,10 @@ class Reader(private val schema: Schema) {
           fields
             .get(name)
             .toVector
-            .map(_.map { json =>
+            .flatTraverse(_.map { json =>
               if (json.isObject) Vector(json)
               else json.asArray.toVector.flatten
             })
-            .flatSequence
             .pipe(decodeRepeat(input, field, _))
         case _ => readValue(input, field)
       }
