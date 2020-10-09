@@ -1,5 +1,8 @@
 package restui.models
 
+import scala.util.chaining._
+
+import io.circe.syntax._
 import restui.protobuf.data.Schema
 
 sealed trait Service {
@@ -27,7 +30,7 @@ object Service {
                         metadata: Map[String, String] = Map.empty)
       extends Service {
     override def toEvent: Event.Service = Event.Service.Grpc(id, name, metadata)
-    override val hash: String           = ""
+    override val hash: String           = schema.asJson.noSpaces.pipe(computeSha1(_))
   }
   object Grpc {
     final case class Server(address: String, port: Int, useTls: Boolean)

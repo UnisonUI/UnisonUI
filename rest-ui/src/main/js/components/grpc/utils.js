@@ -1,6 +1,30 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
 
+export const isMap = schema =>
+  schema.options &&
+  schema.options['google.protobuf.MessageOptions.map_entry'] === 'true'
+
+const getValue = (field, schema) => {
+  switch (field.type) {
+    case 'STRING':
+      return 'STRING'
+    case 'BYTES':
+      return btoa('BYTES')
+    case 'BOOL':
+      return true
+    case 'MESSAGE':
+      return messageExample(schema, field.schema)
+    case 'ENUM':
+      return schema.enums.find(e => e.name === field.schema).values[0]
+    case 'FLOAT':
+    case 'DOUBLE':
+      return 0.5
+    default:
+      return 42
+  }
+}
+
 export const messageExample = (schema, method) => {
   const result = {}
   const fields = schema.messages.find(message => message.name === method).fields
@@ -8,27 +32,15 @@ export const messageExample = (schema, method) => {
     let value =
       field.default !== undefined
         ? this.default
-        : (type => {
-          switch (type) {
-            case 'STRING':
-              return 'STRING'
-            case 'BYTES':
-              return btoa('BYTES')
-            case 'BOOL':
-              return true
-            case 'MESSAGE':
-              return messageExample(schema, field.schema)
-            case 'ENUM':
-              return schema.enums.find(e => e.name === field.schema).values[0]
-            case 'FLOAT':
-            case 'DOUBLE':
-              return 0.5
-            default:
-              return 42
-          }
-        })(field.type)
+        : getValue(field, schema)
     if (field.label === 'repeated') {
-      value = [value]
+      const subSchema = schema.messages.find(message => message.name === field.schema)
+      if (isMap(subSchema)) {
+        value = {}
+        const key = getValue(subSchema.fields.find(f => f.name === 'key'))
+        const val = getValue(subSchema.fields.find(f => f.name === 'value'))
+        value[key] = val
+      } else value = [value]
     }
     result[field.name] = value
   }

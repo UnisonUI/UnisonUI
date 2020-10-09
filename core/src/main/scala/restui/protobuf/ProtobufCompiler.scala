@@ -12,8 +12,7 @@ trait ProtobufCompiler {
 }
 
 class ProtobufCompilerImpl extends ProtobufCompiler {
-  private val protocExe  = "protoc"
-  private val hideStdErr = ProcessLogger(_ => ())
+  private val protocExe = "protoc"
   override def compile(path: Path): Either[Throwable, File] =
     allCatch.either {
       val tempFile = File.createTempFile("restui", ".protoset")
@@ -24,7 +23,7 @@ class ProtobufCompilerImpl extends ProtobufCompiler {
           path.toAbsolutePath.getParent.toString,
           path.toAbsolutePath.toString)
         .pipe(Process(_))
-        .!!(hideStdErr)
+        .!!
       tempFile
     }
   override def clean(file: File): Either[Throwable, Unit] = allCatch.either(file.delete())

@@ -98,6 +98,7 @@ class Reader(private val schema: Schema) {
         case _ => Json.arr(list: _*)
       }
     }
+
   private def decodeList(input: CodedInputStream,
                          field: Field,
                          maybeList: Either[Throwable, Vector[Json]]): Vector[Either[Throwable, Json]] =

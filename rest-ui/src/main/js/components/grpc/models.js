@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Collapse } from './utils'
+import { isMap, Collapse } from './utils'
 import { ChevronDown, ChevronRight } from 'react-feather'
 
 const braceOpen = '{'
@@ -28,9 +28,15 @@ export default class Models extends Component {
           {isVisible ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </h4>
         <Collapse isOpened={isVisible}>
-          {this.props.spec.messages.map(schema => (
-            <Model key={`models-section-${schema.name}`} schema={schema} />
-          ))}
+          {this.props.spec.messages
+            .filter(schema => !isMap(schema))
+            .map(schema => (
+              <Model
+                key={`models-section-${schema.name}`}
+                schema={schema}
+                spec={this.props.spec}
+              />
+            ))}
           {this.props.spec.enums.map(value => (
             <Model key={`models-section-${value.name}`} schema={value} />
           ))}
@@ -64,6 +70,7 @@ class Model extends Component {
         >
           <ModelWrapper
             schema={this.props.schema}
+            spec={this.props.spec}
             isCollapsed={isCollapsed}
             toggleCollapsed={this.toggleCollapsed}
           />
@@ -110,11 +117,30 @@ class ModelWrapper extends Component {
 
 class PrimitiveModel extends Component {
   render () {
-    const { type, schema } = this.props.field
+    const { type, schema, label } = this.props.field
+    let displayType = type
+    let isArray = label === 'repeated'
+    if (schema) {
+      const subSchema = this.props.spec.messages.find(
+        sub => sub.name === schema && isMap(sub)
+      )
+      if (subSchema) {
+        isArray = false
+        displayType = `map<${
+          subSchema.fields.find(f => f.name === 'key').type
+        },${subSchema.fields.find(f => f.name === 'value').type}>`
+      } else {
+        displayType = schema
+      }
+    }
     return (
       <span className="model">
         <span className="prop">
-          <span className="prop-type">{schema || type}</span>
+          <span className="prop-type">
+            {isArray && bracketOpen}
+            {displayType.toLowerCase()}
+            {isArray && bracketClose}
+          </span>
         </span>
       </span>
     )
@@ -123,7 +149,7 @@ class PrimitiveModel extends Component {
 
 class ObjectModel extends Component {
   render () {
-    const { isCollapsed, toggleCollapsed } = this.props
+    const { isCollapsed, toggleCollapsed, spec } = this.props
     const { values, fields, name } = this.props.schema
     const isObject = !!fields
     return (
@@ -153,7 +179,11 @@ class ObjectModel extends Component {
                         {isRequired && <span className="star">*</span>}
                       </td>
                       <td>
-                        <PrimitiveModel key={`object_${key}`} field={field} />
+                        <PrimitiveModel
+                          key={`object_${key}`}
+                          field={field}
+                          spec={spec}
+                        />
                       </td>
                     </tr>
                   )

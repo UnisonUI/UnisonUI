@@ -64,9 +64,16 @@ object Dependencies {
     val all               = Seq(scalaTest, scalamock)
   }
 
+  object Cats {
+    private val version = "2.2.0"
+    private val kernel  = "org.typelevel" %% "cats-kernel" % version
+    private val core    = "org.typelevel" %% "cats-core"   % version
+    val all             = Seq(kernel, core)
+  }
+
   private lazy val common = Testing.all ++ Logging.all ++ Config.all
 
-  lazy val restUi = libraryDependencies ++= common ++ Akka.all ++ Circe.all
+  lazy val restUi = libraryDependencies ++= common ++ Akka.all ++ Circe.all ++ Cats.all
 
   lazy val restUiCore = libraryDependencies ++= common ++ Akka.akka ++ Circe.all ++ Grpc.all ++ Seq(Circe.schema, Circe.parser)
 

@@ -14,8 +14,6 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
-import cats.syntax.either._
-import cats.syntax.option._
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.Json
 import io.circe.generic.auto._
@@ -23,6 +21,9 @@ import restui.grpc.Client
 import restui.models.Service
 import restui.protobuf.data.{Method, Service => ProtobufService}
 import restui.server.service.ServiceActor
+import cats.syntax.option._
+import cats.syntax.either._
+import io.circe.DecodingFailure
 
 object Grpc {
   final case class Input(server: String, data: Json)
@@ -43,18 +44,19 @@ object Grpc {
 
         }
 
-      onSuccess(response) {
+      onSuccess(response.recover(_.asLeft)) {
         case Right(Some(json)) =>
           complete(json)
         case Right(None) =>
           complete(StatusCodes.NotFound -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, s"$id is not registered"))
+        case Left(exception: DecodingFailure) =>
+          complete(StatusCodes.BadRequest -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, exception.getMessage()))
         case Left(exception) =>
           complete(
             StatusCodes.InternalServerError -> HttpEntity(ContentTypes.`text/plain(UTF-8)`,
                                                           s"Grpc client error: ${exception.getMessage()}"))
       }
     }
-
   private def grpcCall(input: Json, method: String, service: ProtobufService, server: Service.Grpc.Server)(implicit
       actorSystem: ActorSystem[_],
       executionContext: ExecutionContext): Future[Either[Throwable, Option[Json]]] = {
@@ -65,7 +67,7 @@ object Grpc {
       _.map { result =>
         client.close()
         result.some.asRight[Throwable]
-      }.recover(_.asLeft)
+      }
     }
   }
 
