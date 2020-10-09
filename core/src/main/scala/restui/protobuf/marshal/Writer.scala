@@ -76,7 +76,7 @@ class Writer(private val schema: Schema) {
     val maybeList = field.schema match {
       case Some(subSchema) if schema.messages.get(subSchema).exists(_.isMap) =>
         if (value.isObject)
-          value.asObject.toVector.map(Json.fromJsonObject(_)).asRight
+          value.asObject.toVector.flatMap(_.toVector).map(Json.obj(_)).asRight
         else DecodingFailure(s""""${field.name}" is expecting: ${field.`type`.name}""", Nil).asLeft
       case _ => value.asArray.toVector.flatten.asRight
     }

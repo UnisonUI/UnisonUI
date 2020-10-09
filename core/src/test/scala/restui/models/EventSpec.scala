@@ -12,6 +12,8 @@ class EventSpec extends AnyFlatSpec with Matchers with TableDrivenPropertyChecks
       ("event", "json"),
       (Event.ServiceUp(Event.Service.OpenApi("id", "test", false, Map("key" -> "value"))),
        """{"event":"serviceUp","id":"id","name":"test","metadata":{"key":"value"},"useProxy":false,"type":"openapi"}"""),
+      (Event.ServiceUp(Event.Service.Grpc("id", "test", Map("key" -> "value"))),
+       """{"event":"serviceUp","id":"id","name":"test","metadata":{"key":"value"},"type":"grpc"}"""),
       (Event.ServiceDown("id"), """{"event":"serviceDown","id":"id"}""")
     )
 
