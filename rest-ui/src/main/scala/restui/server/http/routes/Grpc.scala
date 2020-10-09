@@ -14,16 +14,15 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.util.Timeout
+import cats.syntax.either._
+import cats.syntax.option._
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
-import io.circe.Json
 import io.circe.generic.auto._
+import io.circe.{DecodingFailure, Json}
 import restui.grpc.Client
 import restui.models.Service
 import restui.protobuf.data.{Method, Service => ProtobufService}
 import restui.server.service.ServiceActor
-import cats.syntax.option._
-import cats.syntax.either._
-import io.circe.DecodingFailure
 
 object Grpc {
   final case class Input(server: String, data: Json)
