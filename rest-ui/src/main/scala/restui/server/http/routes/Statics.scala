@@ -7,7 +7,9 @@ import restui.server.http.directives.StaticsDirectives._
 object Statics {
   val route: Route =
     pathPrefix("statics") {
-      staticsFromResourceDirectory("web/statics", Encodings.Brotli, Encodings.Gzip)
+      staticsFromResourceDirectory("web/statics",
+                                   Encodings.Brotli,
+                                   Encodings.Gzip)
     } ~ path(PathEnd) {
       getFromResource("web/index.html")
     }

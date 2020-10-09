@@ -14,11 +14,17 @@ import restui.protobuf.ProtobufCompiler
 import restui.protobuf.data.Schema._
 import restui.protobuf.marshal.Reader._
 
-class ReaderSpec extends AnyWordSpec with Matchers with Inside with LazyLogging {
-  private def arrayToStream(bytes: Array[Byte]): InputStream = new ByteArrayInputStream(bytes) with KnownLength
+class ReaderSpec
+    extends AnyWordSpec
+    with Matchers
+    with Inside
+    with LazyLogging {
+  private def arrayToStream(bytes: Array[Byte]): InputStream =
+    new ByteArrayInputStream(bytes) with KnownLength
   implicit val compiler: ProtobufCompiler = new ProtobufCompiler {
-    override def compile(path: Path): Either[Throwable, File] = new File(s"${path.toAbsolutePath().toString}set").asRight[Throwable]
-    override def clean(file: File): Either[Throwable, Unit]   = ().asRight
+    override def compile(path: Path): Either[Throwable, File] =
+      new File(s"${path.toAbsolutePath().toString}set").asRight[Throwable]
+    override def clean(file: File): Either[Throwable, Unit] = ().asRight
   }
 
   "marshaling a protobuf binary to json" should {
@@ -30,8 +36,8 @@ class ReaderSpec extends AnyWordSpec with Matchers with Inside with LazyLogging 
           json <- schema.read(input)
         } yield json
 
-        inside(result) {
-          case Right(json) => json shouldBe Json.Null
+        inside(result) { case Right(json) =>
+          json shouldBe Json.Null
         }
       }
 
@@ -43,8 +49,8 @@ class ReaderSpec extends AnyWordSpec with Matchers with Inside with LazyLogging 
           json <- is.read(input)
         } yield json
 
-        inside(result) {
-          case Right(json) => json.noSpaces shouldBe """{"name":"test"}"""
+        inside(result) { case Right(json) =>
+          json.noSpaces shouldBe """{"name":"test"}"""
 
         }
       }
@@ -53,14 +59,14 @@ class ReaderSpec extends AnyWordSpec with Matchers with Inside with LazyLogging 
         val result = for {
           schema <- Paths.get("src/test/resources/complex.proto").toSchema
           input = arrayToStream(
-            Array(18, 2, 0, 1, 26, 8, 10, 1, 107, 18, 3, 118, 97, 108, 26, 6, 10, 1, 111, 18, 1, 97, 50, 5, 116, 101, 115, 116, 10, 10, 4,
-              116, 101, 115, 116, 34, 10, 24, 1, 18, 2, 8, 1, 18, 2, 8, 2))
+            Array(18, 2, 0, 1, 26, 8, 10, 1, 107, 18, 3, 118, 97, 108, 26, 6,
+              10, 1, 111, 18, 1, 97, 50, 5, 116, 101, 115, 116, 10, 10, 4, 116,
+              101, 115, 116, 34, 10, 24, 1, 18, 2, 8, 1, 18, 2, 8, 2))
           json <- schema.copy(rootKey = "helloworld.Complex".some).read(input)
         } yield json
 
-        inside(result) {
-          case Right(json) =>
-            json.noSpaces shouldBe """{"name":"test","myEnum":["VALUE1","VALUE2"],"myMap":{"k":"val","o":"a"},"myBytes":"dGVzdAo=","tree":{"root":true,"children":[{"value":1,"children":[],"root":false},{"value":2,"children":[],"root":false}],"value":0},"myInt":1}"""
+        inside(result) { case Right(json) =>
+          json.noSpaces shouldBe """{"name":"test","myEnum":["VALUE1","VALUE2"],"myMap":{"k":"val","o":"a"},"myBytes":"dGVzdAo=","tree":{"root":true,"children":[{"value":1,"children":[],"root":false},{"value":2,"children":[],"root":false}],"value":0},"myInt":1}"""
         }
       }
     }

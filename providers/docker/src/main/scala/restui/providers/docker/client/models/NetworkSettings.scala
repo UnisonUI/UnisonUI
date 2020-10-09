@@ -10,6 +10,9 @@ object NetworkSettings {
       .get[Map[String, Network]]("Networks")
       .map(NetworkSettings(_))
 
-  implicit val encoder: Encoder[NetworkSettings] = (networkSettings: NetworkSettings) =>
-    Json.obj("Networks" -> Json.obj(networkSettings.networks.view.mapValues(_.asJson).toList: _*))
+  implicit val encoder: Encoder[NetworkSettings] =
+    (networkSettings: NetworkSettings) =>
+      Json.obj(
+        "Networks" -> Json.obj(
+          networkSettings.networks.view.mapValues(_.asJson).toList: _*))
 }

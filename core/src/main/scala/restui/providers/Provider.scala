@@ -7,5 +7,6 @@ import com.typesafe.config.Config
 import restui.models.ServiceEvent
 
 trait Provider {
-  def start(actorSystem: ActorSystem[_], config: Config): Source[(String, ServiceEvent), NotUsed]
+  def start(actorSystem: ActorSystem[_],
+            config: Config): Source[(String, ServiceEvent), NotUsed]
 }

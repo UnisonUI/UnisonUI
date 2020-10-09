@@ -15,8 +15,9 @@ import restui.protobuf.marshal.Writer._
 
 class WriteSpec extends AnyWordSpec with Matchers with Inside {
   implicit val compiler: ProtobufCompiler = new ProtobufCompiler {
-    override def compile(path: Path): Either[Throwable, File] = new File(s"${path.toAbsolutePath().toString}set").asRight[Throwable]
-    override def clean(file: File): Either[Throwable, Unit]   = ().asRight
+    override def compile(path: Path): Either[Throwable, File] =
+      new File(s"${path.toAbsolutePath().toString}set").asRight[Throwable]
+    override def clean(file: File): Either[Throwable, Unit] = ().asRight
   }
 
   "marshaling a json to protobuf binary" should {
@@ -28,8 +29,8 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside {
           bytes <- schema.write(input)
         } yield bytes
 
-        inside(result) {
-          case Right(bytes) => bytes shouldBe empty
+        inside(result) { case Right(bytes) =>
+          bytes shouldBe empty
         }
       }
 
@@ -41,8 +42,8 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside {
           bytes <- is.write(input)
         } yield bytes
 
-        inside(result) {
-          case Right(bytes) => bytes shouldBe Array(10, 4, 116, 101, 115, 116)
+        inside(result) { case Right(bytes) =>
+          bytes shouldBe Array(10, 4, 116, 101, 115, 116)
         }
       }
 
@@ -66,10 +67,10 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside {
           bytes <- schema.copy(rootKey = "helloworld.Complex".some).write(input)
         } yield bytes
 
-        inside(result) {
-          case Right(bytes) =>
-            bytes shouldBe Array(18, 2, 0, 1, 26, 8, 10, 1, 107, 18, 3, 118, 97, 108, 26, 6, 10, 1, 111, 18, 1, 97, 50, 5, 116, 101, 115,
-              116, 10, 10, 4, 116, 101, 115, 116, 34, 10, 24, 1, 18, 2, 8, 1, 18, 2, 8, 2)
+        inside(result) { case Right(bytes) =>
+          bytes shouldBe Array(18, 2, 0, 1, 26, 8, 10, 1, 107, 18, 3, 118, 97,
+            108, 26, 6, 10, 1, 111, 18, 1, 97, 50, 5, 116, 101, 115, 116, 10,
+            10, 4, 116, 101, 115, 116, 34, 10, 24, 1, 18, 2, 8, 1, 18, 2, 8, 2)
         }
       }
     }
@@ -80,11 +81,12 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside {
           val result = for {
             schema <- Paths.get("src/test/resources/complex.proto").toSchema
             input = parse("""{"name":"test","myMap":1}""").getOrElse(Json.Null)
-            bytes <- schema.copy(rootKey = "helloworld.Complex".some).write(input)
+            bytes <-
+              schema.copy(rootKey = "helloworld.Complex".some).write(input)
           } yield bytes
 
-          inside(result) {
-            case Left(exception: DecodingFailure) => exception.getMessage shouldBe """"myMap" is expecting: MESSAGE"""
+          inside(result) { case Left(exception: DecodingFailure) =>
+            exception.getMessage shouldBe """"myMap" is expecting: MESSAGE"""
           }
         }
 
@@ -92,11 +94,12 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside {
           val result = for {
             schema <- Paths.get("src/test/resources/complex.proto").toSchema
             input = parse("""{}""").getOrElse(Json.Null)
-            bytes <- schema.copy(rootKey = "helloworld.Complex".some).write(input)
+            bytes <-
+              schema.copy(rootKey = "helloworld.Complex".some).write(input)
           } yield bytes
 
-          inside(result) {
-            case Left(exception: Errors.RequiredField) => exception.getMessage shouldBe "name is required"
+          inside(result) { case Left(exception: Errors.RequiredField) =>
+            exception.getMessage shouldBe "name is required"
           }
         }
       }

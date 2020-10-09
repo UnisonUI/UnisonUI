@@ -21,27 +21,44 @@ package object data {
     val path: String
   }
 
-  final case class UnnamedSpecification(path: String)                                        extends Specification
-  final case class NamedSpecification(name: String, path: String, useProxy: Option[Boolean]) extends Specification
+  final case class UnnamedSpecification(path: String) extends Specification
+  final case class NamedSpecification(name: String,
+                                      path: String,
+                                      useProxy: Option[Boolean])
+      extends Specification
   final case class RestUI(name: Option[String],
                           specifications: List[Specification],
                           grpc: Map[String, GrpcSetting],
                           useProxy: Option[Boolean])
 
-  final case class GrpcSetting(maybeName: Option[String], servers: Map[String, Service.Grpc.Server])
+  final case class GrpcSetting(maybeName: Option[String],
+                               servers: Map[String, Service.Grpc.Server])
 
   sealed trait GitFileEvent extends Product with Serializable
   object GitFileEvent {
-    final case class Deleted(path: Path)                                                                            extends GitFileEvent
-    final case class UpsertedOpenApi(maybeName: Option[String], path: Path, useProxy: Option[Boolean])              extends GitFileEvent
-    final case class UpsertedGrpc(maybeName: Option[String], path: Path, servers: Map[String, Service.Grpc.Server]) extends GitFileEvent
+    final case class Deleted(path: Path) extends GitFileEvent
+    final case class UpsertedOpenApi(maybeName: Option[String],
+                                     path: Path,
+                                     useProxy: Option[Boolean])
+        extends GitFileEvent
+    final case class UpsertedGrpc(maybeName: Option[String],
+                                  path: Path,
+                                  servers: Map[String, Service.Grpc.Server])
+        extends GitFileEvent
   }
 
   sealed trait LoadedContent extends Product with Serializable
   object LoadedContent {
-    final case class Deleted(path: Path)                                                                        extends LoadedContent
-    final case class OpenApi(maybeName: Option[String], path: Path, content: String, useProxy: Option[Boolean]) extends LoadedContent
-    final case class Grpc(maybeName: Option[String], path: Path, schema: Schema, servers: Map[String, Service.Grpc.Server])
+    final case class Deleted(path: Path) extends LoadedContent
+    final case class OpenApi(maybeName: Option[String],
+                             path: Path,
+                             content: String,
+                             useProxy: Option[Boolean])
+        extends LoadedContent
+    final case class Grpc(maybeName: Option[String],
+                          path: Path,
+                          schema: Schema,
+                          servers: Map[String, Service.Grpc.Server])
         extends LoadedContent
   }
 
@@ -62,22 +79,26 @@ package object data {
         servers   <- cursor.get[List[(String, Service.Grpc.Server)]]("servers")
       } yield GrpcSetting(maybeName, servers.toMap)
 
-    implicit val serverDecoder: Decoder[(String, Service.Grpc.Server)] = (cursor: HCursor) =>
-      for {
-        address <- cursor.get[String]("address")
-        port    <- cursor.get[Int]("port")
-        useTls  <- cursor.getOrElse[Boolean]("useTls")(false)
-        name    <- cursor.getOrElse[String]("name")(s"$address:$port")
-      } yield name -> Service.Grpc.Server(address, port, useTls)
+    implicit val serverDecoder: Decoder[(String, Service.Grpc.Server)] =
+      (cursor: HCursor) =>
+        for {
+          address <- cursor.get[String]("address")
+          port    <- cursor.get[Int]("port")
+          useTls  <- cursor.getOrElse[Boolean]("useTls")(false)
+          name    <- cursor.getOrElse[String]("name")(s"$address:$port")
+        } yield name -> Service.Grpc.Server(address, port, useTls)
   }
 
   object Specification {
     implicit val decoder: Decoder[Specification] =
-      List[Decoder[Specification]](Decoder[UnnamedSpecification].widen, Decoder[NamedSpecification].widen).reduceLeft(_ or _)
+      List[Decoder[Specification]](
+        Decoder[UnnamedSpecification].widen,
+        Decoder[NamedSpecification].widen).reduceLeft(_ or _)
   }
 
   object UnnamedSpecification {
-    implicit val decoder: Decoder[UnnamedSpecification] = (cursor: HCursor) => cursor.as[String].map(UnnamedSpecification(_))
+    implicit val decoder: Decoder[UnnamedSpecification] = (cursor: HCursor) =>
+      cursor.as[String].map(UnnamedSpecification(_))
   }
 
   object NamedSpecification {

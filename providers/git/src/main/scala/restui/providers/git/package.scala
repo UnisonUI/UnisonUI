@@ -1,10 +1,10 @@
 package restui.providers
 
-import scala.concurrent.Future
-
 import akka.NotUsed
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse}
 import akka.stream.scaladsl.{Flow => AkkaFlow, Source => AkkaSource}
+
+import scala.concurrent.Future
 
 package object git {
   type Flow[I, O]      = AkkaFlow[I, O, NotUsed]

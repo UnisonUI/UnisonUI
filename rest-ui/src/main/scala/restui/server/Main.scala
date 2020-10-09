@@ -1,9 +1,5 @@
 package restui.server
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-import scala.util.{Failure, Success}
-
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.javadsl.Behaviors
 import akka.stream.scaladsl.{Sink, Source}
@@ -13,6 +9,10 @@ import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.ProvidersLoader
 import restui.server.http.HttpServer
 import restui.server.service._
+
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
 // $COVERAGE-OFF$
 object Main extends App with LazyLogging {
@@ -25,28 +25,35 @@ object Main extends App with LazyLogging {
   val port                         = config.getInt(s"$Namespace.port")
   val selfSpecification            = config.getBoolean("restui.self-specification")
   private val (queue, eventSource) = EventSource.createEventSource.run()
-  private val serviceActor         = system.systemActorOf(ServiceActor(queue), "serviceActor")
-  private val httpServer           = new HttpServer(serviceActor, eventSource)
+  private val serviceActor =
+    system.systemActorOf(ServiceActor(queue), "serviceActor")
+  private val httpServer = new HttpServer(serviceActor, eventSource)
 
   val specificationSource = if (selfSpecification) {
-    val specification = scala.io.Source.fromResource("specification.yaml").getLines().mkString("\n")
+    val specification = scala.io.Source
+      .fromResource("specification.yaml")
+      .getLines()
+      .mkString("\n")
     Source.single(
       Main.getClass.getCanonicalName -> ServiceEvent.ServiceUp(
-        Service.OpenApi("restui:restui", "RestUI", specification, Map(Metadata.File -> "specification.yaml"))))
+        Service.OpenApi("restui:restui",
+                        "RestUI",
+                        specification,
+                        Map(Metadata.File -> "specification.yaml"))))
   } else Source.empty[(String, ServiceEvent)]
 
   ProvidersLoader
     .load(config)
     .prepend(specificationSource)
-    .runWith(Sink.foreach {
-      case (provider, event) =>
-        serviceActor ! ServiceActor.Add(provider, event)
+    .runWith(Sink.foreach { case (provider, event) =>
+      serviceActor ! ServiceActor.Add(provider, event)
     })
 
   httpServer.bind(interface, port).onComplete {
     case Success(binding) =>
       val address = binding.localAddress
-      logger.info(s"Server online at http://${address.getHostName}:${address.getPort}/")
+      logger.info(
+        s"Server online at http://${address.getHostName}:${address.getPort}/")
       sys.addShutdownHook {
         binding.terminate(hardDeadline = 3.seconds).flatMap { _ =>
           system.terminate()

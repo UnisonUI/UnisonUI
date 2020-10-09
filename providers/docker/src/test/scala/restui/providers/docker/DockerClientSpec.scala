@@ -1,9 +1,12 @@
 package restui.providers.docker
 
-import scala.concurrent.Future
-
 import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{
+  ContentTypes,
+  HttpEntity,
+  HttpResponse,
+  StatusCodes
+}
 import akka.stream.scaladsl.{Sink, Source}
 import io.circe.syntax._
 import org.scalamock.scalatest.MockFactory
@@ -13,12 +16,22 @@ import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.docker.client.HttpClient
 import restui.providers.docker.client.models.{Container, Event, State}
 
-class DockerClientSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike with Matchers with MockFactory {
+import scala.concurrent.Future
+
+class DockerClientSpec
+    extends ScalaTestWithActorTestKit
+    with AnyWordSpecLike
+    with Matchers
+    with MockFactory {
   private val Id          = "12345"
   private val ServiceName = "test"
 
-  private val settings                   = Settings("myDocker.sock", Labels("name", "port", "specification", "useProxy"))
-  private val MatchingContainerLabels    = Map("name" -> ServiceName, "port" -> "9999", "specification" -> "/openapi.yaml")
+  private val settings = Settings(
+    "myDocker.sock",
+    Labels("name", "port", "specification", "useProxy"))
+  private val MatchingContainerLabels = Map("name" -> ServiceName,
+                                            "port"          -> "9999",
+                                            "specification" -> "/openapi.yaml")
   private val NonMatchingContainerLabels = Map("name" -> ServiceName)
 
   "Streaming the containers" when {
@@ -28,10 +41,13 @@ class DockerClientSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike wi
         val clientMock = mock[HttpClient]
         (clientMock.watch _)
           .expects(*)
-          .returning(Source.single(HttpResponse(status = StatusCodes.BadRequest)))
+          .returning(
+            Source.single(HttpResponse(status = StatusCodes.BadRequest)))
 
         val probe = testKit.createTestProbe[ServiceEvent]()
-        new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
+        new DockerClient(clientMock, settings).startStreaming
+          .to(Sink.foreach(e => probe.ref ! e))
+          .run()
 
         probe.expectNoMessage()
 
@@ -48,7 +64,9 @@ class DockerClientSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike wi
               )))
 
         val probe = testKit.createTestProbe[ServiceEvent]()
-        new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
+        new DockerClient(clientMock, settings).startStreaming
+          .to(Sink.foreach(e => probe.ref ! e))
+          .run()
 
         probe.expectNoMessage()
 
@@ -61,7 +79,11 @@ class DockerClientSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike wi
           .returning(
             Source.single(
               HttpResponse(
-                entity = HttpEntity(ContentTypes.`application/json`, Event(Id, Some(State.Start), MatchingContainerLabels).asJson.noSpaces)
+                entity =
+                  HttpEntity(ContentTypes.`application/json`,
+                             Event(Id,
+                                   Some(State.Start),
+                                   MatchingContainerLabels).asJson.noSpaces)
               )))
 
         (clientMock.get _)
@@ -72,7 +94,9 @@ class DockerClientSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike wi
             )
           )
         val probe = testKit.createTestProbe[ServiceEvent]()
-        new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
+        new DockerClient(clientMock, settings).startStreaming
+          .to(Sink.foreach(e => probe.ref ! e))
+          .run()
 
         probe.expectNoMessage()
 
@@ -88,28 +112,40 @@ class DockerClientSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike wi
                       Event(Id, Some(State.Stop), MatchingContainerLabels)
                     ))
         val probe = testKit.createTestProbe[ServiceEvent]()
-        new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
+        new DockerClient(clientMock, settings).startStreaming
+          .to(Sink.foreach(e => probe.ref ! e))
+          .run()
 
         probe.expectMessage(ServiceEvent.ServiceDown(Id))
         probe.expectMessage(
           ServiceEvent.ServiceUp(
-            Service.OpenApi(Id, ServiceName, "OK", Map(Metadata.Provider -> "docker", Metadata.File -> "openapi.yaml"))
+            Service.OpenApi(Id,
+                            ServiceName,
+                            "OK",
+                            Map(Metadata.Provider -> "docker",
+                                Metadata.File     -> "openapi.yaml"))
           )
         )
       }
 
       "not find it" when {
         "there is a missing label" in {
-          val clientMock = setupMock(NonMatchingContainerLabels, List(Event(Id, Some(State.Start), NonMatchingContainerLabels)))
-          val probe      = testKit.createTestProbe[ServiceEvent]()
-          new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
+          val clientMock = setupMock(
+            NonMatchingContainerLabels,
+            List(Event(Id, Some(State.Start), NonMatchingContainerLabels)))
+          val probe = testKit.createTestProbe[ServiceEvent]()
+          new DockerClient(clientMock, settings).startStreaming
+            .to(Sink.foreach(e => probe.ref ! e))
+            .run()
           probe.expectNoMessage()
         }
 
         "there is no labels at all" in {
           val clientMock = setupMock(Map.empty, Nil)
           val probe      = testKit.createTestProbe[ServiceEvent]()
-          new DockerClient(clientMock, settings).startStreaming.to(Sink.foreach(e => probe.ref ! e)).run()
+          new DockerClient(clientMock, settings).startStreaming
+            .to(Sink.foreach(e => probe.ref ! e))
+            .run()
           probe.expectNoMessage()
         }
       }
@@ -123,7 +159,8 @@ class DockerClientSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike wi
       .expects(*)
       .returning(Source(events.map { event =>
         HttpResponse(
-          entity = HttpEntity(ContentTypes.`application/json`, event.asJson.noSpaces)
+          entity =
+            HttpEntity(ContentTypes.`application/json`, event.asJson.noSpaces)
         )
       }))
       .once()
@@ -133,11 +170,16 @@ class DockerClientSpec extends ScalaTestWithActorTestKit with AnyWordSpecLike wi
       .returning(
         Future.successful(
           HttpResponse(
-            entity = HttpEntity(ContentTypes.`application/json`, Container(labels, Some("localhost")).asJson.noSpaces)
+            entity =
+              HttpEntity(ContentTypes.`application/json`,
+                         Container(labels, Some("localhost")).asJson.noSpaces)
           )))
       .anyNumberOfTimes()
 
-    (clientMock.downloadFile _).expects("http://localhost:9999/openapi.yaml").returning(Future.successful("OK")).anyNumberOfTimes()
+    (clientMock.downloadFile _)
+      .expects("http://localhost:9999/openapi.yaml")
+      .returning(Future.successful("OK"))
+      .anyNumberOfTimes()
 
     clientMock
 

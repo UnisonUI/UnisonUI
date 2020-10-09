@@ -11,7 +11,9 @@ import restui.providers.Provider
 // $COVERAGE-OFF$
 class KubernetesProvider extends Provider with LazyLogging {
 
-  override def start(actorSystem: ActorSystem[_], config: Config): Source[(String, ServiceEvent), NotUsed] = {
+  override def start(
+      actorSystem: ActorSystem[_],
+      config: Config): Source[(String, ServiceEvent), NotUsed] = {
     implicit val system: ActorSystem[_] = actorSystem
     val name                            = classOf[KubernetesProvider].getCanonicalName
     val settings                        = Settings.from(config)

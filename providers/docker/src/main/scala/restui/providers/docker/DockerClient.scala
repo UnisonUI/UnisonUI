@@ -1,8 +1,5 @@
 package restui.providers.docker
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
-
 import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.Uri
@@ -16,35 +13,43 @@ import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.docker.client.HttpClient
 import restui.providers.docker.client.models.{Container, Event, State}
 
-class DockerClient(private val client: HttpClient, private val settings: Settings)(implicit val system: ActorSystem[_])
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
+
+class DockerClient(private val client: HttpClient,
+                   private val settings: Settings)(implicit
+    val system: ActorSystem[_])
     extends LazyLogging {
   import DockerClient._
   implicit val executionContent: ExecutionContext = system.executionContext
 
   def startStreaming: Source[ServiceEvent, NotUsed] =
     events.collect {
-      case event @ Event(id, Some(state), attributes) if findMatchingLabels(attributes).isDefined =>
+      case event @ Event(id, Some(state), attributes)
+          if findMatchingLabels(attributes).isDefined =>
         logger.debug(s"Event found: $event")
         (id, state)
     }.flatMapMerge(
-        Concurrency.AvailableCore,
-        {
-          case (id, State.Start) =>
-            handleServiceUp(id).async
-          case (id, _) =>
-            Source.single(ServiceEvent.ServiceDown(id))
-        }
-      )
-      .async
+      Concurrency.AvailableCore,
+      {
+        case (id, State.Start) =>
+          handleServiceUp(id).async
+        case (id, _) =>
+          Source.single(ServiceEvent.ServiceDown(id))
+      }
+    ).async
 
   private def events: Source[Event, NotUsed] =
     client
-      .watch(Uri("/events").withRawQueryString("""since=0&filters={"event":["start","stop"],"type":["container"]}"""))
+      .watch(Uri("/events").withRawQueryString(
+        """since=0&filters={"event":["start","stop"],"type":["container"]}"""))
       .flatMapMerge(
         Concurrency.AvailableCore,
         response =>
           if (response.status.isSuccess) response.entity.dataBytes
-          else Source.futureSource(response.entity.discardBytes().future.map(_ => Source.empty))
+          else
+            Source.futureSource(
+              response.entity.discardBytes().future.map(_ => Source.empty))
       )
       .via(JsonFraming.objectScanner(MaximumFrameSize))
       .flatMapMerge(
@@ -60,9 +65,9 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
 
   private def handleServiceUp(id: String): Source[ServiceEvent, NotUsed] =
     container(id).async.flatMapConcat { container =>
-      findEndpoint(container.labels, container.ip).fold(Source.empty[ServiceEvent]) {
-        case (serviceName, address, useProxy) =>
-          downloadFile(id, serviceName, address, useProxy).async
+      findEndpoint(container.labels, container.ip).fold(
+        Source.empty[ServiceEvent]) { case (serviceName, address, useProxy) =>
+        downloadFile(id, serviceName, address, useProxy).async
       }
     }
 
@@ -72,16 +77,26 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
         .get(Uri(s"/containers/$id/json"))
         .flatMap { response =>
           if (response.status.isSuccess) Unmarshal(response).to[Container]
-          else response.entity.discardBytes().future.flatMap(_ => Future.failed(new Exception(response.status.defaultMessage)))
+          else
+            response.entity
+              .discardBytes()
+              .future
+              .flatMap(_ =>
+                Future.failed(new Exception(response.status.defaultMessage)))
         }
         .map(Source.single(_))
         .recover { throwable =>
-          logger.warn("There was an error while retrieving the container information", throwable)
+          logger.warn(
+            "There was an error while retrieving the container information",
+            throwable)
           Source.empty[Container]
         }
     }.mapMaterializedValue(_ => NotUsed)
 
-  private def downloadFile(id: String, serviceName: String, uri: String, useProxy: Boolean): Source[ServiceEvent, NotUsed] =
+  private def downloadFile(id: String,
+                           serviceName: String,
+                           uri: String,
+                           useProxy: Boolean): Source[ServiceEvent, NotUsed] =
     Source.futureSource {
       client
         .downloadFile(uri)
@@ -93,7 +108,11 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
 
           Source.single(
             ServiceEvent.ServiceUp(
-              Service.OpenApi(id, serviceName, content, metadata, useProxy = useProxy)
+              Service.OpenApi(id,
+                              serviceName,
+                              content,
+                              metadata,
+                              useProxy = useProxy)
             )
           )
         }
@@ -103,19 +122,25 @@ class DockerClient(private val client: HttpClient, private val settings: Setting
         }
     }.mapMaterializedValue(_ => NotUsed)
 
-  private def findEndpoint(labels: Map[String, String], maybeIpAddress: Option[String]): Option[ServiceNameWithAddress] =
+  private def findEndpoint(
+      labels: Map[String, String],
+      maybeIpAddress: Option[String]): Option[ServiceNameWithAddress] =
     for {
       labels    <- findMatchingLabels(labels)
       ipAddress <- maybeIpAddress
       useProxy = Try(labels.useProxy.toBoolean).getOrElse(false)
-    } yield (labels.serviceName, s"http://$ipAddress:${labels.port.toInt}${labels.specificationPath}", useProxy)
+    } yield
+      (labels.serviceName,
+       s"http://$ipAddress:${labels.port.toInt}${labels.specificationPath}",
+       useProxy)
 
   private def findMatchingLabels(labels: Map[String, String]): Option[Labels] =
     for {
       serviceName <- labels.get(settings.labels.serviceName)
       port        <- labels.get(settings.labels.port)
-      useProxy          = labels.getOrElse(settings.labels.useProxy, "false")
-      specificationPath = labels.getOrElse(settings.labels.specificationPath, "/specification.yaml")
+      useProxy = labels.getOrElse(settings.labels.useProxy, "false")
+      specificationPath = labels.getOrElse(settings.labels.specificationPath,
+                                           "/specification.yaml")
     } yield Labels(serviceName, port, specificationPath, useProxy)
 }
 

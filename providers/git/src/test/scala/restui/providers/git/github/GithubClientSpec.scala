@@ -1,7 +1,5 @@
 package restui.providers.git.github
 
-import scala.concurrent.Future
-
 import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpResponse}
 import akka.stream.scaladsl.Sink
 import base.AsyncTestBase
@@ -9,16 +7,25 @@ import io.circe.syntax._
 import restui.providers.git.github.data.{Error, Node, Repository}
 import restui.providers.git.settings.GithubSettings
 
+import scala.concurrent.Future
+
 class GithubClientSpec extends AsyncTestBase {
   private val github = GithubSettings("MyAwesomeUser", "MyAwesomeUser")
-  private val nodes  = Seq(Node("MyAwesomeUser/MyAwesomeRepo", "https://github.com/MyAwesomeUser/MyAwesomeRepo", "master"))
+  private val nodes = Seq(
+    Node("MyAwesomeUser/MyAwesomeRepo",
+         "https://github.com/MyAwesomeUser/MyAwesomeRepo",
+         "master"))
 
   "Listing repositories" when {
 
     "there is no pagination" in {
       val client = GithubClient(
         github,
-        _ => Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`, Repository(nodes, None).asJson.noSpaces)))
+        _ =>
+          Future.successful(
+            HttpResponse(entity =
+              HttpEntity(ContentTypes.`application/json`,
+                         Repository(nodes, None).asJson.noSpaces)))
       )
 
       GithubClient.listRepositories(client).runWith(Sink.seq).map { result =>
@@ -38,7 +45,9 @@ class GithubClientSpec extends AsyncTestBase {
               Repository(nodes, Some(value)).asJson.noSpaces
           }
 
-          Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`, json)))
+          Future.successful(
+            HttpResponse(entity =
+              HttpEntity(ContentTypes.`application/json`, json)))
         }
       )
 
@@ -53,7 +62,10 @@ class GithubClientSpec extends AsyncTestBase {
         val client = GithubClient(
           github,
           _ =>
-            Future.successful(HttpResponse(entity = HttpEntity(ContentTypes.`application/json`, Error(List("Some error")).asJson.noSpaces)))
+            Future.successful(
+              HttpResponse(entity =
+                HttpEntity(ContentTypes.`application/json`,
+                           Error(List("Some error")).asJson.noSpaces)))
         )
 
         GithubClient.listRepositories(client).runWith(Sink.seq).map { result =>

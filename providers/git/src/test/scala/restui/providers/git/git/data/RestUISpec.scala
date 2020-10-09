@@ -19,10 +19,13 @@ class RestUISpec extends AnyFlatSpec with Matchers {
       .parse(input)
       .flatMap(_.as[RestUI])
       .valueOr(throw _)
-    restui shouldBe RestUI("test".some,
-                           UnnamedSpecification("file.yaml") :: NamedSpecification("another service", "other.yaml", None) :: Nil,
-                           Map.empty,
-                           None)
+    restui shouldBe RestUI(
+      "test".some,
+      UnnamedSpecification("file.yaml") :: NamedSpecification("another service",
+                                                              "other.yaml",
+                                                              None) :: Nil,
+      Map.empty,
+      None)
   }
   it should "decode a restui config file with grpc" in {
     val input = """name: "test"
@@ -49,10 +52,17 @@ class RestUISpec extends AnyFlatSpec with Matchers {
       .valueOr(throw _)
     restui shouldBe RestUI(
       "test".some,
-      UnnamedSpecification("file.yaml") :: NamedSpecification("another service", "other.yaml", None) :: Nil,
+      UnnamedSpecification("file.yaml") :: NamedSpecification("another service",
+                                                              "other.yaml",
+                                                              None) :: Nil,
       Map(
-        "path/spec.proto"  -> GrpcSetting(None, Map("127.0.0.1:8080" -> Service.Grpc.Server("127.0.0.1", 8080, false))),
-        "path/spec2.proto" -> GrpcSetting("test".some, Map("other server" -> Service.Grpc.Server("127.0.0.1", 8080, true)))
+        "path/spec.proto" -> GrpcSetting(
+          None,
+          Map(
+            "127.0.0.1:8080" -> Service.Grpc.Server("127.0.0.1", 8080, false))),
+        "path/spec2.proto" -> GrpcSetting(
+          "test".some,
+          Map("other server" -> Service.Grpc.Server("127.0.0.1", 8080, true)))
       ),
       None
     )

@@ -1,12 +1,12 @@
 package restui.specifications
 
-import scala.io.Source
-import scala.util.Try
-
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.parser.{parse => parseJson}
 import io.circe.schema.Schema
 import restui.specifications.parse
+
+import scala.io.Source
+import scala.util.Try
 
 object Validator extends LazyLogging {
   private val schema: Schema  = loadSchema("schema.json").get
@@ -20,7 +20,12 @@ object Validator extends LazyLogging {
 
   def isValid(input: String): Boolean =
     (for {
-      json   <- parse(input)
-      result <- schema3.validate(json).toEither.left.flatMap(_ => schema.validate(json).toEither)
+      json <- parse(input)
+      result <-
+        schema3
+          .validate(json)
+          .toEither
+          .left
+          .flatMap(_ => schema.validate(json).toEither)
     } yield result).isRight
 }

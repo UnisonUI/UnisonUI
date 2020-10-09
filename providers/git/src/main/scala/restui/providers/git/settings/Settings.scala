@@ -1,9 +1,9 @@
 package restui.providers.git.settings
 
+import com.typesafe.config.Config
+
 import scala.concurrent.duration.FiniteDuration
 import scala.jdk.DurationConverters._
-
-import com.typesafe.config.Config
 
 final case class Settings(cacheDuration: FiniteDuration, vcs: List[VCS])
 object Settings {

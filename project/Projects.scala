@@ -15,22 +15,25 @@ object Projects {
       .settings(sonarProperties ++= SonarProperties.sonarProp(moduleName))
       .enablePlugins(AssemblyPlugin)
       .settings(assemblyMergeStrategy in assembly := {
-        case PathList("META-INF", "io.netty.versions.properties", xs @ _*) => MergeStrategy.last
-        case "application.conf"                                            => MergeStrategy.concat
-        case "reference.conf"                                              => MergeStrategy.concat
-        case PathList("META-INF", "services", _*)                          => MergeStrategy.concat
-        case PathList("META-INF", _*)                                      => MergeStrategy.discard
-        case x                                                             => MergeStrategy.last
+        case PathList("META-INF", "io.netty.versions.properties", xs @ _*) =>
+          MergeStrategy.last
+        case "application.conf"                   => MergeStrategy.concat
+        case "reference.conf"                     => MergeStrategy.concat
+        case PathList("META-INF", "services", _*) => MergeStrategy.concat
+        case PathList("META-INF", _*)             => MergeStrategy.discard
+        case x                                    => MergeStrategy.last
       })
 
   val restUiCore = createModule("rest-ui-core", "core")
     .settings(resolvers += "jitpack".at("https://jitpack.io"))
 
   val restUi = createModule("rest-ui", "rest-ui")
-    .settings(mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh")
+    .settings(
+      mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh")
 
-  val providerDocker     = createModule("provider-docker", "providers/docker")
-  val providerKubernetes = createModule("provider-kubernetes", "providers/kubernetes")
-  val providerGit        = createModule("provider-git", "providers/git")
-  val providerWebhook    = createModule("provider-webhook", "providers/webhook")
+  val providerDocker = createModule("provider-docker", "providers/docker")
+  val providerKubernetes =
+    createModule("provider-kubernetes", "providers/kubernetes")
+  val providerGit     = createModule("provider-git", "providers/git")
+  val providerWebhook = createModule("provider-webhook", "providers/webhook")
 }

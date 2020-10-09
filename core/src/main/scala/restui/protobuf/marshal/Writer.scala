@@ -12,7 +12,8 @@ import restui.protobuf.json._
 
 object Writer {
   implicit class WriterOps(private val schema: Schema) {
-    def write(json: Json): Either[Throwable, Array[Byte]] = new Writer(schema).write(json)
+    def write(json: Json): Either[Throwable, Array[Byte]] =
+      new Writer(schema).write(json)
   }
 }
 
@@ -26,15 +27,22 @@ class Writer(private val schema: Schema) {
       result.map(_ => bytes)
     }
 
-  private def write(json: Json, root: MessageSchema, output: OutputStream): Either[Throwable, Unit] = {
+  private def write(json: Json,
+                    root: MessageSchema,
+                    output: OutputStream): Either[Throwable, Unit] = {
     val cos    = CodedOutputStream.newInstance(output)
     val result = writeObject(json, root, cos)
     cos.flush()
     result
   }
 
-  private def writeObject(json: Json, messageSchema: MessageSchema, output: CodedOutputStream): Either[Throwable, Unit] = {
-    val fieldMap  = messageSchema.fields.map { case (_, field) => field.name -> field }
+  private def writeObject(
+      json: Json,
+      messageSchema: MessageSchema,
+      output: CodedOutputStream): Either[Throwable, Unit] = {
+    val fieldMap = messageSchema.fields.map { case (_, field) =>
+      field.name -> field
+    }
     val keyValues = json.asObject.toVector.flatMap(_.toVector)
     val fields = if (messageSchema.isMap) for {
       (key, value) <- keyValues
@@ -48,14 +56,21 @@ class Writer(private val schema: Schema) {
         field        <- fieldMap.get(key).toVector
       } yield (field, value)
     fieldMap.find {
-      case (_, Field(_, name, Label.Required, _, _, _, _, _)) => !keyValues.exists(_._1 == name)
-      case _                                                  => false
+      case (_, Field(_, name, Label.Required, _, _, _, _, _)) =>
+        !keyValues.exists(_._1 == name)
+      case _ => false
     }.fold {
-      fields.traverse { case (field, value) => writeField(output, field, value) }.map(_ => ())
-    } { case (_, Field(_, name, _, _, _, _, _, _)) => Errors.RequiredField(name).asLeft }
+      fields.traverse { case (field, value) =>
+        writeField(output, field, value)
+      }.map(_ => ())
+    } { case (_, Field(_, name, _, _, _, _, _, _)) =>
+      Errors.RequiredField(name).asLeft
+    }
   }
 
-  private def writeField(output: CodedOutputStream, field: Field, value: Json): Either[Throwable, Unit] = {
+  private def writeField(output: CodedOutputStream,
+                         field: Field,
+                         value: Json): Either[Throwable, Unit] = {
     val wireTypeValue = wireType(field.`type`)
     field.label match {
       case Label.Repeated =>
@@ -72,12 +87,18 @@ class Writer(private val schema: Schema) {
     }
   }
 
-  private def writeRepeat(output: CodedOutputStream, field: Field, value: Json, wireTypeValue: Int): Either[Throwable, Unit] = {
+  private def writeRepeat(output: CodedOutputStream,
+                          field: Field,
+                          value: Json,
+                          wireTypeValue: Int): Either[Throwable, Unit] = {
     val maybeList = field.schema match {
       case Some(subSchema) if schema.messages.get(subSchema).exists(_.isMap) =>
         if (value.isObject)
           value.asObject.toVector.flatMap(_.toVector).map(Json.obj(_)).asRight
-        else DecodingFailure(s""""${field.name}" is expecting: ${field.`type`.name}""", Nil).asLeft
+        else
+          DecodingFailure(
+            s""""${field.name}" is expecting: ${field.`type`.name}""",
+            Nil).asLeft
       case _ => value.asArray.toVector.flatten.asRight
     }
 
@@ -97,7 +118,9 @@ class Writer(private val schema: Schema) {
     }
   }
 
-  private def writeValue(out: CodedOutputStream, field: Field, value: Json): Either[Throwable, Unit] =
+  private def writeValue(out: CodedOutputStream,
+                         field: Field,
+                         value: Json): Either[Throwable, Unit] =
     (field.`type` match {
 // $COVERAGE-OFF$
       case Type.FLOAT    => value.as[Float].map(out.writeFloatNoTag(_))
@@ -116,22 +139,29 @@ class Writer(private val schema: Schema) {
 // $COVERAGE-ON$
       case Type.STRING =>
         value.as[String].map(out.writeStringNoTag(_))
-      case Type.BYTES => value.as[String].map(string => out.writeByteArrayNoTag(ju.Base64.getDecoder.decode(string)))
+      case Type.BYTES =>
+        value
+          .as[String]
+          .map(string =>
+            out.writeByteArrayNoTag(ju.Base64.getDecoder.decode(string)))
       case Type.ENUM =>
         val enumMap = schema.enums(field.schema.get).values.map(_.swap)
         value.as[String].map(string => out.writeEnumNoTag(enumMap(string)))
       case Type.MESSAGE =>
         val baos     = new ByteArrayOutputStream()
         val bytesOut = CodedOutputStream.newInstance(baos)
-        val result   = writeObject(value, schema.messages(field.schema.get), bytesOut)
+        val result =
+          writeObject(value, schema.messages(field.schema.get), bytesOut)
         bytesOut.flush()
         out.writeByteArrayNoTag(baos.toByteArray)
         result
 
-      case Type.GROUP => (new IllegalArgumentException("Unsupported type: GROUP")).asLeft[Unit]
+      case Type.GROUP =>
+        (new IllegalArgumentException("Unsupported type: GROUP")).asLeft[Unit]
     }).leftMap {
-      case e: DecodingFailure => e.withMessage(s""""${field.name}" is expecting: ${field.`type`.name}""")
-      case e                  => e
+      case e: DecodingFailure =>
+        e.withMessage(s""""${field.name}" is expecting: ${field.`type`.name}""")
+      case e => e
     }
 
 // $COVERAGE-OFF$

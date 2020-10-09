@@ -9,7 +9,11 @@ import restui.protobuf.marshal.Reader._
 import restui.protobuf.marshal.Writer._
 
 class Marshaller(schema: Schema) extends MethodDescriptor.Marshaller[Json] {
-  override def parse(stream: InputStream): Json = schema.read(stream).fold(e => throw e, identity(_))
+  override def parse(stream: InputStream): Json =
+    schema.read(stream).fold(e => throw e, identity(_))
   override def stream(value: Json): InputStream =
-    schema.write(value).fold(e => throw e, bytes => new ByteArrayInputStream(bytes) with KnownLength)
+    schema
+      .write(value)
+      .fold(e => throw e,
+            bytes => new ByteArrayInputStream(bytes) with KnownLength)
 }

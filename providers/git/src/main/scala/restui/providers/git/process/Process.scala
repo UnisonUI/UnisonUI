@@ -1,10 +1,10 @@
 package restui.providers.git.process
 
-import scala.sys.process.{Process => ScalaProcess, _}
-import scala.util.Try
-
 import akka.stream.scaladsl.{Flow => AkkaFlow}
 import restui.providers.git.Flow
+
+import scala.sys.process.{Process => ScalaProcess, _}
+import scala.util.Try
 
 object Process {
 

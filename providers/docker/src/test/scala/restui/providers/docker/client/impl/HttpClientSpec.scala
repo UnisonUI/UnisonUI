@@ -13,7 +13,10 @@ import akka.util.ByteString
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 
-class HttpClientSpec extends ScalaTestWithActorTestKit with AsyncWordSpecLike with Matchers {
+class HttpClientSpec
+    extends ScalaTestWithActorTestKit
+    with AsyncWordSpecLike
+    with Matchers {
   private val httpResponse = ByteString("""HTTP/1.1 200 OK
 |Content-Type: text/plain; charset=UTF-8
 |Content-Length: 2
@@ -25,7 +28,8 @@ class HttpClientSpec extends ScalaTestWithActorTestKit with AsyncWordSpecLike wi
 """.stripMargin)
   "Get a resource" when {
     "using an unix domain socket" in {
-      val sockFile = Files.createTempFile("restui_unix", ".sock").toAbsolutePath()
+      val sockFile =
+        Files.createTempFile("restui_unix", ".sock").toAbsolutePath()
       sockFile.toFile.delete
       val client = new HttpClient(s"unix://${sockFile.toString}")
       for {
@@ -45,7 +49,8 @@ class HttpClientSpec extends ScalaTestWithActorTestKit with AsyncWordSpecLike wi
 
   "Watching a resource" when {
     "there is no error" in {
-      val sockFile = Files.createTempFile("restui_unix", ".sock").toAbsolutePath()
+      val sockFile =
+        Files.createTempFile("restui_unix", ".sock").toAbsolutePath()
       sockFile.toFile.delete
       val client = new HttpClient(s"unix://${sockFile.toString}")
       for {

@@ -26,5 +26,6 @@ class ProtobufCompilerImpl extends ProtobufCompiler {
         .!!
       tempFile
     }
-  override def clean(file: File): Either[Throwable, Unit] = allCatch.either(file.delete())
+  override def clean(file: File): Either[Throwable, Unit] =
+    allCatch.either(file.delete())
 }

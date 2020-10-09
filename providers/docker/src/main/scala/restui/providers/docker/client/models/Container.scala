@@ -17,9 +17,13 @@ object Container {
     val obj =
       container.ip.foldLeft(
         "Config" ->
-          Json.obj("Labels" ->
-            Json.obj(container.labels.view.mapValues(Json.fromString).toList: _*)) :: Nil)((obj, ip) =>
-        obj :+ "NetworkSettings" -> NetworkSettings(Map("Bridge" -> Network(ip))).asJson)
+          Json.obj(
+            "Labels" ->
+              Json.obj(container.labels.view
+                .mapValues(Json.fromString)
+                .toList: _*)) :: Nil)((obj, ip) =>
+        obj :+ "NetworkSettings" -> NetworkSettings(
+          Map("Bridge" -> Network(ip))).asJson)
     Json.obj(obj: _*)
   }
 

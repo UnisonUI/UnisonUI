@@ -1,23 +1,24 @@
 package restui.providers.git
 
-import scala.concurrent.duration._
-
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import restui.providers.git.settings._
 
+import scala.concurrent.duration._
+
 class SettingsSpec extends AnyWordSpec with Matchers {
-  private val defaultConfig                      = ConfigFactory.defaultReference()
-  private def loadConfig(config: String): Config = ConfigFactory.parseString(config).withFallback(defaultConfig)
-  private val longRepositories                   = """ repositories = [
+  private val defaultConfig = ConfigFactory.defaultReference()
+  private def loadConfig(config: String): Config =
+    ConfigFactory.parseString(config).withFallback(defaultConfig)
+  private val longRepositories = """ repositories = [
 |       {
 |         location = "https://github.com/myOrg/Test"
 |         specification-paths = ["test/"]
 |       },
 |     ]
 |""".stripMargin
-  private val repositories                       = """ repositories = [
+  private val repositories     = """ repositories = [
 |       {
 |         location = "myOrg/Test"
 |         specification-paths = ["test/"]
@@ -83,11 +84,17 @@ class SettingsSpec extends AnyWordSpec with Matchers {
                 "test",
                 "https://api.github.com/graphql",
                 1.hours,
-                RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/"), false) :: RepositorySettings(
+                RepositorySettings(Location.Uri("myOrg/Test"),
+                                   None,
+                                   List("test/"),
+                                   false) :: RepositorySettings(
                   Location.Regex("myOrg/.+"),
                   None,
                   Nil,
-                  false) :: RepositorySettings(Location.Uri("restui"), None, Nil, false) :: Nil
+                  false) :: RepositorySettings(Location.Uri("restui"),
+                                               None,
+                                               Nil,
+                                               false) :: Nil
               )
             )
           )
@@ -109,7 +116,10 @@ class SettingsSpec extends AnyWordSpec with Matchers {
                 "test",
                 "https://api.github.com/graphql",
                 1.hours,
-                RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/"), false) :: Nil
+                RepositorySettings(Location.Uri("myOrg/Test"),
+                                   None,
+                                   List("test/"),
+                                   false) :: Nil
               )
             )
           )
@@ -129,11 +139,17 @@ class SettingsSpec extends AnyWordSpec with Matchers {
         2.hours,
         List(
           GitSettings(
-            RepositorySettings(Location.Uri("myOrg/Test"), None, List("test/"), false) :: RepositorySettings(
+            RepositorySettings(Location.Uri("myOrg/Test"),
+                               None,
+                               List("test/"),
+                               false) :: RepositorySettings(
               Location.Regex("myOrg/.+"),
               None,
               Nil,
-              false) :: RepositorySettings(Location.Uri("restui"), None, Nil, false) :: Nil)
+              false) :: RepositorySettings(Location.Uri("restui"),
+                                           None,
+                                           Nil,
+                                           false) :: Nil)
         )
       )
     }

@@ -45,7 +45,10 @@ package object data {
         .dropNullValues
   }
 
-  final case class EnumSchema(name: String, values: Map[Int, String], options: Option[Map[String, String]]) extends DescriptorSchema
+  final case class EnumSchema(name: String,
+                              values: Map[Int, String],
+                              options: Option[Map[String, String]])
+      extends DescriptorSchema
 
   object EnumSchema {
     implicit val encoder: Encoder[EnumSchema] = (message: EnumSchema) =>
@@ -89,10 +92,13 @@ package object data {
       case None        => Json.Null
       case Some(value) => value.asInstanceOf[Any].asJson
     }
-    implicit val typeEncoder: Encoder[FieldDescriptor.Type] = (fieldType: FieldDescriptor.Type) => Json.fromString(fieldType.name())
+    implicit val typeEncoder: Encoder[FieldDescriptor.Type] =
+      (fieldType: FieldDescriptor.Type) => Json.fromString(fieldType.name())
   }
 
-  final case class Service(name: String, fullName: String, methods: List[Method])
+  final case class Service(name: String,
+                           fullName: String,
+                           methods: List[Method])
   final case class Method(name: String, inputType: Schema, outputType: Schema)
 
   object Service {

@@ -12,7 +12,9 @@ import restui.providers.webhook.settings.Settings
 
 // $COVERAGE-OFF$
 class WebhookProvider extends Provider with LazyLogging {
-  override def start(actorSystem: ActorSystem[_], config: Config): Source[(String, ServiceEvent), NotUsed] = {
+  override def start(
+      actorSystem: ActorSystem[_],
+      config: Config): Source[(String, ServiceEvent), NotUsed] = {
     implicit val system: ActorSystem[_]             = actorSystem
     implicit val protobufCompiler: ProtobufCompiler = new ProtobufCompilerImpl
     val settings                                    = Settings.from(config)
@@ -21,10 +23,16 @@ class WebhookProvider extends Provider with LazyLogging {
     val name = classOf[WebhookProvider].getCanonicalName
 
     val specificationSource = if (settings.selfSpecification) {
-      val specification = scala.io.Source.fromResource("webhook-specification.yaml").getLines().mkString("\n")
+      val specification = scala.io.Source
+        .fromResource("webhook-specification.yaml")
+        .getLines()
+        .mkString("\n")
       Source.single(
         ServiceEvent.ServiceUp(
-          Service.OpenApi("restui:webhook", "Webhook provider", specification, Map(Metadata.File -> "webhook-specification.yaml"))))
+          Service.OpenApi("restui:webhook",
+                          "Webhook provider",
+                          specification,
+                          Map(Metadata.File -> "webhook-specification.yaml"))))
     } else Source.empty[ServiceEvent]
 
     Source

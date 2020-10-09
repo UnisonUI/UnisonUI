@@ -1,10 +1,10 @@
 package restui.providers.docker.client
 
-import scala.concurrent.Future
-
 import akka.NotUsed
 import akka.http.scaladsl.model.{HttpResponse, Uri}
 import akka.stream.scaladsl.Source
+
+import scala.concurrent.Future
 
 trait HttpClient {
   def get(path: Uri): Future[HttpResponse]

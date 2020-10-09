@@ -2,7 +2,11 @@ import Aliases._
 
 scalafixDependencies in ThisBuild += "com.github.liancheng" %% "organize-imports" % "0.3.1-RC1"
 
-testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-u", (baseDirectory.value / "target" / "test-reports").toString, "-o")
+testOptions in Test += Tests.Argument(
+  TestFrameworks.ScalaTest,
+  "-u",
+  (baseDirectory.value / "target" / "test-reports").toString,
+  "-o")
 
 lazy val root = Project("restUI", file("."))
   .aggregate(projects: _*)
@@ -11,7 +15,11 @@ lazy val root = Project("restUI", file("."))
   .disablePlugins(ReleasePlugin)
 
 lazy val restUi = Projects.restUi
-  .dependsOn(restUiCore, providerDocker, providerKubernetes, providerGit, providerWebhook)
+  .dependsOn(restUiCore,
+             providerDocker,
+             providerKubernetes,
+             providerGit,
+             providerWebhook)
   .settings(Dependencies.restUi)
   .settings(DockerSettings.settings)
   .settings(mainClass in Compile := Some("restui.server.Main"))

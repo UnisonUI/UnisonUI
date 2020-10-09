@@ -12,7 +12,9 @@ import restui.providers.docker.client.impl.HttpClient
 // $COVERAGE-OFF$
 class DockerProvider extends Provider with LazyLogging {
 
-  override def start(actorSystem: ActorSystem[_], config: Config): Source[(String, ServiceEvent), NotUsed] = {
+  override def start(
+      actorSystem: ActorSystem[_],
+      config: Config): Source[(String, ServiceEvent), NotUsed] = {
     implicit val system: ActorSystem[_] = actorSystem
     val name                            = classOf[DockerProvider].getCanonicalName
     val settings                        = Settings.from(config)

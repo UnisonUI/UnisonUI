@@ -1,4 +1,6 @@
-import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.{Docker => docker}
+import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.{
+  Docker => docker
+}
 import sbt.Keys._
 import sbt.{Project, State, ThisBuild}
 import sbtassembly.AssemblyPlugin.autoImport._

@@ -15,8 +15,8 @@ class ProcessSpec extends TestBase with Inside {
         |2""".stripMargin :: Nil)
       Source.single(args).via(Process.execute).runWith(Sink.seq).map { result =>
         result should have length 1
-        inside(result.head) {
-          case Right(list) => list shouldBe List("1", "2")
+        inside(result.head) { case Right(list) =>
+          list shouldBe List("1", "2")
         }
       }
     }
@@ -28,8 +28,8 @@ class ProcessSpec extends TestBase with Inside {
         result should have length 1
         val path = tempDir.getCanonicalPath()
         tempDir.delete()
-        inside(result.head) {
-          case Right(list) => list shouldBe List(path)
+        inside(result.head) { case Right(list) =>
+          list shouldBe List(path)
         }
       }
     }
@@ -38,8 +38,8 @@ class ProcessSpec extends TestBase with Inside {
     val args = ProcessArgs("i_do_not_exists" :: Nil)
     Source.single(args).via(Process.execute).runWith(Sink.seq).map { result =>
       result should have length 1
-      inside(result.head) {
-        case Left(value) => value shouldBe ""
+      inside(result.head) { case Left(value) =>
+        value shouldBe ""
       }
     }
   }

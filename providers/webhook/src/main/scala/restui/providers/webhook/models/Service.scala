@@ -14,9 +14,17 @@ object Service {
   implicit val decoderServer: Decoder[Server]   = deriveDecoder[Server]
   implicit val decoderOpenApi: Decoder[OpenApi] = deriveDecoder[OpenApi]
   implicit val decoderGrpc: Decoder[Grpc]       = deriveDecoder[Grpc]
-  implicit val decoder: Decoder[Service]        = List[Decoder[Service]](Decoder[OpenApi].widen, Decoder[Grpc].widen).reduceLeft(_ or _)
+  implicit val decoder: Decoder[Service] =
+    List[Decoder[Service]](Decoder[OpenApi].widen, Decoder[Grpc].widen)
+      .reduceLeft(_ or _)
 
-  final case class OpenApi(name: String, specification: String, metadata: Map[String, String] = Map.empty) extends Service
-  final case class Grpc(name: String, schema: String, servers: Map[String, Server], metadata: Map[String, String] = Map.empty)
+  final case class OpenApi(name: String,
+                           specification: String,
+                           metadata: Map[String, String] = Map.empty)
+      extends Service
+  final case class Grpc(name: String,
+                        schema: String,
+                        servers: Map[String, Server],
+                        metadata: Map[String, String] = Map.empty)
       extends Service
 }

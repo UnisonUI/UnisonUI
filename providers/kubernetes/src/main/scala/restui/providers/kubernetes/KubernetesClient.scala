@@ -1,8 +1,4 @@
 package restui.providers.kubernetes
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-import scala.util.{Failure, Success}
-
 import akka.NotUsed
 import akka.actor.Props
 import akka.actor.typed.ActorSystem
@@ -14,14 +10,25 @@ import skuber._
 import skuber.api.Configuration
 import skuber.json.format._
 
-class KubernetesClient(private val settings: Settings)(implicit system: ActorSystem[_]) extends LazyLogging {
-  private implicit val executionContent: ExecutionContext = system.executionContext
-  private val classicSystem: akka.actor.ActorSystem       = system.classicSystem
-  private val BufferSize                                  = 10
-  private val (queue, source) =
-    Source.queue[ServiceEvent](BufferSize, OverflowStrategy.backpressure).toMat(BroadcastHub.sink[ServiceEvent])(Keep.both).run()
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+import scala.util.{Failure, Success}
 
-  private val serviceActorRef = classicSystem.actorOf(Props(classOf[ServiceActor], settings.labels, queue))
+class KubernetesClient(private val settings: Settings)(implicit
+    system: ActorSystem[_])
+    extends LazyLogging {
+  private implicit val executionContent: ExecutionContext =
+    system.executionContext
+  private val classicSystem: akka.actor.ActorSystem = system.classicSystem
+  private val BufferSize                            = 10
+  private val (queue, source) =
+    Source
+      .queue[ServiceEvent](BufferSize, OverflowStrategy.backpressure)
+      .toMat(BroadcastHub.sink[ServiceEvent])(Keep.both)
+      .run()
+
+  private val serviceActorRef =
+    classicSystem.actorOf(Props(classOf[ServiceActor], settings.labels, queue))
 
   def listCurrentAndFutureServices: Source[ServiceEvent, NotUsed] =
     Configuration.inClusterConfig match {
@@ -37,10 +44,9 @@ class KubernetesClient(private val settings: Settings)(implicit system: ActorSys
               k8s.listByNamespace[ServiceList]().map { map =>
                 Source(map.view.mapValues(_.items).toList)
               }
-            }.recover {
-              case e =>
-                logger.warn("Error while fetching services", e)
-                Source.empty[List[Service]]
+            }.recover { case e =>
+              logger.warn("Error while fetching services", e)
+              Source.empty[List[Service]]
             }
           }
           .runWith(

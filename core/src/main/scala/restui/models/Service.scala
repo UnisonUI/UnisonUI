@@ -1,9 +1,9 @@
 package restui.models
 
-import scala.util.chaining._
-
 import io.circe.syntax._
 import restui.protobuf.data.Schema
+
+import scala.util.chaining._
 
 sealed trait Service {
   val id: String
@@ -17,10 +17,15 @@ object Service {
     md.digest(input.getBytes("UTF-8")).map("%02x".format(_)).mkString
   }
 
-  final case class OpenApi(id: String, name: String, file: String, metadata: Map[String, String] = Map.empty, useProxy: Boolean = false)
+  final case class OpenApi(id: String,
+                           name: String,
+                           file: String,
+                           metadata: Map[String, String] = Map.empty,
+                           useProxy: Boolean = false)
       extends Service {
-    override def toEvent: Event.Service = Event.Service.OpenApi(id, name, useProxy, metadata)
-    override val hash: String           = computeSha1(file)
+    override def toEvent: Event.Service =
+      Event.Service.OpenApi(id, name, useProxy, metadata)
+    override val hash: String = computeSha1(file)
   }
 
   final case class Grpc(id: String,
