@@ -13,7 +13,6 @@ import com.google.protobuf.DescriptorProtos.FieldDescriptorProto.Label._
 import com.google.protobuf.DescriptorProtos.{FileDescriptorProto, FileDescriptorSet}
 import com.google.protobuf.Descriptors._
 import com.google.protobuf.{ByteString, MessageOrBuilder}
-import com.typesafe.scalalogging.LazyLogging
 import io.circe.syntax._
 import io.circe.{Encoder, Json}
 import restui.protobuf.ProtobufCompiler
@@ -22,7 +21,7 @@ final case class Schema(messages: Map[String, MessageSchema] = Map.empty,
                         enums: Map[String, EnumSchema] = Map.empty,
                         services: Map[String, Service] = Map.empty,
                         rootKey: Option[String] = None) { val root: Option[MessageSchema] = rootKey.flatMap(messages.get(_)) }
-object Schema extends LazyLogging {
+object Schema {
   implicit class SchemaOps(path: Path)(implicit val protobufCompiler: ProtobufCompiler) {
     def toSchema: Either[Throwable, Schema] = Schema.fromFile(path)
   }

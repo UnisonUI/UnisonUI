@@ -6,14 +6,16 @@ import akka.stream.scaladsl.Source
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
 import restui.models.{Metadata, Service, ServiceEvent}
+import restui.protobuf.{ProtobufCompiler, ProtobufCompilerImpl}
 import restui.providers.Provider
 import restui.providers.webhook.settings.Settings
 
 // $COVERAGE-OFF$
 class WebhookProvider extends Provider with LazyLogging {
   override def start(actorSystem: ActorSystem[_], config: Config): Source[(String, ServiceEvent), NotUsed] = {
-    implicit val system: ActorSystem[_] = actorSystem
-    val settings                        = Settings.from(config)
+    implicit val system: ActorSystem[_]             = actorSystem
+    implicit val protobufCompiler: ProtobufCompiler = new ProtobufCompilerImpl
+    val settings                                    = Settings.from(config)
 
     logger.debug("Initialising webhook provider")
     val name = classOf[WebhookProvider].getCanonicalName

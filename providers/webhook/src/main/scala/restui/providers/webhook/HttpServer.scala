@@ -11,13 +11,16 @@ import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{BroadcastHub, Keep, Source, SourceQueueWithComplete}
 import com.typesafe.scalalogging.LazyLogging
 import restui.models.ServiceEvent
+import restui.protobuf.ProtobufCompiler
 import restui.providers.webhook.routes.Services
 
 object HttpServer extends LazyLogging with Directives {
 
   private val BufferSize = 0
 
-  def start(interface: String, port: Int)(implicit actorSystem: ActorSystem[_]): Future[Source[ServiceEvent, NotUsed]] = {
+  def start(interface: String, port: Int)(implicit
+      actorSystem: ActorSystem[_],
+      protobufCompiler: ProtobufCompiler): Future[Source[ServiceEvent, NotUsed]] = {
     implicit val executionContext: ExecutionContext = actorSystem.executionContext
     val (queue, source) =
       Source.queue[ServiceEvent](BufferSize, OverflowStrategy.backpressure).toMat(BroadcastHub.sink[ServiceEvent])(Keep.both).run()
@@ -35,7 +38,8 @@ object HttpServer extends LazyLogging with Directives {
       complete(StatusCodes.InternalServerError -> HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Something bad happened"))
   }
 
-  private def routes(queue: SourceQueueWithComplete[ServiceEvent])(implicit executionContext: ExecutionContext) =
+  private def routes(
+      queue: SourceQueueWithComplete[ServiceEvent])(implicit executionContext: ExecutionContext, protobufCompiler: ProtobufCompiler) =
     handleExceptions(exceptionHandler) {
       Services.route(queue)
     }
