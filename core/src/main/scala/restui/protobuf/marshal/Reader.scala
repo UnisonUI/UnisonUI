@@ -110,8 +110,9 @@ class Reader(private val schema: Schema) {
 
   private def readValue(in: CodedInputStream, field: Field): Either[Throwable, Json] =
     field.`type` match {
-      case Type.FLOAT    => Json.fromFloat(in.readFloat()).toRight(new IllegalArgumentException(""))
-      case Type.DOUBLE   => Json.fromDouble(in.readDouble()).toRight(new IllegalArgumentException(""))
+// $COVERAGE-OFF$
+      case Type.FLOAT    => Json.fromFloatOrNull(in.readFloat()).asRight[Throwable]
+      case Type.DOUBLE   => Json.fromDoubleOrNull(in.readDouble()).asRight[Throwable]
       case Type.FIXED32  => Json.fromInt(in.readFixed32()).asRight[Throwable]
       case Type.FIXED64  => Json.fromLong(in.readFixed64()).asRight[Throwable]
       case Type.INT32    => Json.fromInt(in.readInt32()).asRight[Throwable]
@@ -123,9 +124,10 @@ class Reader(private val schema: Schema) {
       case Type.SINT32   => Json.fromInt(in.readSInt32()).asRight[Throwable]
       case Type.SINT64   => Json.fromLong(in.readSInt64()).asRight[Throwable]
       case Type.BOOL     => Json.fromBoolean(in.readBool()).asRight[Throwable]
-      case Type.STRING   => Json.fromString(in.readString()).asRight[Throwable]
-      case Type.BYTES    => Json.fromString(new String(ju.Base64.getEncoder().encode(in.readByteArray()))).asRight[Throwable]
-      case Type.ENUM     => Json.fromString(schema.enums(field.schema.get).values(in.readEnum())).asRight[Throwable]
+// $COVERAGE-ON$
+      case Type.STRING => Json.fromString(in.readString()).asRight[Throwable]
+      case Type.BYTES  => Json.fromString(new String(ju.Base64.getEncoder().encode(in.readByteArray()))).asRight[Throwable]
+      case Type.ENUM   => Json.fromString(schema.enums(field.schema.get).values(in.readEnum())).asRight[Throwable]
       case Type.MESSAGE =>
         val nestedIn = CodedInputStream.newInstance(in.readByteBuffer())
         read(nestedIn, schema.messages(field.schema.get).some)

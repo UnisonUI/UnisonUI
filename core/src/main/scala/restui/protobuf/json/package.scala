@@ -28,6 +28,7 @@ package object json {
     Decoder.decodeFloat.widen,
     Decoder.decodeInt.widen,
     Decoder.decodeLong.widen,
-    Decoder.decodeShort.widen
+    Decoder.decodeShort.widen,
+    Decoder.const(None)
   ).reduceLeft(_ or _)
 }

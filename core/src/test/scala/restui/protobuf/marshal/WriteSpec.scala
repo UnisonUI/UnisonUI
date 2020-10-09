@@ -23,6 +23,17 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside with LazyLogging {
 
   "marshaling a json to protobuf binary" should {
     "success" when {
+      "there is no root key" in {
+        val result = for {
+          schema <- Paths.get("src/test/resources/helloworld.proto").toSchema
+          input = parse("""{"name":"test"}""").getOrElse(Json.Null)
+          bytes <- schema.write(input)
+        } yield bytes
+
+        inside(result) {
+          case Right(bytes) => bytes shouldBe empty
+        }
+      }
       "all fields and types match the schema" in {
         val result = for {
           schema <- Paths.get("src/test/resources/helloworld.proto").toSchema
@@ -42,6 +53,7 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside with LazyLogging {
           input = parse("""{
           |  "myEnum":["VALUE1","VALUE2"],
           |  "myMap":{"k":"val"},
+          |  "myBytes":"dGVzdAo=",
           |  "name":"test",
           |  "tree":{
           |    "value": 0,
@@ -59,8 +71,8 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside with LazyLogging {
 
         inside(result) {
           case Right(bytes) =>
-            bytes shouldBe Array(18, 2, 0, 1, 26, 8, 10, 1, 107, 18, 3, 118, 97, 108, 10, 4, 116, 101, 115, 116, 34, 12, 8, 0, 24, 1, 18, 2,
-              8, 1, 18, 2, 8, 2)
+            bytes shouldBe Array(18, 2, 0, 1, 26, 8, 10, 1, 107, 18, 3, 118, 97, 108, 50, 5, 116, 101, 115, 116, 10, 10, 4, 116, 101, 115,
+              116, 34, 10, 24, 1, 18, 2, 8, 1, 18, 2, 8, 2)
         }
       }
     }
@@ -70,7 +82,7 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside with LazyLogging {
         "the field is from a wrong type" in {
           val result = for {
             schema <- Paths.get("src/test/resources/complex.proto").toSchema
-            input = parse("""{"myMap":1}""").getOrElse(Json.Null)
+            input = parse("""{"name":"test","myMap":1}""").getOrElse(Json.Null)
             bytes <- schema.copy(rootKey = "helloworld.Complex".some).write(input)
           } yield bytes
 
@@ -79,16 +91,15 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside with LazyLogging {
           }
         }
 
-        "a required field is missing" ignore {
+        "a required field is missing" in {
           val result = for {
-            schema <- Paths.get("src/test/resources/helloworld.proto").toSchema
+            schema <- Paths.get("src/test/resources/complex.proto").toSchema
             input = parse("""{}""").getOrElse(Json.Null)
-            is    = schema.services("helloworld.Greeter").methods.head.inputType
-            bytes <- is.write(input)
+            bytes <- schema.copy(rootKey = "helloworld.Complex".some).write(input)
           } yield bytes
 
           inside(result) {
-            case Right(bytes) => bytes shouldBe Array(10, 4, 116, 101, 115, 116)
+            case Left(exception: Errors.RequiredField) => exception.getMessage shouldBe "name is required"
           }
         }
       }

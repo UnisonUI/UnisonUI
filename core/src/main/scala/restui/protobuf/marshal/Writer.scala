@@ -47,8 +47,12 @@ class Writer(private val schema: Schema) {
         (key, value) <- keyValues
         field        <- fieldMap.get(key).toVector
       } yield (field, value)
-
-    fields.traverse { case (field, value) => writeField(output, field, value) }.map(_ => ())
+    fieldMap.find {
+      case (_, Field(_, name, Label.Required, _, _, _, _, _)) => !keyValues.exists(_._1 == name)
+      case _                                                  => false
+    }.fold {
+      fields.traverse { case (field, value) => writeField(output, field, value) }.map(_ => ())
+    } { case (_, Field(_, name, _, _, _, _, _, _)) => Errors.RequiredField(name).asLeft }
   }
 
   private def writeField(output: CodedOutputStream, field: Field, value: Json): Either[Throwable, Unit] = {
@@ -57,10 +61,14 @@ class Writer(private val schema: Schema) {
       case Label.Repeated =>
         writeRepeat(output, field, value, wireTypeValue)
       case _ =>
-        if (!field.default.contains(value.as[Any])) {
-          output.writeTag(field.id, wireTypeValue)
-          writeValue(output, field, value)
-        } else ().asRight
+        for {
+          valueFromJson <- value.as[Any]
+          result <-
+            if (!field.default.contains(valueFromJson)) {
+              output.writeTag(field.id, wireTypeValue)
+              writeValue(output, field, value)
+            } else ().asRight[Throwable]
+        } yield result
     }
   }
 
