@@ -4,6 +4,7 @@ import java.nio.file.{Path, Paths}
 
 import cats.syntax.either._
 import cats.syntax.option._
+import com.google.protobuf.InvalidProtocolBufferException
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.Json
 import io.grpc.KnownLength
@@ -70,34 +71,31 @@ class ReaderSpec
         }
       }
     }
-    /*
+
     "fail" when {
-      "fields are missing from the schema" when {
-        "the field is from a wrong type" in {
-          val result = for {
-            schema <- Paths.get("src/test/resources/complex.proto").toSchema
-            input = parse("""{"name":"test","myMap":1}""").getOrElse(Json.Null)
-            json <- schema.copy(rootKey = "helloworld.Complex".some).read(input)
-          } yield json
+      "couldn't parse list" in {
+        val result = for {
+          schema <- Paths.get("src/test/resources/complex.proto").toSchema
+          input = arrayToStream(Array(18, 1, 0, 2))
+          json <- schema.copy(rootKey = "helloworld.Complex".some).read(input)
+        } yield json
 
-          inside(result) {
-            case Left(exception: DecodingFailure) => exception.getMessage shouldBe """"myMap" is expecting: MESSAGE"""
-          }
+        inside(result) { case Left(exception: InvalidProtocolBufferException) =>
+          exception.getMessage shouldBe "Protocol message contained an invalid tag (zero)."
         }
+      }
 
-        "a required field is missing" in {
-          val result = for {
-            schema <- Paths.get("src/test/resources/complex.proto").toSchema
-            input = parse("""{}""").getOrElse(Json.Null)
-            json <- schema.copy(rootKey = "helloworld.Complex".some).read(input)
-          } yield json
+      "couldn't parse enum" in {
+        val result = for {
+          schema <- Paths.get("src/test/resources/complex.proto").toSchema
+          input = arrayToStream(Array(18, 2, 0, 2))
+          json <- schema.copy(rootKey = "helloworld.Complex".some).read(input)
+        } yield json
 
-          inside(result) {
-            case Left(exception: Errors.RequiredField) => exception.getMessage shouldBe "name is required"
-          }
+        inside(result) { case Left(Errors.InvalidEnumEntry(id)) =>
+          id shouldBe 2
         }
       }
     }
-     */
   }
 }
