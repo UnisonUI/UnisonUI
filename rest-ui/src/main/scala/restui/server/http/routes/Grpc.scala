@@ -40,7 +40,7 @@ object Grpc {
                 if servers.contains(input.server) && schema.services.exists {
                   case (currentService, ProtobufService(_, _, methods)) =>
                     currentService == service && methods.exists {
-                      case Method(name, _, _) => name == method
+                      case Method(name, _, _, _, _) => name == method
                     }
                 } =>
               grpcCall(input.data,

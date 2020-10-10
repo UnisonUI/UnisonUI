@@ -26,9 +26,8 @@ object DockerSettings {
       }
     },
     imageNames in docker := Seq(
-      ImageName(s"ghcr.io/${organization.value}/${name.value}:latest"),
-      ImageName(
-        s"ghcr.io/${organization.value}/${name.value}:v${version.value}")
+      ImageName(s"${organization.value}/${name.value}:latest"),
+      ImageName(s"${organization.value}/${name.value}:v${version.value}")
     )
   )
 }
