@@ -57,7 +57,7 @@ jobs:
       run: |
         npm install conventional-changelog-cli
         node_modules/.bin/conventional-changelog  -r 2 -p angular | tail -n +5 > release.md
-        echo "\`docker pull ghcr.io/maethornaur/restui:${RELEASE_VERSION}\`" >> release.md 
+        echo "\`docker pull ghcr.io/maethornaur/restui:${RELEASE_VERSION}\`" >> release.md
     - name: build
       run: sbt "project rest-ui; npmInstall; webpackProdTask; dockerBuildAndPush"
     - name: Create Release
