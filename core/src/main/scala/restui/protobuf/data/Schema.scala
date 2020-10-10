@@ -205,8 +205,8 @@ object Schema {
         method.getName,
         schema.copy(rootKey = method.getInputType.getFullName.some),
         schema.copy(rootKey = method.getOutputType.getFullName.some),
-        method.isServerStreaming(),
-        method.isClientStreaming()
+        method.isServerStreaming,
+        method.isClientStreaming
       )
     }
 }
