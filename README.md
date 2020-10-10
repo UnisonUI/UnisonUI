@@ -1,8 +1,8 @@
 # RestUI
 
-[![Github Actions](https://github.com/MaethorNaur/restui/workflows/Scala%20CI/badge.svg)](https://github.com/MaethorNaur/restui/actions)
-[![codecov](https://codecov.io/gh/MaethorNaur/restui/branch/master/graph/badge.svg)](https://codecov.io/gh/MaethorNaur/restui)
-[![CodeFactor](https://www.codefactor.io/repository/github/maethornaur/restui/badge)](https://www.codefactor.io/repository/github/maethornaur/restui)
+[![Github Actions](https://github.com/UnisonUI/UnisonUI/workflows/Scala%20CI/badge.svg)](https://github.com/UnisonUI/UnisonUI/actions)
+[![codecov](https://codecov.io/gh/UnisonUI/UnisonUI/branch/master/graph/badge.svg)](https://codecov.io/gh/UnisonUI/UnisonUI)
+[![CodeFactor](https://www.codefactor.io/repository/github/unisonui/UnisonUI/badge)](https://www.codefactor.io/repository/github/unisonui/UnisonUI)
 
 RestUI is intended to be a centralised UI for all your **OpenApi Specification** files.
 
