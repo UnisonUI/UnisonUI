@@ -17,7 +17,7 @@ object BaseSettings {
     fork in Test := true,
     cancelable in Global := true,
     addCompilerPlugin(
-      "org.scalameta" % "semanticdb-scalac" % "4.3.22" cross CrossVersion.full),
+      "org.scalameta" % "semanticdb-scalac" % "4.3.24" cross CrossVersion.full),
     scalacOptions += "-Yrangepos",
     test in assembly := {},
     scalacOptions in Compile ++= ScalacOptions.options,

@@ -3,7 +3,6 @@ import sbt.Keys._
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
 import sbtassembly.AssemblyPlugin
 import sbtassembly.AssemblyPlugin.autoImport._
-import sbtsonar.SonarPlugin.autoImport.sonarProperties
 
 import BaseSettings.defaultSettings
 
@@ -12,7 +11,6 @@ object Projects {
   private def createModule(moduleName: String, fileName: String): Project =
     Project(id = moduleName, base = file(fileName))
       .settings(defaultSettings: _*)
-      .settings(sonarProperties ++= SonarProperties.sonarProp(moduleName))
       .enablePlugins(AssemblyPlugin)
       .settings(assemblyMergeStrategy in assembly := {
         case PathList("META-INF", "io.netty.versions.properties", xs @ _*) =>
