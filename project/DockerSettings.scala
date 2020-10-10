@@ -7,11 +7,11 @@ import sbt.Keys._
 object DockerSettings {
   val settings = Seq(
     dockerBaseImage := "openjdk:11-jre-slim",
-    dockerLabels := Map("maintener" -> "pedro.mangabeiralindekrantz@gmail.com"),
-    dockerUsername := Some("maethornaur"),
+    dockerLabels := Map("maintener" -> "maethornaur@users.noreply.github.com"),
+    dockerUsername := Some("unisonui"),
     dockerRepository := Some("ghcr.io"),
     dockerUpdateLatest := true,
-    packageName in Docker := "restui",
+    packageName in Docker := "unisonui",
     dockerExposedPorts := Seq(8080),
     dockerEntrypoint := Seq("/opt/docker/entrypoint.sh",
                             executableScriptName.value),
