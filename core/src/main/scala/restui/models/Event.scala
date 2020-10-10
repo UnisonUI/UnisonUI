@@ -51,21 +51,20 @@ object Event {
   final case class ServiceDown(id: String)           extends Event
   final case class ServiceContentChanged(id: String) extends Event
 
-  implicit val encoder: Encoder[Event] = (event: Event) =>
-    event match {
-      case ServiceUp(service: Service) => service.asJson
-      case ServiceDown(id) =>
-        Json.obj(
-          "event" -> Json.fromString("serviceDown"),
-          "id"    -> Json.fromString(id)
-        )
-      case ServiceContentChanged(id) =>
-        Json.obj(
-          "event" -> Json.fromString("serviceChanged"),
-          "id"    -> Json.fromString(id)
-        )
+  implicit val encoder: Encoder[Event] = {
+    case ServiceUp(service: Service) => service.asJson
+    case ServiceDown(id) =>
+      Json.obj(
+        "event" -> Json.fromString("serviceDown"),
+        "id"    -> Json.fromString(id)
+      )
+    case ServiceContentChanged(id) =>
+      Json.obj(
+        "event" -> Json.fromString("serviceChanged"),
+        "id"    -> Json.fromString(id)
+      )
 
-    }
+  }
 
   implicit val listEncoder: Encoder[List[ServiceUp]] =
     (events: List[ServiceUp]) => Json.arr(events.map(encoder(_)): _*)

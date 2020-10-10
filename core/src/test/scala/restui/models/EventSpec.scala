@@ -14,10 +14,13 @@ class EventSpec
     val properties = Table(
       ("event", "json"),
       (Event.ServiceUp(
-         Event.Service.OpenApi("id", "test", false, Map("key" -> "value"))),
+         Event.Service
+           .OpenApi("id", "test", useProxy = false, Map("key" -> "value"))),
        """{"event":"serviceUp","id":"id","name":"test","metadata":{"key":"value"},"useProxy":false,"type":"openapi"}"""),
       (Event.ServiceUp(Event.Service.Grpc("id", "test", Map("key" -> "value"))),
        """{"event":"serviceUp","id":"id","name":"test","metadata":{"key":"value"},"type":"grpc"}"""),
+      (Event.ServiceContentChanged("id"),
+       """{"event":"serviceChanged","id":"id"}"""),
       (Event.ServiceDown("id"), """{"event":"serviceDown","id":"id"}""")
     )
 
@@ -29,8 +32,8 @@ class EventSpec
     val properties = Table(
       ("event", "json"),
       (List(
-         Event.ServiceUp(
-           Event.Service.OpenApi("id", "test", false, Map("key" -> "value")))),
+         Event.ServiceUp(Event.Service
+           .OpenApi("id", "test", useProxy = false, Map("key" -> "value")))),
        """[{"event":"serviceUp","id":"id","name":"test","metadata":{"key":"value"},"useProxy":false,"type":"openapi"}]""")
     )
 

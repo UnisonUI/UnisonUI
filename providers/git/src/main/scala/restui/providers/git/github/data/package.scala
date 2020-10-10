@@ -5,8 +5,8 @@ import cats.syntax.functor._
 import io.circe.{Decoder, Encoder, HCursor, Json}
 
 package object data {
-  sealed trait GrahpQL
-  final case class Error(messages: List[String]) extends GrahpQL
+  sealed trait GraphQL
+  final case class Error(messages: List[String]) extends GraphQL
 
   object Error {
     implicit val encoder: Encoder[Error] = (error: Error) =>
@@ -28,7 +28,7 @@ package object data {
   }
 
   final case class Repository(repositories: Seq[Node], cursor: Option[String])
-      extends GrahpQL
+      extends GraphQL
   final case class Node(name: String, url: String, branch: String)
 
   object Repository {
@@ -83,9 +83,9 @@ package object data {
         }
     }
   }
-  object GrahpQL {
-    implicit val decoder: Decoder[GrahpQL] =
-      List[Decoder[GrahpQL]](Decoder[Error].widen, Decoder[Repository].widen)
+  object GraphQL {
+    implicit val decoder: Decoder[GraphQL] =
+      List[Decoder[GraphQL]](Decoder[Error].widen, Decoder[Repository].widen)
         .reduceLeft(_ or _)
   }
 }

@@ -22,8 +22,8 @@ class Writer(private val schema: Schema) {
     schema.root.fold(Array.empty[Byte].asRight[Throwable]) { root =>
       val byteArrayOutputStream = new ByteArrayOutputStream()
       val result                = write(json.deepDropNullValues, root, byteArrayOutputStream)
-      byteArrayOutputStream.close
-      val bytes = byteArrayOutputStream.toByteArray()
+      byteArrayOutputStream.close()
+      val bytes = byteArrayOutputStream.toByteArray
       result.map(_ => bytes)
     }
 
@@ -108,7 +108,7 @@ class Writer(private val schema: Schema) {
         val bytesOut              = CodedOutputStream.newInstance(byteArrayOutputStream)
         val result                = list.traverse(writeValue(bytesOut, field, _)).map(_ => ())
         bytesOut.flush()
-        output.writeByteArray(field.id, byteArrayOutputStream.toByteArray())
+        output.writeByteArray(field.id, byteArrayOutputStream.toByteArray)
         result
       } else
         list.traverse { value =>
@@ -123,22 +123,22 @@ class Writer(private val schema: Schema) {
                          value: Json): Either[Throwable, Unit] =
     (field.`type` match {
 // $COVERAGE-OFF$
-      case Type.FLOAT    => value.as[Float].map(out.writeFloatNoTag(_))
-      case Type.DOUBLE   => value.as[Double].map(out.writeDoubleNoTag(_))
-      case Type.FIXED32  => value.as[Int].map(out.writeFixed32NoTag(_))
-      case Type.FIXED64  => value.as[Long].map(out.writeFixed64NoTag(_))
-      case Type.INT32    => value.as[Int].map(out.writeInt32NoTag(_))
-      case Type.INT64    => value.as[Long].map(out.writeInt64NoTag(_))
-      case Type.UINT32   => value.as[Int].map(out.writeUInt32NoTag(_))
-      case Type.UINT64   => value.as[Long].map(out.writeUInt64NoTag(_))
-      case Type.SFIXED32 => value.as[Int].map(out.writeSFixed32NoTag(_))
-      case Type.SFIXED64 => value.as[Long].map(out.writeSFixed64NoTag(_))
-      case Type.SINT32   => value.as[Int].map(out.writeSInt32NoTag(_))
-      case Type.SINT64   => value.as[Long].map(out.writeSInt64NoTag(_))
-      case Type.BOOL     => value.as[Boolean].map(out.writeBoolNoTag(_))
+      case Type.FLOAT    => value.as[Float].map(out.writeFloatNoTag)
+      case Type.DOUBLE   => value.as[Double].map(out.writeDoubleNoTag)
+      case Type.FIXED32  => value.as[Int].map(out.writeFixed32NoTag)
+      case Type.FIXED64  => value.as[Long].map(out.writeFixed64NoTag)
+      case Type.INT32    => value.as[Int].map(out.writeInt32NoTag)
+      case Type.INT64    => value.as[Long].map(out.writeInt64NoTag)
+      case Type.UINT32   => value.as[Int].map(out.writeUInt32NoTag)
+      case Type.UINT64   => value.as[Long].map(out.writeUInt64NoTag)
+      case Type.SFIXED32 => value.as[Int].map(out.writeSFixed32NoTag)
+      case Type.SFIXED64 => value.as[Long].map(out.writeSFixed64NoTag)
+      case Type.SINT32   => value.as[Int].map(out.writeSInt32NoTag)
+      case Type.SINT64   => value.as[Long].map(out.writeSInt64NoTag)
+      case Type.BOOL     => value.as[Boolean].map(out.writeBoolNoTag)
 // $COVERAGE-ON$
       case Type.STRING =>
-        value.as[String].map(out.writeStringNoTag(_))
+        value.as[String].map(out.writeStringNoTag)
       case Type.BYTES =>
         value
           .as[String]

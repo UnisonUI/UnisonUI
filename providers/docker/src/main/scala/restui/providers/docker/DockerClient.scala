@@ -84,7 +84,7 @@ class DockerClient(private val client: HttpClient,
               .flatMap(_ =>
                 Future.failed(new Exception(response.status.defaultMessage)))
         }
-        .map(Source.single(_))
+        .map(Source.single)
         .recover { throwable =>
           logger.warn(
             "There was an error while retrieving the container information",

@@ -17,7 +17,7 @@ class ProtobufCompilerImpl extends ProtobufCompiler {
     allCatch.either {
       val tempFile = File.createTempFile("restui", ".protoset")
       Seq(protocExe,
-          s"-o${tempFile.getAbsolutePath()}",
+          s"-o${tempFile.getAbsolutePath}",
           "--include_imports",
           "-I",
           path.toAbsolutePath.getParent.toString,

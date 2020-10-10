@@ -103,11 +103,10 @@ class ServiceActor(settingsLabels: Labels,
     for {
       port <- labels.get(settingsLabels.port)
       specificationPath =
-        labels
-          .get(settingsLabels.specificationPath)
-          .getOrElse("/specification.yaml")
-      protocol = labels.get(settingsLabels.protocol).getOrElse("http")
-      useProxy = labels.get(settingsLabels.useProxy).getOrElse("false")
+        labels.getOrElse(settingsLabels.specificationPath,
+                         "/specification.yaml")
+      protocol = labels.getOrElse(settingsLabels.protocol, "http")
+      useProxy = labels.getOrElse(settingsLabels.useProxy, "false")
     } yield Labels(protocol, port, specificationPath, useProxy)
 
 }

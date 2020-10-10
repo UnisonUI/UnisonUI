@@ -31,7 +31,7 @@ class HttpServerSpec
     with FailFastCirceSupport {
   implicit val compiler: ProtobufCompiler = new ProtobufCompiler {
     override def compile(path: Path): Either[Throwable, File] =
-      new File(s"${path.toAbsolutePath().toString}set").asRight[Throwable]
+      new File(s"${path.toAbsolutePath.toString}set").asRight[Throwable]
     override def clean(file: File): Either[Throwable, Unit] = ().asRight
   }
   "Sending a service to the webhook server" should {

@@ -26,7 +26,7 @@ class ProcessSpec extends TestBase with Inside {
       val args    = ProcessArgs("pwd" :: Nil, Some(tempDir))
       Source.single(args).via(Process.execute).runWith(Sink.seq).map { result =>
         result should have length 1
-        val path = tempDir.getCanonicalPath()
+        val path = tempDir.getCanonicalPath
         tempDir.delete()
         inside(result.head) { case Right(list) =>
           list shouldBe List(path)

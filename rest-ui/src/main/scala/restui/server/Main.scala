@@ -18,7 +18,7 @@ import scala.util.{Failure, Success}
 object Main extends App with LazyLogging {
   private val Namespace: String                   = "restui.http"
   private val config                              = Configuration.config(args.headOption)
-  implicit val system                             = ActorSystem(Behaviors.empty, "restui")
+  implicit val system: ActorSystem[_]             = ActorSystem(Behaviors.empty, "restui")
   implicit val executionContext: ExecutionContext = system.executionContext
 
   val interface                    = config.getString(s"$Namespace.interface")

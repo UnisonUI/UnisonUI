@@ -15,7 +15,7 @@ import restui.protobuf.data.Schema._
 class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
   implicit val compiler: ProtobufCompiler = new ProtobufCompiler {
     override def compile(path: Path): Either[Throwable, File] =
-      new File(s"${path.toAbsolutePath().toString}set").asRight[Throwable]
+      new File(s"${path.toAbsolutePath.toString}set").asRight[Throwable]
     override def clean(file: File): Either[Throwable, Unit] = ().asRight
   }
   private val expectedSchema = Schema(
@@ -27,7 +27,7 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
                      "name",
                      Label.Optional,
                      FieldDescriptor.Type.STRING,
-                     false,
+                     packed = false,
                      None,
                      None,
                      None)),
@@ -39,7 +39,7 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
                      "message",
                      Label.Optional,
                      FieldDescriptor.Type.STRING,
-                     false,
+                     packed = false,
                      None,
                      None,
                      None)),
@@ -50,7 +50,7 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
     None
   )
 
-  it should "decod a valid protobuf schema" in {
+  it should "decode a valid protobuf schema" in {
     inside(Paths.get("src/test/resources/helloworld.proto").toSchema) {
       case Right(schema) =>
         schema shouldBe expectedSchema.copy(services = Map(

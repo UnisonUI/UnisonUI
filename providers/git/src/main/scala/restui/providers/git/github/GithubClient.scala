@@ -87,7 +87,7 @@ object GithubClient extends LazyLogging {
       .flatMap { response =>
         response.entity.contentType match {
           case ContentTypes.`application/json` =>
-            Unmarshal(response.entity).to[GrahpQL]
+            Unmarshal(response.entity).to[GraphQL]
           case _ =>
             response.entity.toStrict(5.seconds).map { body =>
               val msg = body.data.decodeString(StandardCharsets.UTF_8)
@@ -99,7 +99,7 @@ object GithubClient extends LazyLogging {
         val sw = new StringWriter()
         val pw = new PrintWriter(sw)
         exception.printStackTrace(pw)
-        Error(List(exception.getMessage, sw.toString()))
+        Error(List(exception.getMessage, sw.toString))
       }
   }
 

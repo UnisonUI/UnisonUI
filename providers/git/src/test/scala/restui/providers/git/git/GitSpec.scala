@@ -26,21 +26,21 @@ class GitSpec extends TestBase with Inside {
            |""".stripMargin
   trait StubRepository {
     import sys.process._
-    val repo       = Files.createTempDirectory("restui-git-test")
-    val hideStdErr = ProcessLogger(_ => ())
+    val repo: Path                = Files.createTempDirectory("restui-git-test")
+    val hideStdErr: ProcessLogger = ProcessLogger(_ => ())
 
-    Process(Seq("git", "init"), repo.toFile()).!(hideStdErr) shouldBe 0
-    Process(Seq("git", "config", "user.email", "test@test.org"), repo.toFile())
+    Process(Seq("git", "init"), repo.toFile).!(hideStdErr) shouldBe 0
+    Process(Seq("git", "config", "user.email", "test@test.org"), repo.toFile)
       .!(hideStdErr)
-    Process(Seq("git", "config", "user.name", "test"), repo.toFile())
+    Process(Seq("git", "config", "user.name", "test"), repo.toFile)
       .!(hideStdErr)
 
     commit("init", "init")
 
     def commit(file: Path): Unit = {
-      Process(Seq("git", "add", file.toAbsolutePath.toString), repo.toFile())
+      Process(Seq("git", "add", file.toAbsolutePath.toString), repo.toFile)
         .!(hideStdErr)
-      Process(Seq("git", "commit", "-m", "new file"), repo.toFile())
+      Process(Seq("git", "commit", "-m", "new file"), repo.toFile)
         .!(hideStdErr)
     }
 
@@ -51,8 +51,8 @@ class GitSpec extends TestBase with Inside {
 
     def rm(path: String): Unit = {
       Process(Seq("git", "rm", repo.resolve(path).toAbsolutePath.toString),
-              repo.toFile()).!(hideStdErr)
-      Process(Seq("git", "commit", "-m", "rm file"), repo.toFile())
+              repo.toFile).!(hideStdErr)
+      Process(Seq("git", "commit", "-m", "rm file"), repo.toFile)
         .!(hideStdErr)
     }
 
@@ -61,14 +61,14 @@ class GitSpec extends TestBase with Inside {
                   "mv",
                   repo.resolve(path).toAbsolutePath.toString,
                   repo.resolve(newPath).toAbsolutePath.toString),
-              repo.toFile())
+              repo.toFile)
         .!(hideStdErr)
-      Process(Seq("git", "commit", "-m", "mv file"), repo.toFile())
+      Process(Seq("git", "commit", "-m", "mv file"), repo.toFile)
         .!(hideStdErr)
     }
 
     def sha1(branch: String): String =
-      Process(Seq("git", "rev-parse", "--verify", branch), repo.toFile())
+      Process(Seq("git", "rev-parse", "--verify", branch), repo.toFile)
         .!!(hideStdErr)
         .trim
 
@@ -287,7 +287,7 @@ class GitSpec extends TestBase with Inside {
                 servers shouldBe Map(
                   "127.0.0.1:8080" -> Service.Grpc.Server("127.0.0.1",
                                                           8080,
-                                                          false))
+                                                          useTls = false))
                 inside(schema) { case Schema(messages, enums, services, None) =>
                   messages should have size 2
                   enums shouldBe Symbol("empty")

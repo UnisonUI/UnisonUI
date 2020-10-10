@@ -37,8 +37,8 @@ object Services extends Directives with FailFastCirceSupport {
       entity(as[Service]) {
         _.pipe(transformService(_))
           .fold(
-            Future.failed(_),
-            _.pipe(ServiceEvent.ServiceUp(_))
+            Future.failed,
+            _.pipe(ServiceEvent.ServiceUp)
               .pipe(queue.offer(_))
               .flatMap {
                 case QueueOfferResult.Failure(ex) => Future.failed(ex)

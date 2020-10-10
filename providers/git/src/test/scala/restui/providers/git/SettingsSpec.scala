@@ -87,14 +87,15 @@ class SettingsSpec extends AnyWordSpec with Matchers {
                 RepositorySettings(Location.Uri("myOrg/Test"),
                                    None,
                                    List("test/"),
-                                   false) :: RepositorySettings(
+                                   useProxy = false) :: RepositorySettings(
                   Location.Regex("myOrg/.+"),
                   None,
                   Nil,
-                  false) :: RepositorySettings(Location.Uri("restui"),
-                                               None,
-                                               Nil,
-                                               false) :: Nil
+                  useProxy = false) :: RepositorySettings(
+                  Location.Uri("restui"),
+                  None,
+                  Nil,
+                  useProxy = false) :: Nil
               )
             )
           )
@@ -119,7 +120,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
                 RepositorySettings(Location.Uri("myOrg/Test"),
                                    None,
                                    List("test/"),
-                                   false) :: Nil
+                                   useProxy = false) :: Nil
               )
             )
           )
@@ -142,14 +143,14 @@ class SettingsSpec extends AnyWordSpec with Matchers {
             RepositorySettings(Location.Uri("myOrg/Test"),
                                None,
                                List("test/"),
-                               false) :: RepositorySettings(
+                               useProxy = false) :: RepositorySettings(
               Location.Regex("myOrg/.+"),
               None,
               Nil,
-              false) :: RepositorySettings(Location.Uri("restui"),
-                                           None,
-                                           Nil,
-                                           false) :: Nil)
+              useProxy = false) :: RepositorySettings(Location.Uri("restui"),
+                                                      None,
+                                                      Nil,
+                                                      useProxy = false) :: Nil)
         )
       )
     }

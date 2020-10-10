@@ -23,7 +23,7 @@ class ReaderSpec
     new ByteArrayInputStream(bytes) with KnownLength
   implicit val compiler: ProtobufCompiler = new ProtobufCompiler {
     override def compile(path: Path): Either[Throwable, File] =
-      new File(s"${path.toAbsolutePath().toString}set").asRight[Throwable]
+      new File(s"${path.toAbsolutePath.toString}set").asRight[Throwable]
     override def clean(file: File): Either[Throwable, Unit] = ().asRight
   }
 

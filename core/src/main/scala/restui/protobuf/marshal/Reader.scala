@@ -130,7 +130,7 @@ class Reader(private val schema: Schema) {
       (for {
         list  <- maybeList
         value <- readValue(input, field)
-      } yield list :+ value).pipe(convertEitherToVector(_))
+      } yield list :+ value).pipe(convertEitherToVector)
 
   private def convertEitherToVector(maybeList: Either[Throwable, Vector[Json]])
       : Vector[Either[Throwable, Json]] =
@@ -168,7 +168,7 @@ class Reader(private val schema: Schema) {
       case Type.BYTES =>
         Json
           .fromString(
-            new String(ju.Base64.getEncoder().encode(in.readByteArray())))
+            new String(ju.Base64.getEncoder.encode(in.readByteArray())))
           .asRight[Throwable]
       case Type.ENUM =>
         Json

@@ -29,7 +29,7 @@ class HttpClientSpec
   "Get a resource" when {
     "using an unix domain socket" in {
       val sockFile =
-        Files.createTempFile("restui_unix", ".sock").toAbsolutePath()
+        Files.createTempFile("restui_unix", ".sock").toAbsolutePath
       sockFile.toFile.delete
       val client = new HttpClient(s"unix://${sockFile.toString}")
       for {
@@ -50,7 +50,7 @@ class HttpClientSpec
   "Watching a resource" when {
     "there is no error" in {
       val sockFile =
-        Files.createTempFile("restui_unix", ".sock").toAbsolutePath()
+        Files.createTempFile("restui_unix", ".sock").toAbsolutePath
       sockFile.toFile.delete
       val client = new HttpClient(s"unix://${sockFile.toString}")
       for {

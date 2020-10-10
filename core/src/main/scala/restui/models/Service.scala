@@ -35,7 +35,7 @@ object Service {
                         metadata: Map[String, String] = Map.empty)
       extends Service {
     override def toEvent: Event.Service = Event.Service.Grpc(id, name, metadata)
-    override val hash: String           = schema.asJson.noSpaces.pipe(computeSha1(_))
+    override val hash: String           = schema.asJson.noSpaces.pipe(computeSha1)
   }
   object Grpc {
     final case class Server(address: String, port: Int, useTls: Boolean)

@@ -59,10 +59,15 @@ class RestUISpec extends AnyFlatSpec with Matchers {
         "path/spec.proto" -> GrpcSetting(
           None,
           Map(
-            "127.0.0.1:8080" -> Service.Grpc.Server("127.0.0.1", 8080, false))),
+            "127.0.0.1:8080" -> Service.Grpc.Server("127.0.0.1",
+                                                    8080,
+                                                    useTls = false))),
         "path/spec2.proto" -> GrpcSetting(
           "test".some,
-          Map("other server" -> Service.Grpc.Server("127.0.0.1", 8080, true)))
+          Map(
+            "other server" -> Service.Grpc.Server("127.0.0.1",
+                                                  8080,
+                                                  useTls = true)))
       ),
       None
     )

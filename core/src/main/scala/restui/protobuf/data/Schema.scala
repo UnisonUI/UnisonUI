@@ -24,7 +24,7 @@ final case class Schema(messages: Map[String, MessageSchema] = Map.empty,
                         enums: Map[String, EnumSchema] = Map.empty,
                         services: Map[String, Service] = Map.empty,
                         rootKey: Option[String] = None) {
-  val root: Option[MessageSchema] = rootKey.flatMap(messages.get(_))
+  val root: Option[MessageSchema] = rootKey.flatMap(messages.get)
 }
 object Schema {
   implicit class SchemaOps(path: Path)(implicit
@@ -54,33 +54,30 @@ object Schema {
     allCatch.either {
       val descriptor = FileDescriptorSet.parseFrom(input)
       val fileDescriptors =
-        extraxtFileDescriptors(descriptor.getFileList().asScala.toList)
+        extractFileDescriptors(descriptor.getFileList.asScala.toList)
       val schemas = fileDescriptors.foldLeft(Schema()) {
         case (Schema(messageSchemas, enumSchemas, services, _),
               fileDescriptor) =>
           val (messages, enums) = parseDescriptors(
-            fileDescriptor.getMessageTypes().asScala.toList).partitionMap {
+            fileDescriptor.getMessageTypes.asScala.toList).partitionMap {
             case (name, schema: MessageSchema) => Left(name -> schema)
             case (name, schema: EnumSchema)    => Right(name -> schema)
           }
           val allEnums = enums ++ parseEnumDescriptors(
-            fileDescriptor.getEnumTypes().asScala.toList)
+            fileDescriptor.getEnumTypes.asScala.toList)
           Schema(messageSchemas ++ messages.toMap,
                  enumSchemas ++ allEnums.toMap,
                  services)
       }
       fileDescriptors.foldLeft(schemas) {
         case (schema @ Schema(_, _, services, _), fileDescriptor) =>
-          val parsedServices = fileDescriptor
-            .getServices()
-            .asScala
-            .toList
+          val parsedServices = fileDescriptor.getServices.asScala.toList
             .pipe(parseServices(schemas))
           schema.copy(services = services ++ parsedServices)
       }
     }
 
-  private def extraxtFileDescriptors(
+  private def extractFileDescriptors(
       fileDescriptors: List[FileDescriptorProto]) = {
     val protoDescriptors = HashSet.from(fileDescriptors.map(_.getName))
     fileDescriptors
@@ -195,19 +192,19 @@ object Schema {
   private def parseServices(schema: Schema)(
       services: List[ServiceDescriptor]): Map[String, Service] =
     services.map { service =>
-      val methods = parseMethods(service.getMethods().asScala.toList, schema)
-      service.getFullName() -> Service(service.getName(),
-                                       service.getFullName(),
-                                       methods)
+      val methods = parseMethods(service.getMethods.asScala.toList, schema)
+      service.getFullName -> Service(service.getName,
+                                     service.getFullName,
+                                     methods)
     }.toMap
 
   private def parseMethods(methods: List[MethodDescriptor],
                            schema: Schema): List[Method] =
     methods.map { method =>
       Method(
-        method.getName(),
-        schema.copy(rootKey = method.getInputType().getFullName().some),
-        schema.copy(rootKey = method.getOutputType.getFullName().some)
+        method.getName,
+        schema.copy(rootKey = method.getInputType.getFullName.some),
+        schema.copy(rootKey = method.getOutputType.getFullName.some)
       )
     }
 }
