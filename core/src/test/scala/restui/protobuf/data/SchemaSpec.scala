@@ -50,18 +50,38 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
     None
   )
 
-  it should "decode a valid protobuf schema" in {
+  it should "decode a valid protobuf schema without stream" in {
     inside(Paths.get("src/test/resources/helloworld.proto").toSchema) {
       case Right(schema) =>
         schema shouldBe expectedSchema.copy(services = Map(
           "helloworld.Greeter" -> Service(
             "Greeter",
             "helloworld.Greeter",
-            List(
-              Method(
-                "SayHello",
-                expectedSchema.copy(rootKey = "helloworld.HelloRequest".some),
-                expectedSchema.copy(rootKey = "helloworld.HelloReply".some)))
+            List(Method(
+              "SayHello",
+              expectedSchema.copy(rootKey = "helloworld.HelloRequest".some),
+              expectedSchema.copy(rootKey = "helloworld.HelloReply".some),
+              isServerStreaming = false,
+              isClientStreaming = false
+            ))
+          )))
+    }
+  }
+
+  it should "decode a valid protobuf schema with stream" in {
+    inside(Paths.get("src/test/resources/helloworld_stream.proto").toSchema) {
+      case Right(schema) =>
+        schema shouldBe expectedSchema.copy(services = Map(
+          "helloworld.Greeter" -> Service(
+            "Greeter",
+            "helloworld.Greeter",
+            List(Method(
+              "SayHello",
+              expectedSchema.copy(rootKey = "helloworld.HelloRequest".some),
+              expectedSchema.copy(rootKey = "helloworld.HelloReply".some),
+              isServerStreaming = false,
+              isClientStreaming = true
+            ))
           )))
 
     }

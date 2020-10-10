@@ -99,7 +99,11 @@ package object data {
   final case class Service(name: String,
                            fullName: String,
                            methods: List[Method])
-  final case class Method(name: String, inputType: Schema, outputType: Schema)
+  final case class Method(name: String,
+                          inputType: Schema,
+                          outputType: Schema,
+                          isServerStreaming: Boolean,
+                          isClientStreaming: Boolean)
 
   object Service {
     implicit val encoder: Encoder[Service] = (service: Service) =>
@@ -113,7 +117,10 @@ package object data {
   object Method {
     implicit val encoder: Encoder[Method] = (method: Method) =>
       Json.obj(
-        "name"       -> Json.fromString(method.name),
+        "name" -> Json.fromString(method.name),
+        "streaming" -> Json.obj(
+          "server" -> Json.fromBoolean(method.isServerStreaming),
+          "client" -> Json.fromBoolean(method.isClientStreaming)),
         "inputType"  -> Json.fromString(method.inputType.rootKey.get),
         "outputType" -> Json.fromString(method.outputType.rootKey.get)
       )
