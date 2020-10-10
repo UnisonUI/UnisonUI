@@ -1,25 +1,34 @@
 import com.typesafe.sbt.packager.Keys._
-import com.typesafe.sbt.packager.docker._
-import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.Docker
+import sbtdocker.DockerPlugin.autoImport._
 import sbt._
 import sbt.Keys._
 
 object DockerSettings {
   val settings = Seq(
-    dockerBaseImage := "openjdk:11-jre-slim",
-    dockerLabels := Map("maintener" -> "maethornaur@users.noreply.github.com"),
-    dockerUsername := Some("unisonui"),
-    dockerRepository := Some("ghcr.io"),
-    dockerUpdateLatest := true,
-    packageName in Docker := "unisonui",
-    dockerExposedPorts := Seq(8080),
-    dockerEntrypoint := Seq("/opt/docker/entrypoint.sh",
-                            executableScriptName.value),
-    dockerCommands ++= Seq(
-      Cmd("USER", "root"),
-      Cmd("RUN",
-          "apt-get update -y && apt-get install -y git protobuf-compiler"),
-      Cmd("USER", "1001:0")
+    dockerfile in docker := {
+      val appDir: File = stage.value
+      val entrypointFile: File =
+        new File(baseDirectory.value, "../docker/entrypoint.sh")
+      val targetDir = "/app"
+      new Dockerfile {
+        from("alpine:3.12.0")
+        run("apk",
+            "add",
+            "--no-cache",
+            "openjdk11-jre",
+            "git",
+            "protoc",
+            "bash")
+        entryPoint(s"$targetDir/entrypoint.sh", executableScriptName.value)
+        workDir(targetDir)
+        user("daemon")
+        copy(appDir, targetDir, chown = "daemon:daemon")
+      }
+    },
+    imageNames in docker := Seq(
+      ImageName(s"ghcr.io/${organization.value}/${name.value}:latest"),
+      ImageName(
+        s"ghcr.io/${organization.value}/${name.value}:v${version.value}")
     )
   )
 }

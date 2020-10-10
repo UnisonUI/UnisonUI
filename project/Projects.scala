@@ -29,6 +29,8 @@ object Projects {
 
   val restUi = createModule("rest-ui", "rest-ui")
     .settings(
+      name := "restui",
+      organization := "maethornaur",
       mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh")
 
   val providerDocker = createModule("provider-docker", "providers/docker")

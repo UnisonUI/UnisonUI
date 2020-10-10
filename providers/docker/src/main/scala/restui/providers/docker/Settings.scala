@@ -17,7 +17,7 @@ object Settings {
     val port        = config.getString(s"$Namespace.labels.port")
     val specificationPath =
       config.getString(s"$Namespace.labels.specification-path")
-    val useProxy = config.getString(s"$Namespace.labels.useProxy")
+    val useProxy = config.getString(s"$Namespace.labels.use-proxy")
     Settings(dockerHost, Labels(serviceName, port, specificationPath, useProxy))
   }
 }

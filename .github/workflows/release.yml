@@ -10,6 +10,9 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - name: Get release version
+      id: vars
+      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
     - name: Set up JDK 11
       uses: actions/setup-java@v1
       with:
@@ -49,11 +52,14 @@ jobs:
         key: ${{ runner.os }}-conventional-changelog
         restore-keys: ${{ runner.os }}-conventional-changelog
     - name: install conventional changelog
+      env:
+        RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
       run: |
         npm install conventional-changelog-cli
         node_modules/.bin/conventional-changelog  -r 2 -p angular | tail -n +5 > release.md
+        echo "\`docker pull ghcr.io/maethornaur/restui:${RELEASE_VERSION}\`" >> release.md 
     - name: build
-      run: sbt "project rest-ui; npmInstall; webpackProdTask; docker:publish"
+      run: sbt "project rest-ui; npmInstall; webpackProdTask; dockerBuildAndPush"
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
