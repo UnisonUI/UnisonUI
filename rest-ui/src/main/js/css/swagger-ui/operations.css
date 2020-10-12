@@ -1,4 +1,7 @@
 .swagger-ui {
+  .nostyle {
+    @apply font-body;
+  }
 
   .parameter__type {
     @apply text-base font-code;

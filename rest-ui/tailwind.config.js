@@ -14,7 +14,7 @@ module.exports = {
     },
     fontFamily: {
       body: ['Montserrat', 'sans-serif'],
-      code: ['Source Sans Pro', 'sans-serif']
+      code: ['Fira Code', 'sans-serif']
     },
     minWidth: {
       0: '0',

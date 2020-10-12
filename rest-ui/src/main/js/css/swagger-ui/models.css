@@ -59,7 +59,7 @@
 
     .deprecated {
       span, td {
-        @apply text-gray-400;
+        @apply text-gray-700;
       }
   
       > td:first-of-type {

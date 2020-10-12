@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { isMap, Collapse } from './utils'
+import { isDeprecated, isMap, Collapse } from './utils'
 import { ChevronDown, ChevronRight } from 'react-feather'
 
 const braceOpen = '{'
@@ -59,7 +59,7 @@ class Model extends Component {
 
   render () {
     const { isCollapsed } = this.state
-    const { name } = this.props.schema
+    const { fields, name, oneOf, values } = this.props.schema
     return (
       <div id={`model-${name}`} className="model-container" data-name={name}>
         <ModelCollapse
@@ -69,7 +69,10 @@ class Model extends Component {
           self={true}
         >
           <ModelWrapper
-            schema={this.props.schema}
+            values={values}
+            oneOf={oneOf}
+            name={name}
+            fields={fields}
             spec={this.props.spec}
             isCollapsed={isCollapsed}
             toggleCollapsed={this.toggleCollapsed}
@@ -79,6 +82,7 @@ class Model extends Component {
     )
   }
 }
+
 class ModelCollapse extends Component {
   render () {
     const { toggleCollapsed, isCollapsed, name, self } = this.props
@@ -105,6 +109,7 @@ class ModelCollapse extends Component {
     )
   }
 }
+
 class ModelWrapper extends Component {
   render () {
     return (
@@ -149,57 +154,104 @@ class PrimitiveModel extends Component {
 
 class ObjectModel extends Component {
   render () {
-    const { isCollapsed, toggleCollapsed, spec } = this.props
-    const { values, fields, name } = this.props.schema
+    const {
+      isCollapsed,
+      toggleCollapsed,
+      spec,
+      values,
+      oneOf,
+      fields,
+      name,
+      isOneOf
+    } = this.props
     const isObject = !!fields
+
+    const enums = Object.values(values || {}).map(value => (
+      <tr key={`value-${value}`} className="property-row">
+        <td>{value}</td>
+      </tr>
+    ))
+
+    const oneOfs = Object.entries(oneOf || {}).map(([name, fields]) => {
+      const classNames = ['property-row']
+      const key = `field-${name}`
+      return (
+        <tr key={key} className={classNames.join(' ')}>
+          <td>{name}</td>
+          <td>
+            <ObjectModel
+              key={`object_${key}`}
+              isOneOf={true}
+              fields={fields}
+              spec={spec}
+              name={name}
+              isCollapsed={isCollapsed}
+            />
+          </td>
+        </tr>
+      )
+    })
+
+    const entries = (fields || []).map(field => {
+      const classNames = ['property-row']
+      const isRequired = field.label === 'required'
+
+      if (isDeprecated(field)) {
+        classNames.push('deprecated')
+      }
+
+      if (isRequired) {
+        classNames.push('required')
+      }
+
+      const key = `field-${field.name}`
+
+      return (
+        <tr key={key} className={classNames.join(' ')}>
+          <td>
+            {field.name} {isRequired && <span className="star">*</span>}
+          </td>
+          <td>
+            <PrimitiveModel key={`object_${key}`} field={field} spec={spec} />
+          </td>
+        </tr>
+      )
+    })
+
+    const body = (
+      <div>
+        {isOneOf && <span className="prop-type">oneOf{' '}</span>}
+        <span className="brace-open object">
+          {isObject ? braceOpen : bracketOpen}
+        </span>
+        <span className="inner-object">
+          <table className="model">
+            <tbody>
+              {entries}
+              {oneOfs}
+              {enums}
+            </tbody>
+          </table>
+        </span>
+        <span className="brace-close">
+          {isObject ? braceClose : bracketClose}
+        </span>
+      </div>
+    )
+
     return (
       <span className="model">
-        <ModelCollapse
-          name={name}
-          toggleCollapsed={toggleCollapsed}
-          isCollapsed={isCollapsed}
-        >
-          <span className="brace-open object">
-            {isObject ? braceOpen : bracketOpen}
-          </span>
-          <span className="inner-object">
-            <table className="model">
-              <tbody>
-                {(fields || []).map(field => {
-                  const classNames = ['property-row']
-                  const isRequired = field.label === 'required'
-                  if (isRequired) {
-                    classNames.push('required')
-                  }
-                  const key = `field-${field.name}`
-                  return (
-                    <tr key={key} className={classNames.join(' ')}>
-                      <td>
-                        {field.name}{' '}
-                        {isRequired && <span className="star">*</span>}
-                      </td>
-                      <td>
-                        <PrimitiveModel
-                          key={`object_${key}`}
-                          field={field}
-                          spec={spec}
-                        />
-                      </td>
-                    </tr>
-                  )
-                })}
-                {Object.values(values || {}).map(value => (
-                  <tr key={`value-${value}`} className="property-row">
-                    <td>{value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </span>
-          <span className="brace-close">
-            {isObject ? braceClose : bracketClose}
-          </span>
-        </ModelCollapse>
+        {!isOneOf ? (
+          <ModelCollapse
+            name={name}
+            toggleCollapsed={toggleCollapsed}
+            isCollapsed={isCollapsed}
+          >
+            {body}
+          </ModelCollapse>
+        ) : (
+          body
+        )}
       </span>
     )
   }

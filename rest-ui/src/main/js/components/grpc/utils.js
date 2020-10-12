@@ -5,6 +5,10 @@ export const isMap = schema =>
   schema.options &&
   schema.options['google.protobuf.MessageOptions.map_entry'] === 'true'
 
+export const isDeprecated = field =>
+  field.options &&
+  field.options['google.protobuf.FieldOptions.deprecated'] === 'true'
+
 const getValue = (field, schema) => {
   switch (field.type) {
     case 'STRING':
@@ -30,11 +34,11 @@ export const messageExample = (schema, method) => {
   const fields = schema.messages.find(message => message.name === method).fields
   for (const field of fields) {
     let value =
-      field.default !== undefined
-        ? this.default
-        : getValue(field, schema)
+      field.default !== undefined ? this.default : getValue(field, schema)
     if (field.label === 'repeated') {
-      const subSchema = schema.messages.find(message => message.name === field.schema)
+      const subSchema = schema.messages.find(
+        message => message.name === field.schema
+      )
       if (isMap(subSchema)) {
         value = {}
         const key = getValue(subSchema.fields.find(f => f.name === 'key'))
@@ -53,7 +57,10 @@ export const stringify = object => {
 }
 
 function xclass (...args) {
-  return args.filter(a => !!a).join(' ').trim()
+  return args
+    .filter(a => !!a)
+    .join(' ')
+    .trim()
 }
 
 const DEVICES = {
@@ -166,7 +173,7 @@ export class Collapse extends Component {
   }
 }
 
-const NoMargin = ({ children }) => <div className='no-margin'> {children} </div>
+const NoMargin = ({ children }) => <div className="no-margin"> {children} </div>
 
 NoMargin.propTypes = {
   children: PropTypes.node
