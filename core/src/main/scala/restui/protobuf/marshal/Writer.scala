@@ -40,33 +40,58 @@ class Writer(private val schema: Schema) {
       json: Json,
       messageSchema: MessageSchema,
       output: CodedOutputStream): Either[Throwable, Unit] = {
+    val fields = getFieldsFromJson(messageSchema, json)
+    detectMissingRequiredFields(messageSchema, json).fold(fields.traverse {
+      case (field, value) =>
+        writeField(output, field, value)
+    }.map(_ => ()))(Errors.RequiredField(_).asLeft)
+  }
+
+  private def getFieldsFromJson(messageSchema: MessageSchema, json: Json) = {
     val fieldMap = messageSchema.fields.map { case (_, field) =>
       field.name -> field
-    }
+    }.toMap
+
     val keyValues = json.asObject.toVector.flatMap(_.toVector)
-    val fields = if (messageSchema.isMap) for {
+    if (messageSchema.isMap) for {
       (key, value) <- keyValues
       keyField     <- fieldMap.get("key").toVector
       valueField   <- fieldMap.get("value").toVector
-      tuple        <- (keyField, Json.fromString(key)) :: (valueField, value) :: Nil
+      tuple        <- Vector(keyField -> Json.fromString(key), valueField -> value)
     } yield tuple
     else
       for {
-        (key, value) <- keyValues
-        field        <- fieldMap.get(key).toVector
-      } yield (field, value)
-    fieldMap.find {
-      case (_, Field(_, name, Label.Required, _, _, _, _, _)) =>
-        !keyValues.exists(_._1 == name)
-      case _ => false
-    }.fold {
-      fields.traverse { case (field, value) =>
-        writeField(output, field, value)
-      }.map(_ => ())
-    } { case (_, Field(_, name, _, _, _, _, _, _)) =>
-      Errors.RequiredField(name).asLeft
+        (key, value)        <- keyValues
+        (field, finalValue) <- getOneOfValue(messageSchema, key, value)
+      } yield (field, finalValue)
+  }
+
+  private def detectMissingRequiredFields(messageSchema: MessageSchema,
+                                          json: Json): Option[String] = {
+    val keyValues = json.asObject.toVector.flatMap(_.toVector).toMap
+    messageSchema.fields.collectFirst {
+      case (_, Field(_, name, Label.Required, _, _, _, _, _))
+          if !keyValues.contains(name) =>
+        name
     }
   }
+
+  private def getOneOfValue(messageSchema: MessageSchema,
+                            key: String,
+                            currentValue: Json): Vector[(Field, Json)] =
+    messageSchema.fields.collectFirst {
+      case (_, field) if field.name == key => field
+    }.fold {
+      val keyValues = currentValue.asObject.toVector.flatMap(_.toVector).toMap
+      for {
+        oneOf      <- messageSchema.oneOfs.get(key).toVector
+        oneOfType  <- keyValues.get("type").toVector.flatMap(_.asString.toVector)
+        oneOfValue <- keyValues.get("value").toVector
+        field <- oneOf.collectFirst {
+          case (_, field) if field.name == oneOfType => field
+        }.toVector
+      } yield (field, oneOfValue)
+    }(field => Vector(field -> currentValue))
 
   private def writeField(output: CodedOutputStream,
                          field: Field,

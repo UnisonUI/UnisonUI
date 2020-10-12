@@ -118,7 +118,12 @@ export default class Method extends Component {
             <div className="opblock-section opblock-section-request-body">
               <div className="opblock-section-header">
                 <h4 className="opblock-title parameter__name">
-                  Request (<small>{method.inputType}</small>)
+                  Request (
+                  <small>
+                    {method.streaming.client && 'stream '}
+                    {method.inputType}
+                  </small>
+                  )
                 </h4>
                 <TryItOut
                   enabled={tryItOutEnabled}
@@ -155,7 +160,12 @@ export default class Method extends Component {
             <div className="responses-wrapper">
               <div className="opblock-section-header">
                 <h4>
-                  Response (<small>{method.outputType}</small>)
+                  Response (
+                  <small>
+                    {method.streaming.server && 'stream '}
+                    {method.outputType}
+                  </small>
+                  )
                 </h4>
               </div>
               <div className="responses-inner">

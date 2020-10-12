@@ -118,7 +118,7 @@ class ModelWrapper extends Component {
 class PrimitiveModel extends Component {
   render () {
     const { type, schema, label } = this.props.field
-    let displayType = type
+    let displayType = type.toLowerCase()
     let isArray = label === 'repeated'
     if (schema) {
       const subSchema = this.props.spec.messages.find(
@@ -138,7 +138,7 @@ class PrimitiveModel extends Component {
         <span className="prop">
           <span className="prop-type">
             {isArray && bracketOpen}
-            {displayType.toLowerCase()}
+            {displayType}
             {isArray && bracketClose}
           </span>
         </span>

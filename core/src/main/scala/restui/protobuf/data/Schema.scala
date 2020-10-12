@@ -117,9 +117,16 @@ object Schema {
 
   private def toSchemaMap(descriptor: Descriptor,
                           seen: Set[String]): Map[String, DescriptorSchema] = {
-    val (fields, schemas) = descriptor.getFields.asScala
-      .foldLeft(Map.empty[Int, Field], Map.empty[String, DescriptorSchema]) {
-        case ((fields, schemas), fd) =>
+    val oneOfMap = (for {
+      oneOfDescriptor <- descriptor.getOneofs.asScala
+      field           <- oneOfDescriptor.getFields.asScala
+    } yield field.getNumber -> oneOfDescriptor.getName).toMap
+
+    val (fields, oneOfs, schemas) = descriptor.getFields.asScala
+      .foldLeft(Map.empty[Int, Field],
+                Map.empty[String, Map[Int, Field]],
+                Map.empty[String, DescriptorSchema]) {
+        case ((fields, oneOfs, schemas), fd) =>
           val default = if (fd.hasDefaultValue) {
             val value = fd.getDefaultValue
             val json = fd.getType match {
@@ -145,27 +152,37 @@ object Schema {
               None,
               fieldOpts
             )
-          fd.getType match {
+          val (newField, newSchemas) = fd.getType match {
             case FieldDescriptor.Type.MESSAGE =>
               val name = fd.getMessageType.getFullName
               val schema =
                 if (!seen(name)) toSchemaMap(fd.getMessageType, seen + name)
                 else Map.empty
-              (fields + (field.id -> field.copy(schema = Some(name))),
-               schemas ++ schema)
+              (field.copy(schema = Some(name)), schemas ++ schema)
             case FieldDescriptor.Type.ENUM =>
               val name   = fd.getEnumType.getFullName
               val schema = toEnumSchema(fd.getEnumType)
-              (fields + (field.id     -> field.copy(schema = Some(name))),
+              (field.copy(schema = Some(name)),
                schemas + (schema.name -> schema))
             case _ =>
-              (fields + (field.id -> field), schemas)
+              (field, schemas)
           }
+          oneOfMap
+            .get(newField.id)
+            .fold((fields + (newField.id -> newField), oneOfs, newSchemas)) {
+              oneOfName =>
+                val newOneOfs =
+                  oneOfs.getOrElse(oneOfName,
+                                   Map.empty) + (newField.id -> newField)
+                (fields, oneOfs + (oneOfName                 -> newOneOfs), newSchemas)
+            }
       }
     val msgOpts = optionMap(descriptor.getOptions)
+
     schemas + (descriptor.getFullName -> MessageSchema(descriptor.getFullName,
                                                        fields,
-                                                       msgOpts))
+                                                       msgOpts,
+                                                       oneOfs))
   }
 
   private def toEnumSchema(ed: EnumDescriptor): EnumSchema = {

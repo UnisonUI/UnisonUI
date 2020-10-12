@@ -18,6 +18,57 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
       new File(s"${path.toAbsolutePath.toString}set").asRight[Throwable]
     override def clean(file: File): Either[Throwable, Unit] = ().asRight
   }
+  private val expectedSchemaOneOf = Schema(
+    Map(
+      "helloworld.HelloRequest" -> MessageSchema(
+        "helloworld.HelloRequest",
+        Map(
+          1 -> Field(1,
+                     "name",
+                     Label.Optional,
+                     FieldDescriptor.Type.STRING,
+                     packed = false,
+                     None,
+                     None,
+                     None)),
+        None,
+        Map(
+          "switch" -> Map(
+            2 -> Field(2,
+                       "myInt",
+                       Label.Optional,
+                       FieldDescriptor.Type.INT32,
+                       packed = false,
+                       None,
+                       None,
+                       None),
+            3 -> Field(3,
+                       "myString",
+                       Label.Optional,
+                       FieldDescriptor.Type.STRING,
+                       packed = false,
+                       None,
+                       None,
+                       None)
+          ))
+      ),
+      "helloworld.HelloReply" -> MessageSchema(
+        "helloworld.HelloReply",
+        Map(
+          1 -> Field(1,
+                     "message",
+                     Label.Optional,
+                     FieldDescriptor.Type.STRING,
+                     packed = false,
+                     None,
+                     None,
+                     None)),
+        None)
+    ),
+    Map(),
+    Map(),
+    None
+  )
   private val expectedSchema = Schema(
     Map(
       "helloworld.HelloRequest" -> MessageSchema(
@@ -53,14 +104,15 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
   it should "decode a valid protobuf schema without stream" in {
     inside(Paths.get("src/test/resources/helloworld.proto").toSchema) {
       case Right(schema) =>
-        schema shouldBe expectedSchema.copy(services = Map(
+        schema shouldBe expectedSchemaOneOf.copy(services = Map(
           "helloworld.Greeter" -> Service(
             "Greeter",
             "helloworld.Greeter",
             List(Method(
               "SayHello",
-              expectedSchema.copy(rootKey = "helloworld.HelloRequest".some),
-              expectedSchema.copy(rootKey = "helloworld.HelloReply".some),
+              expectedSchemaOneOf.copy(rootKey =
+                "helloworld.HelloRequest".some),
+              expectedSchemaOneOf.copy(rootKey = "helloworld.HelloReply".some),
               isServerStreaming = false,
               isClientStreaming = false
             ))

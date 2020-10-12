@@ -76,11 +76,17 @@ class Reader(private val schema: Schema) {
       case true => fields.asRight[Throwable]
       case false =>
         for {
-          id    <- input.readFieldId
-          field <- messageSchema.fields.get(id).toRight(Errors.InvalidField(id))
-          name = field.name
-          value = field.label match {
-            case Label.Repeated =>
+          id           <- input.readFieldId
+          fieldOrOneOf <- findField(id, messageSchema)
+          name = fieldOrOneOf.fold(_._1, _._1)
+          value = fieldOrOneOf match {
+            case Left((_, field)) =>
+              field.pipe(readValue(input, _)).map { value =>
+                Json.obj("type"  -> Json.fromString(field.name),
+                         "value" -> value)
+              }
+            case Right(
+                  (name, field @ Field(_, _, Label.Repeated, _, _, _, _, _))) =>
               fields
                 .get(name)
                 .toVector
@@ -89,11 +95,23 @@ class Reader(private val schema: Schema) {
                   else json.asArray.toVector.flatten
                 })
                 .pipe(decodeRepeat(input, field, _))
-            case _ => readValue(input, field)
+            case Right((_, field)) => readValue(input, field)
           }
           result <- decodeInput(input, messageSchema, fields + (name -> value))
         } yield result
     }
+
+  private def findField(id: Int, messageSchema: MessageSchema)
+      : Either[Throwable, Either[(String, Field), (String, Field)]] =
+    messageSchema.fields
+      .get(id)
+      .map(field => (field.name -> field).asRight[(String, Field)])
+      .fold {
+        messageSchema.oneOfs.collectFirst {
+          case (name, fields) if fields.contains(id) => name -> fields(id)
+        }.map(_.asLeft[(String, Field)])
+          .toRight[Throwable](Errors.InvalidField(id))
+      }(_.asRight[Throwable])
 
   private def decodeRepeat(
       input: SafeCodedInputStream,

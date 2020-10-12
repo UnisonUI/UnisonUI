@@ -11,6 +11,7 @@ package object data {
     case object Required extends Label
     case object Optional extends Label
     case object Repeated extends Label
+
     implicit val encoder: Encoder[Label] = Encoder.instance {
       case Required => Json.fromString("required")
       case Optional => Json.fromString("optional")
@@ -23,7 +24,8 @@ package object data {
   final case class MessageSchema(
       name: String,
       fields: Map[Int, Field],
-      options: Option[Map[String, String]]
+      options: Option[Map[String, String]],
+      oneOfs: Map[String, Map[Int, Field]] = Map.empty
   ) extends DescriptorSchema {
     val isMap: Boolean =
       options.exists {
@@ -38,8 +40,12 @@ package object data {
     implicit val encoder: Encoder[MessageSchema] = (message: MessageSchema) =>
       Json
         .obj(
-          "name"    -> Json.fromString(message.name),
-          "fields"  -> message.fields.values.asJson,
+          "name"   -> Json.fromString(message.name),
+          "fields" -> message.fields.values.toVector.sortBy(_.id).asJson,
+          "oneOf" -> message.oneOfs.view
+            .mapValues(_.values.toVector.sortBy(_.id))
+            .toMap
+            .asJson,
           "options" -> message.options.asJson
         )
         .dropNullValues

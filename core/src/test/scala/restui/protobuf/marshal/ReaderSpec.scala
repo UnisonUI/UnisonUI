@@ -5,7 +5,6 @@ import java.nio.file.{Path, Paths}
 import cats.syntax.either._
 import cats.syntax.option._
 import com.google.protobuf.InvalidProtocolBufferException
-import com.typesafe.scalalogging.LazyLogging
 import io.circe.Json
 import io.grpc.KnownLength
 import org.scalatest.Inside
@@ -15,11 +14,7 @@ import restui.protobuf.ProtobufCompiler
 import restui.protobuf.data.Schema._
 import restui.protobuf.marshal.Reader._
 
-class ReaderSpec
-    extends AnyWordSpec
-    with Matchers
-    with Inside
-    with LazyLogging {
+class ReaderSpec extends AnyWordSpec with Matchers with Inside {
   private def arrayToStream(bytes: Array[Byte]): InputStream =
     new ByteArrayInputStream(bytes) with KnownLength
   implicit val compiler: ProtobufCompiler = new ProtobufCompiler {
@@ -45,14 +40,14 @@ class ReaderSpec
       "all fields and types match the schema" in {
         val result = for {
           schema <- Paths.get("src/test/resources/helloworld.proto").toSchema
-          input = arrayToStream(Array(10, 4, 116, 101, 115, 116))
-          is    = schema.services("helloworld.Greeter").methods.head.inputType
+          input = arrayToStream(
+            Array(10, 4, 116, 101, 115, 116, 26, 4, 116, 101, 115, 116, 16, 1))
+          is = schema.services("helloworld.Greeter").methods.head.inputType
           json <- is.read(input)
         } yield json
 
         inside(result) { case Right(json) =>
-          json.noSpaces shouldBe """{"name":"test"}"""
-
+          json.noSpaces shouldBe """{"name":"test","switch":{"type":"myInt","value":1}}"""
         }
       }
 

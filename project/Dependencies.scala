@@ -6,7 +6,6 @@ object Dependencies {
   object Config {
     private val config = "com.typesafe" % "config" % "1.4.0"
     val all            = Seq(config)
-
   }
 
   object Logging {
@@ -60,7 +59,8 @@ object Dependencies {
     private val akkaActorTypedTestKit =
       "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test
     private val akkaDiscovery =
-      "com.typesafe.akka" %% "akka-discovery" % akkaVersion % Test
+      "com.typesafe.akka" %% "akka-discovery" % akkaVersion
+
     val unixDomain =
       "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % alpakkaVersion
     val akka = Seq(sl4j,

@@ -7,6 +7,10 @@ service Greeter {
 
 message HelloRequest {
   string name = 1;
+  oneof switch {
+    int32 myInt = 2;
+    string myString = 3;
+  }
 }
 
 message HelloReply {

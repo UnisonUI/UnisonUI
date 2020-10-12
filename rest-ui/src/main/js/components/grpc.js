@@ -12,15 +12,25 @@ class Grpc extends Component {
       error: null,
       spec: null
     }
+    this._loadSpec = this._loadSpec.bind(this)
   }
 
-  componentDidMount () {
-    const id = this.props.location.pathname.substring(1)
+  _loadSpec (id) {
     if (id) {
       axios
         .get(`/services/${id}`)
         .then(res => this.setState({ spec: res.data }))
         .catch(error => this.setState({ error: error.response.data }))
+    }
+  }
+
+  componentDidMount () {
+    this._loadSpec(this.props.location.pathname.substring(1))
+  }
+
+  componentDidUpdate (prevProps) {
+    if (this.props.location.pathname !== prevProps.location.pathname) {
+      this._loadSpec(this.props.location.pathname.substring(1))
     }
   }
 

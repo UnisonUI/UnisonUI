@@ -34,6 +34,26 @@ class WriteSpec extends AnyWordSpec with Matchers with Inside {
         }
       }
 
+      "there is an oneof field" in {
+        val result = for {
+          schema <- Paths.get("src/test/resources/helloworld.proto").toSchema
+          input = parse(
+            """{"name":"test","switch":{"type":"myString","value":"test"}}""")
+            .getOrElse(Json.Null)
+          bytes <- schema
+            .services("helloworld.Greeter")
+            .methods
+            .head
+            .inputType
+            .write(input)
+        } yield bytes
+
+        inside(result) { case Right(bytes) =>
+          bytes shouldBe Array(10, 4, 116, 101, 115, 116, 26, 4, 116, 101, 115,
+            116)
+        }
+      }
+
       "all fields and types match the schema" in {
         val result = for {
           schema <- Paths.get("src/test/resources/helloworld.proto").toSchema
