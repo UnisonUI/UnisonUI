@@ -26,6 +26,7 @@ final case class Schema(messages: Map[String, MessageSchema] = Map.empty,
                         rootKey: Option[String] = None) {
   val root: Option[MessageSchema] = rootKey.flatMap(messages.get)
 }
+
 object Schema {
   implicit class SchemaOps(path: Path)(implicit
       val protobufCompiler: ProtobufCompiler) {
@@ -50,7 +51,7 @@ object Schema {
       _ <- protobufCompiler.clean(tempFile)
     } yield result
 
-  private def fromBytes(input: Array[Byte]): Either[Throwable, Schema] =
+  def fromBytes(input: Array[Byte]): Either[Throwable, Schema] =
     allCatch.either {
       val descriptor = FileDescriptorSet.parseFrom(input)
       val fileDescriptors =

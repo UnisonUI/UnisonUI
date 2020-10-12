@@ -27,29 +27,19 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
                      "name",
                      Label.Optional,
                      FieldDescriptor.Type.STRING,
-                     packed = false,
-                     None,
-                     None,
-                     None)),
-        None,
-        Map(
+                     packed = false)),
+        oneOfs = Map(
           "switch" -> Map(
             2 -> Field(2,
                        "myInt",
                        Label.Optional,
                        FieldDescriptor.Type.INT32,
-                       packed = false,
-                       None,
-                       None,
-                       None),
+                       packed = false),
             3 -> Field(3,
                        "myString",
                        Label.Optional,
                        FieldDescriptor.Type.STRING,
-                       packed = false,
-                       None,
-                       None,
-                       None)
+                       packed = false)
           ))
       ),
       "helloworld.HelloReply" -> MessageSchema(
@@ -59,16 +49,10 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
                      "message",
                      Label.Optional,
                      FieldDescriptor.Type.STRING,
-                     packed = false,
-                     None,
-                     None,
-                     None)),
-        None)
-    ),
-    Map(),
-    Map(),
-    None
+                     packed = false)))
+    )
   )
+
   private val expectedSchema = Schema(
     Map(
       "helloworld.HelloRequest" -> MessageSchema(
@@ -78,11 +62,7 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
                      "name",
                      Label.Optional,
                      FieldDescriptor.Type.STRING,
-                     packed = false,
-                     None,
-                     None,
-                     None)),
-        None),
+                     packed = false))),
       "helloworld.HelloReply" -> MessageSchema(
         "helloworld.HelloReply",
         Map(
@@ -90,15 +70,8 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
                      "message",
                      Label.Optional,
                      FieldDescriptor.Type.STRING,
-                     packed = false,
-                     None,
-                     None,
-                     None)),
-        None)
-    ),
-    Map(),
-    Map(),
-    None
+                     packed = false)))
+    )
   )
 
   it should "decode a valid protobuf schema without stream" in {

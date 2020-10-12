@@ -24,7 +24,7 @@ package object data {
   final case class MessageSchema(
       name: String,
       fields: Map[Int, Field],
-      options: Option[Map[String, String]],
+      options: Option[Map[String, String]] = None,
       oneOfs: Map[String, Map[Int, Field]] = Map.empty
   ) extends DescriptorSchema {
     val isMap: Boolean =
@@ -53,7 +53,7 @@ package object data {
 
   final case class EnumSchema(name: String,
                               values: Map[Int, String],
-                              options: Option[Map[String, String]])
+                              options: Option[Map[String, String]] = None)
       extends DescriptorSchema
 
   object EnumSchema {
@@ -73,9 +73,9 @@ package object data {
       label: Label,
       `type`: FieldDescriptor.Type,
       packed: Boolean,
-      default: Option[AnyRef],
-      schema: Option[String],
-      options: Option[Map[String, String]]
+      default: Option[AnyRef] = None,
+      schema: Option[String] = None,
+      options: Option[Map[String, String]] = None
   )
 
   object Field {
