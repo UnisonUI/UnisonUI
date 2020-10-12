@@ -28,7 +28,7 @@ const getValue = (field, schema) => {
       return 42
   }
 }
-const populateFields = (schema, fields, result) => {}
+
 export const messageExample = (schema, method) => {
   const result = {}
   const message = schema.messages.find(message => message.name === method)
