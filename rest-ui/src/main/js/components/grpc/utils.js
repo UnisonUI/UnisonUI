@@ -28,10 +28,12 @@ const getValue = (field, schema) => {
       return 42
   }
 }
-
+const populateFields = (schema, fields, result) => {}
 export const messageExample = (schema, method) => {
   const result = {}
-  const fields = schema.messages.find(message => message.name === method).fields
+  const message = schema.messages.find(message => message.name === method)
+  const fields = message.fields
+  const oneOf = message.oneOf
   for (const field of fields) {
     let value =
       field.default !== undefined ? this.default : getValue(field, schema)
@@ -47,6 +49,10 @@ export const messageExample = (schema, method) => {
       } else value = [value]
     }
     result[field.name] = value
+  }
+  for (const [name, fields] of Object.entries(oneOf)) {
+    const field = fields[0]
+    result[name] = { type: field.name, value: getValue(field, schema) }
   }
   return result
 }
