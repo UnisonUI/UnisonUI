@@ -12,7 +12,9 @@ import io.circe.syntax._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpecLike
+import restui.grpc.ReflectionClient
 import restui.models.{Metadata, Service, ServiceEvent}
+import restui.protobuf.data.Schema
 import restui.providers.docker.client.HttpClient
 import restui.providers.docker.client.models.{Container, Event, State}
 
@@ -25,10 +27,13 @@ class DockerClientSpec
     with MockFactory {
   private val Id          = "12345"
   private val ServiceName = "test"
-
+  private val reflectionClient = new ReflectionClient {
+    override def loadSchema(server: Service.Grpc.Server): Future[Schema] =
+      Future.failed(new Exception("noop"))
+  }
   private val settings = Settings(
     "myDocker.sock",
-    Labels("name", "port", "specification", "useProxy"))
+    Labels("name", "port", "specification", "useProxy", None))
   private val MatchingContainerLabels = Map("name" -> ServiceName,
                                             "port"          -> "9999",
                                             "specification" -> "/openapi.yaml")
@@ -45,7 +50,7 @@ class DockerClientSpec
             Source.single(HttpResponse(status = StatusCodes.BadRequest)))
 
         val probe = testKit.createTestProbe[ServiceEvent]()
-        new DockerClient(clientMock, settings).startStreaming
+        new DockerClient(clientMock, reflectionClient, settings).startStreaming
           .to(Sink.foreach(e => probe.ref ! e))
           .run()
 
@@ -64,7 +69,7 @@ class DockerClientSpec
               )))
 
         val probe = testKit.createTestProbe[ServiceEvent]()
-        new DockerClient(clientMock, settings).startStreaming
+        new DockerClient(clientMock, reflectionClient, settings).startStreaming
           .to(Sink.foreach(e => probe.ref ! e))
           .run()
 
@@ -94,7 +99,7 @@ class DockerClientSpec
             )
           )
         val probe = testKit.createTestProbe[ServiceEvent]()
-        new DockerClient(clientMock, settings).startStreaming
+        new DockerClient(clientMock, reflectionClient, settings).startStreaming
           .to(Sink.foreach(e => probe.ref ! e))
           .run()
 
@@ -112,7 +117,7 @@ class DockerClientSpec
                       Event(Id, Some(State.Stop), MatchingContainerLabels)
                     ))
         val probe = testKit.createTestProbe[ServiceEvent]()
-        new DockerClient(clientMock, settings).startStreaming
+        new DockerClient(clientMock, reflectionClient, settings).startStreaming
           .to(Sink.foreach(e => probe.ref ! e))
           .run()
 
@@ -134,7 +139,9 @@ class DockerClientSpec
             NonMatchingContainerLabels,
             List(Event(Id, Some(State.Start), NonMatchingContainerLabels)))
           val probe = testKit.createTestProbe[ServiceEvent]()
-          new DockerClient(clientMock, settings).startStreaming
+          new DockerClient(clientMock,
+                           reflectionClient,
+                           settings).startStreaming
             .to(Sink.foreach(e => probe.ref ! e))
             .run()
           probe.expectNoMessage()
@@ -143,7 +150,9 @@ class DockerClientSpec
         "there is no labels at all" in {
           val clientMock = setupMock(Map.empty, Nil)
           val probe      = testKit.createTestProbe[ServiceEvent]()
-          new DockerClient(clientMock, settings).startStreaming
+          new DockerClient(clientMock,
+                           reflectionClient,
+                           settings).startStreaming
             .to(Sink.foreach(e => probe.ref ! e))
             .run()
           probe.expectNoMessage()

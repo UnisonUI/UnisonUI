@@ -26,6 +26,7 @@ package object data {
                                       path: String,
                                       useProxy: Option[Boolean])
       extends Specification
+
   final case class RestUI(name: Option[String],
                           specifications: List[Specification],
                           grpc: Map[String, GrpcSetting],
@@ -35,12 +36,14 @@ package object data {
                                servers: Map[String, Service.Grpc.Server])
 
   sealed trait GitFileEvent extends Product with Serializable
+
   object GitFileEvent {
     final case class Deleted(path: Path) extends GitFileEvent
     final case class UpsertedOpenApi(maybeName: Option[String],
                                      path: Path,
                                      useProxy: Option[Boolean])
         extends GitFileEvent
+
     final case class UpsertedGrpc(maybeName: Option[String],
                                   path: Path,
                                   servers: Map[String, Service.Grpc.Server])
@@ -48,6 +51,7 @@ package object data {
   }
 
   sealed trait LoadedContent extends Product with Serializable
+
   object LoadedContent {
     final case class Deleted(path: Path) extends LoadedContent
     final case class OpenApi(maybeName: Option[String],
@@ -55,6 +59,7 @@ package object data {
                              content: String,
                              useProxy: Option[Boolean])
         extends LoadedContent
+
     final case class Grpc(maybeName: Option[String],
                           path: Path,
                           schema: Schema,

@@ -1,12 +1,14 @@
 package restui.providers.docker
 
+import cats.syntax.option._
 import com.typesafe.config.Config
 
 final case class Settings(dockerHost: String, labels: Labels)
 final case class Labels(serviceName: String,
                         port: String,
                         specificationPath: String,
-                        useProxy: String)
+                        useProxy: String,
+                        grpcEndpoint: Option[String])
 
 // $COVERAGE-OFF$
 object Settings {
@@ -17,7 +19,11 @@ object Settings {
     val port        = config.getString(s"$Namespace.labels.port")
     val specificationPath =
       config.getString(s"$Namespace.labels.specification-path")
-    val useProxy = config.getString(s"$Namespace.labels.use-proxy")
-    Settings(dockerHost, Labels(serviceName, port, specificationPath, useProxy))
+    val useProxy     = config.getString(s"$Namespace.labels.use-proxy")
+    val grpcEndpoint = config.getString(s"$Namespace.labels.grpc-endpoint").some
+
+    Settings(
+      dockerHost,
+      Labels(serviceName, port, specificationPath, useProxy, grpcEndpoint))
   }
 }

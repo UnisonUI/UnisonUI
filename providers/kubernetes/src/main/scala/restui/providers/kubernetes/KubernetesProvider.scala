@@ -5,6 +5,7 @@ import akka.actor.typed.ActorSystem
 import akka.stream.scaladsl.Source
 import com.typesafe.config.Config
 import com.typesafe.scalalogging.LazyLogging
+import restui.grpc.ReflectionClientImpl
 import restui.models.ServiceEvent
 import restui.providers.Provider
 
@@ -17,8 +18,11 @@ class KubernetesProvider extends Provider with LazyLogging {
     implicit val system: ActorSystem[_] = actorSystem
     val name                            = classOf[KubernetesProvider].getCanonicalName
     val settings                        = Settings.from(config)
+    val reflectionClient                = new ReflectionClientImpl()
     logger.debug("Initialising Kubernetes provider")
-    new KubernetesClient(settings).listCurrentAndFutureServices.map(name -> _)
+    new KubernetesClient(
+      settings,
+      reflectionClient).listCurrentAndFutureServices.map(name -> _)
   }
 
 }

@@ -5,6 +5,7 @@ import akka.actor.typed.ActorSystem
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.{BroadcastHub, Keep, Sink, Source}
 import com.typesafe.scalalogging.LazyLogging
+import restui.grpc.ReflectionClient
 import restui.models.ServiceEvent
 import skuber._
 import skuber.api.Configuration
@@ -14,7 +15,8 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
-class KubernetesClient(private val settings: Settings)(implicit
+class KubernetesClient(private val settings: Settings,
+                       private val reflectionClient: ReflectionClient)(implicit
     system: ActorSystem[_])
     extends LazyLogging {
   private implicit val executionContent: ExecutionContext =
@@ -28,7 +30,8 @@ class KubernetesClient(private val settings: Settings)(implicit
       .run()
 
   private val serviceActorRef =
-    classicSystem.actorOf(Props(classOf[ServiceActor], settings.labels, queue))
+    classicSystem.actorOf(
+      Props(classOf[ServiceActor], settings.labels, queue, reflectionClient))
 
   def listCurrentAndFutureServices: Source[ServiceEvent, NotUsed] =
     Configuration.inClusterConfig match {

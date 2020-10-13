@@ -51,7 +51,7 @@ class ReflectionSpec
   )
 
   it should "retrieve the schema using the server reflection" in {
-    ReflectionClient
+    new ReflectionClientImpl()
       .loadSchema(Server("127.0.0.1", 9000, false))
       .map {
         _ shouldBe expectedSchema.copy(services = Map(

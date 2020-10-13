@@ -4,11 +4,12 @@ import akka.NotUsed
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.Uri
 import akka.http.scaladsl.unmarshalling.Unmarshal
-import akka.stream.scaladsl.{JsonFraming, Source}
+import akka.stream.scaladsl.{JsonFraming, Merge, Source}
 import com.typesafe.scalalogging.LazyLogging
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.parser.parse
 import restui.Concurrency
+import restui.grpc.ReflectionClient
 import restui.models.{Metadata, Service, ServiceEvent}
 import restui.providers.docker.client.HttpClient
 import restui.providers.docker.client.models.{Container, Event, State}
@@ -17,6 +18,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class DockerClient(private val client: HttpClient,
+                   private val reflectionClient: ReflectionClient,
                    private val settings: Settings)(implicit
     val system: ActorSystem[_])
     extends LazyLogging {
@@ -66,8 +68,11 @@ class DockerClient(private val client: HttpClient,
   private def handleServiceUp(id: String): Source[ServiceEvent, NotUsed] =
     container(id).async.flatMapConcat { container =>
       findEndpoint(container.labels, container.ip).fold(
-        Source.empty[ServiceEvent]) { case (serviceName, address, useProxy) =>
-        downloadFile(id, serviceName, address, useProxy).async
+        Source.empty[ServiceEvent]) {
+        case (serviceName, address, useProxy, grpcEndpoint) =>
+          Source.combine(
+            downloadFile(id, serviceName, address, useProxy).async,
+            loadSchema(id, serviceName, grpcEndpoint).async)(Merge(_))
       }
     }
 
@@ -122,17 +127,58 @@ class DockerClient(private val client: HttpClient,
         }
     }.mapMaterializedValue(_ => NotUsed)
 
+  private def loadSchema(
+      id: String,
+      serviceName: String,
+      grpcEndpoint: Option[String]): Source[ServiceEvent, NotUsed] =
+    grpcEndpoint.fold(Source.empty[ServiceEvent]) { endpoint =>
+      val correctedEndoint =
+        if (!endpoint.contains("//")) s"http://$endpoint" else endpoint
+      val uri = Uri(correctedEndoint)
+      val tls = uri.scheme == "https"
+      val server =
+        Service.Grpc.Server(uri.authority.host.toString,
+                            uri.authority.port,
+                            tls)
+
+      Source.futureSource {
+        reflectionClient
+          .loadSchema(server)
+          .map { schema =>
+            val metadata = Map(
+              Metadata.Provider -> "docker",
+              Metadata.File     -> s"${uri.authority}"
+            )
+            Source.single(
+              ServiceEvent.ServiceUp(
+                Service.Grpc(id,
+                             serviceName,
+                             schema,
+                             Map(uri.authority.toString -> server),
+                             metadata)
+              )
+            )
+          }
+          .recover { throwable =>
+            logger.warn("There was an error while download the file", throwable)
+            Source.empty[ServiceEvent]
+          }
+      }.mapMaterializedValue(_ => NotUsed)
+    }
+
   private def findEndpoint(
       labels: Map[String, String],
       maybeIpAddress: Option[String]): Option[ServiceNameWithAddress] =
     for {
       labels    <- findMatchingLabels(labels)
       ipAddress <- maybeIpAddress
-      useProxy = Try(labels.useProxy.toBoolean).getOrElse(false)
+      useProxy     = Try(labels.useProxy.toBoolean).getOrElse(false)
+      grpcEndpoint = labels.grpcEndpoint
     } yield
       (labels.serviceName,
        s"http://$ipAddress:${labels.port.toInt}${labels.specificationPath}",
-       useProxy)
+       useProxy,
+       grpcEndpoint)
 
   private def findMatchingLabels(labels: Map[String, String]): Option[Labels] =
     for {
@@ -141,10 +187,12 @@ class DockerClient(private val client: HttpClient,
       useProxy = labels.getOrElse(settings.labels.useProxy, "false")
       specificationPath = labels.getOrElse(settings.labels.specificationPath,
                                            "/specification.yaml")
-    } yield Labels(serviceName, port, specificationPath, useProxy)
+      grpcEndpoint = settings.labels.grpcEndpoint.flatMap(labels.get(_))
+    } yield Labels(serviceName, port, specificationPath, useProxy, grpcEndpoint)
 }
 
 object DockerClient {
-  private type ServiceNameWithAddress = (String, String, Boolean)
+  private type ServiceNameWithAddress =
+    (String, String, Boolean, Option[String])
   private val MaximumFrameSize: Int = 10000
 }
