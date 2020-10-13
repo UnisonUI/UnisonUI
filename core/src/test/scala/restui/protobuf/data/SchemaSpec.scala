@@ -81,7 +81,7 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
           "helloworld.Greeter" -> Service(
             "Greeter",
             "helloworld.Greeter",
-            List(Method(
+            Vector(Method(
               "SayHello",
               expectedSchemaOneOf.copy(rootKey =
                 "helloworld.HelloRequest".some),
@@ -100,7 +100,7 @@ class SchemaSpec extends AnyFlatSpec with Matchers with Inside {
           "helloworld.Greeter" -> Service(
             "Greeter",
             "helloworld.Greeter",
-            List(Method(
+            Vector(Method(
               "SayHello",
               expectedSchema.copy(rootKey = "helloworld.HelloRequest".some),
               expectedSchema.copy(rootKey = "helloworld.HelloReply".some),

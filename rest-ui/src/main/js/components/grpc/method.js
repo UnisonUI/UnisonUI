@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { Clear, Execute } from './buttons'
 import Request from './request'
 import { Response } from './Response'
-import { Link, Collapse } from './utils'
+import { stringify, Link, Collapse } from './utils'
 import axios from 'axios'
 const CancelToken = axios.CancelToken
 
@@ -29,6 +29,7 @@ export default class Method extends Component {
       tryItOutEnabled: false,
       executeInProgress: false,
       response: null,
+      ws: null,
       cancel: CancelToken.source()
     }
     this.toggleVisibility = this.toggleVisibility.bind(this)
@@ -37,6 +38,12 @@ export default class Method extends Component {
     this.onExecute = this.onExecute.bind(this)
     this.onClear = this.onClear.bind(this)
     this.onUpdate = this.onUpdate.bind(this)
+    this._request = this._request.bind(this)
+    this._streaming = this._streaming.bind(this)
+  }
+
+  componentWillUnmount () {
+    if (this.state.ws) this.state.ws.close()
   }
 
   onUpdate (value) {
@@ -47,10 +54,7 @@ export default class Method extends Component {
     this.setState({ executeInProgress: false })
   }
 
-  onExecute () {
-    let { id, method, service, server } = this.props
-    id = btoa(id).replace('/', '_')
-    server = server.name
+  _request (id, service, method, server) {
     let data = {}
     try {
       data = JSON.parse(this.state.value)
@@ -58,7 +62,7 @@ export default class Method extends Component {
     this.setState({ executeInProgress: true })
     axios
       .post(
-        `/grpc/${id}/${service}/${method.name}`,
+        `/grpc/${id}/${service}/${method}`,
         { server, data },
         { cancelToken: this.state.cancel.token }
       )
@@ -74,6 +78,52 @@ export default class Method extends Component {
       })
   }
 
+  _streaming (id, service, method, server) {
+    const ws = new WebSocket(
+      `ws${location.protocol.replace('http', '')}//${
+        location.host
+      }/grpc/streaming/${id}/${service}/${method}?server=${server}`
+    )
+    ws.onopen = e => {
+      ws.send(this.state.value)
+      this.setState({ executeInProgress: true })
+    }
+    ws.onerror = e => {
+      this.setState({
+        executeInProgress: false,
+        response: { status: 404, data: 'not found' }
+      })
+    }
+    ws.onmessage = e => {
+      const data = JSON.parse(e.data)
+      let response = {}
+      if (data.error) {
+        response = { status: 400, data: data.error }
+      } else {
+        response = { status: 200, data: stringify(data.success) }
+      }
+      this.setState({ executeInProgress: false, response })
+    }
+    ws.onclose = e => {
+      this.setState({ executeInProgress: false, response: null, ws: null })
+    }
+    this.setState({ ws })
+  }
+
+  onExecute () {
+    let { id, method, service, server } = this.props
+    if (this.state.ws) {
+      this.setState({ executeInProgress: true })
+      this.state.ws.send(this.state.value)
+    } else {
+      id = btoa(id).replace('/', '_')
+      server = server.name
+      if (method.streaming.server || method.streaming.client) {
+        this._streaming(id, service, method.name, server)
+      } else this._request(id, service, method.name, server)
+    }
+  }
+
   toggleVisibility () {
     this.setState({ isVisible: !this.state.isVisible })
   }
@@ -83,7 +133,8 @@ export default class Method extends Component {
   }
 
   onCancelClick () {
-    this.state.cancel.cancel()
+    if (this.state.ws) this.state.ws.close()
+    else this.state.cancel.cancel()
     this.setState({ tryItOutEnabled: false })
   }
 
@@ -94,7 +145,8 @@ export default class Method extends Component {
       tryItOutEnabled,
       isVisible,
       executeInProgress,
-      response
+      response,
+      ws
     } = this.state
     return (
       <div
@@ -142,12 +194,14 @@ export default class Method extends Component {
             </div>
             <div
               className={
-                !tryItOutEnabled || !response ? 'execute-wrapper' : 'btn-group'
+                !tryItOutEnabled || !ws || !response
+                  ? 'execute-wrapper'
+                  : 'btn-group'
               }
             >
               {!tryItOutEnabled ? null : <Execute onExecute={this.onExecute} />}
 
-              {!tryItOutEnabled || !response ? null : (
+              {!tryItOutEnabled || !ws || !response ? null : (
                 <Clear onClear={this.onClear} />
               )}
             </div>
@@ -169,7 +223,7 @@ export default class Method extends Component {
                 </h4>
               </div>
               <div className="responses-inner">
-                {response ? <Response response={response} /> : null}
+                {response && <Response response={response} />}
               </div>
             </div>
           </div>

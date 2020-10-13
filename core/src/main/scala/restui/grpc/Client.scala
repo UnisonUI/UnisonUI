@@ -59,35 +59,42 @@ class Client(service: Service, settings: GrpcClientSettings)(implicit
           .invoke(source)
     }
 
-  def streamingRequest(methodName: String, input: Json): Option[SourceJson] =
+  def streamingRequest(methodName: String,
+                       source: SourceJson): Option[SourceJson] = {
+    val fqName = s"${service.fullName}.$methodName"
     service.methods.collectFirst {
+      case method @ Method(name, _, _, true, true) if name == methodName =>
+        val descriptor =
+          methodDescriptor(MethodDescriptor.MethodType.BIDI_STREAMING, method)
+        new ScalaBidirectionalStreamingRequestBuilder(
+          descriptor,
+          fqName,
+          clientState.internalChannel,
+          options,
+          settings)
+          .invoke(source)
       case method @ Method(name, _, _, true, false) if name == methodName =>
         val descriptor =
           methodDescriptor(MethodDescriptor.MethodType.SERVER_STREAMING, method)
-        val fqName = s"${service.fullName}.$name"
-        new ScalaServerStreamingRequestBuilder(descriptor,
-                                               fqName,
-                                               clientState.internalChannel,
-                                               options,
-                                               settings)
-          .invoke(input)
-    }
-
-  def streamingRequest(methodName: String,
-                       source: SourceJson): Option[FutureJson] =
-    service.methods.collectFirst {
+        val builder =
+          new ScalaServerStreamingRequestBuilder(descriptor,
+                                                 fqName,
+                                                 clientState.internalChannel,
+                                                 options,
+                                                 settings)
+        source.flatMapConcat(builder.invoke(_))
       case method @ Method(name, _, _, false, true) if name == methodName =>
         val descriptor =
           methodDescriptor(MethodDescriptor.MethodType.CLIENT_STREAMING, method)
-        val fqName = s"${service.fullName}.$name"
-        new ScalaClientStreamingRequestBuilder(descriptor,
-                                               fqName,
-                                               clientState.internalChannel,
-                                               options,
-                                               settings)
-          .invoke(source)
+        val builder =
+          new ScalaClientStreamingRequestBuilder(descriptor,
+                                                 fqName,
+                                                 clientState.internalChannel,
+                                                 options,
+                                                 settings)
+        Source.future(builder.invoke(source))
     }
-
+  }
   def close(): Future[Done] = clientState.close()
 
   private def methodDescriptor(`type`: MethodDescriptor.MethodType,

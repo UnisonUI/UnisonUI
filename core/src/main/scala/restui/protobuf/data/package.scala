@@ -104,7 +104,7 @@ package object data {
 
   final case class Service(name: String,
                            fullName: String,
-                           methods: List[Method])
+                           methods: Vector[Method])
   final case class Method(name: String,
                           inputType: Schema,
                           outputType: Schema,

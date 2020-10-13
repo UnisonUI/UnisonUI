@@ -51,67 +51,81 @@ object Schema {
       _ <- protobufCompiler.clean(tempFile)
     } yield result
 
-  def fromBytes(input: Array[Byte]): Either[Throwable, Schema] =
+  def fromFileDescriptorProtos(
+      input: Vector[Array[Byte]]): Either[Throwable, Schema] =
+    for {
+      descriptors <- allCatch.either(input.map(FileDescriptorProto.parseFrom))
+      schema      <- descriptors.pipe(decode)
+    } yield schema
+
+  def fromBytes(input: Array[Byte]): Either[Throwable, Schema] = for {
+    descriptor <- allCatch.either(FileDescriptorSet.parseFrom(input))
+    schema <- descriptor.getFileList.asScala.toVector
+      .pipe(decode)
+  } yield schema
+
+  private def decode(
+      descriptors: Vector[FileDescriptorProto]): Either[Throwable, Schema] =
     allCatch.either {
-      val descriptor = FileDescriptorSet.parseFrom(input)
-      val fileDescriptors =
-        extractFileDescriptors(descriptor.getFileList.asScala.toList)
+      val fileDescriptors = extractFileDescriptors(descriptors)
       val schemas = fileDescriptors.foldLeft(Schema()) {
         case (Schema(messageSchemas, enumSchemas, services, _),
               fileDescriptor) =>
           val (messages, enums) = parseDescriptors(
-            fileDescriptor.getMessageTypes.asScala.toList).partitionMap {
+            fileDescriptor.getMessageTypes.asScala.toVector).partitionMap {
             case (name, schema: MessageSchema) => Left(name -> schema)
             case (name, schema: EnumSchema)    => Right(name -> schema)
           }
           val allEnums = enums ++ parseEnumDescriptors(
-            fileDescriptor.getEnumTypes.asScala.toList)
+            fileDescriptor.getEnumTypes.asScala.toVector)
           Schema(messageSchemas ++ messages.toMap,
                  enumSchemas ++ allEnums.toMap,
                  services)
       }
       fileDescriptors.foldLeft(schemas) {
         case (schema @ Schema(_, _, services, _), fileDescriptor) =>
-          val parsedServices = fileDescriptor.getServices.asScala.toList
+          val parsedServices = fileDescriptor.getServices.asScala.toVector
             .pipe(parseServices(schemas))
           schema.copy(services = services ++ parsedServices)
       }
     }
 
   private def extractFileDescriptors(
-      fileDescriptors: List[FileDescriptorProto]) = {
+      fileDescriptors: Vector[FileDescriptorProto]) = {
     val protoDescriptors = HashSet.from(fileDescriptors.map(_.getName))
     fileDescriptors
       .foldLeft(Map.empty[String, FileDescriptor]) {
         (resolved, protoDescriptor) =>
           if (resolved.contains(protoDescriptor.getName)) resolved
           else {
-            val dependencies = protoDescriptor.getDependencyList.asScala.toList
-            val resolvedList =
+            val dependencies =
+              protoDescriptor.getDependencyList.asScala.toVector
+            val resolvedVector =
               dependencies.filter(protoDescriptors.contains).collect {
                 Function.unlift { dependency =>
                   resolved.get(dependency)
                 }
               }
-            if (resolvedList.size == dependencies.size) {
+            if (resolvedVector.size == dependencies.size) {
               val fileDescriptor =
-                FileDescriptor.buildFrom(protoDescriptor, resolvedList.toArray)
+                FileDescriptor.buildFrom(protoDescriptor,
+                                         resolvedVector.toArray)
               resolved + (protoDescriptor.getName -> fileDescriptor)
             } else resolved
           }
       }
       .values
-      .toList
+      .toVector
   }
   private def parseDescriptors(
-      descriptors: List[Descriptor]): Map[String, DescriptorSchema] =
+      descriptors: Vector[Descriptor]): Map[String, DescriptorSchema] =
     descriptors
       .flatMap(descriptor =>
         toSchemaMap(descriptor, Set(descriptor.getFullName)))
       .toMap
 
   private def parseEnumDescriptors(
-      descriptors: List[EnumDescriptor]): Map[String, EnumSchema] =
+      descriptors: Vector[EnumDescriptor]): Map[String, EnumSchema] =
     descriptors
       .map(descriptor => descriptor.getFullName -> toEnumSchema(descriptor))
       .toMap
@@ -208,16 +222,16 @@ object Schema {
   }
 
   private def parseServices(schema: Schema)(
-      services: List[ServiceDescriptor]): Map[String, Service] =
+      services: Vector[ServiceDescriptor]): Map[String, Service] =
     services.map { service =>
-      val methods = parseMethods(service.getMethods.asScala.toList, schema)
+      val methods = parseMethods(service.getMethods.asScala.toVector, schema)
       service.getFullName -> Service(service.getName,
                                      service.getFullName,
                                      methods)
     }.toMap
 
-  private def parseMethods(methods: List[MethodDescriptor],
-                           schema: Schema): List[Method] =
+  private def parseMethods(methods: Vector[MethodDescriptor],
+                           schema: Schema): Vector[Method] =
     methods.map { method =>
       Method(
         method.getName,
