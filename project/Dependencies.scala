@@ -44,9 +44,6 @@ object Dependencies {
     private val akkaHttpCirceVersion = "1.35.0"
 
     private val sl4j = "com.typesafe.akka" %% "akka-slf4j" % akkaVersion
-    private val http2 =
-      "com.typesafe.akka" %% "akka-http2-support" % akkaHttpVersion
-    private val http = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion
     private val akkaActorTyped =
       "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion
     private val stream = "com.typesafe.akka" %% "akka-stream" % akkaVersion
@@ -61,6 +58,9 @@ object Dependencies {
     private val akkaDiscovery =
       "com.typesafe.akka" %% "akka-discovery" % akkaVersion
 
+    val http2 =
+      "com.typesafe.akka" %% "akka-http2-support" % akkaHttpVersion
+    val http = "com.typesafe.akka" %% "akka-http" % akkaHttpVersion
     val unixDomain =
       "com.lightbend.akka" %% "akka-stream-alpakka-unix-domain-socket" % alpakkaVersion
     val akka = Seq(sl4j,
@@ -94,6 +94,8 @@ object Dependencies {
 
   lazy val restUiCore =
     libraryDependencies ++= common ++ Akka.akka ++ Circe.all ++ Grpc.all ++ Seq(
+      Akka.http  % Test,
+      Akka.http2 % Test,
       Circe.schema,
       Circe.parser)
 
