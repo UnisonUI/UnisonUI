@@ -58,7 +58,7 @@ jobs:
         node_modules/.bin/conventional-changelog  -r 2 -p angular | tail -n +5 > release.md
         echo "\`docker pull unisonui/unisonui:${RELEASE_VERSION}\`" >> release.md
     - name: build
-      run: sbt "project rest-ui; npmInstall; webpackProdTask; dockerBuildAndPush"
+      run: sbt "project unison-ui; npmInstall; webpackProdTask; dockerBuildAndPush"
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1

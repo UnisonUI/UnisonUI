@@ -22,10 +22,10 @@ object Projects {
         case x                                    => MergeStrategy.last
       })
 
-  val restUiCore = createModule("rest-ui-core", "core")
+  val unisonUiCore = createModule("unison-ui-core", "core")
     .settings(resolvers += "jitpack".at("https://jitpack.io"))
 
-  val restUi = createModule("rest-ui", "rest-ui")
+  val unisonUi = createModule("unison-ui", "unison-ui")
     .settings(
       name := "unisonui",
       mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh")

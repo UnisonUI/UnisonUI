@@ -10,6 +10,7 @@ import akka.stream.scaladsl.Source
 import com.typesafe.scalalogging.LazyLogging
 import restui.server.http.routes._
 import restui.server.service.ServiceActor
+
 import scala.concurrent.{ExecutionContext, Future}
 
 class HttpServer(private val serviceActorRef: ActorRef[ServiceActor.Message],

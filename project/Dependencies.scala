@@ -89,10 +89,10 @@ object Dependencies {
 
   private lazy val common = Testing.all ++ Logging.all ++ Config.all
 
-  lazy val restUi =
+  lazy val unisonUi =
     libraryDependencies ++= common ++ Akka.all ++ Circe.all ++ Cats.all
 
-  lazy val restUiCore =
+  lazy val unisonUiCore =
     libraryDependencies ++= common ++ Akka.akka ++ Circe.all ++ Grpc.all ++ Seq(
       Akka.http  % Test,
       Akka.http2 % Test,
