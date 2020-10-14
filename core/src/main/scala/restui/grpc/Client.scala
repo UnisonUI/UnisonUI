@@ -17,6 +17,7 @@ import io.grpc.MethodDescriptor
 import restui.protobuf.data._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.chaining._
 
 object Client {
   type FutureJson = Future[Json]
@@ -33,36 +34,22 @@ class Client(service: Service, settings: GrpcClientSettings)(implicit
     akka.event.Logging(sys.classicSystem, this.getClass))
   private val options = NettyClientUtils.callOptions(settings)
 
-  def request(methodName: String, input: Json): Option[FutureJson] =
+  def request(methodName: String, input: Json): Option[SourceJson] =
+    input.pipe(Source.single).pipe(request(methodName, _))
+
+  def request(methodName: String, source: SourceJson): Option[SourceJson] = {
+    val fqName = s"${service.fullName}.$methodName"
     service.methods.collectFirst {
       case method @ Method(name, _, _, false, false) if name == methodName =>
         val descriptor =
           methodDescriptor(MethodDescriptor.MethodType.UNARY, method)
-        new ScalaUnaryRequestBuilder(descriptor,
-                                     clientState.internalChannel,
-                                     options,
-                                     settings).invoke(input)
-    }
-
-  def request(methodName: String, source: SourceJson): Option[SourceJson] =
-    service.methods.collectFirst {
-      case method @ Method(name, _, _, true, true) if name == methodName =>
-        val descriptor =
-          methodDescriptor(MethodDescriptor.MethodType.BIDI_STREAMING, method)
-        val fqName = s"${service.fullName}.$name"
-        new ScalaBidirectionalStreamingRequestBuilder(
-          descriptor,
-          fqName,
-          clientState.internalChannel,
-          options,
-          settings)
-          .invoke(source)
-    }
-
-  def streamingRequest(methodName: String,
-                       source: SourceJson): Option[SourceJson] = {
-    val fqName = s"${service.fullName}.$methodName"
-    service.methods.collectFirst {
+        val builder =
+          new ScalaUnaryRequestBuilder(descriptor,
+                                       clientState.internalChannel,
+                                       options,
+                                       settings)
+        source
+          .flatMapConcat(input => Source.future(builder.invoke(input)))
       case method @ Method(name, _, _, true, true) if name == methodName =>
         val descriptor =
           methodDescriptor(MethodDescriptor.MethodType.BIDI_STREAMING, method)

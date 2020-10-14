@@ -24,6 +24,7 @@ import restui.server.service.{ServiceActor, StreamingConnection}
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.chaining._
+import akka.stream.scaladsl.Sink
 
 object Grpc extends LazyLogging {
   final case class Input(server: String, data: Json)
@@ -111,7 +112,7 @@ object Grpc extends LazyLogging {
     client
       .request(method, input)
       .fold(Future.successful(Option.empty[Json].asRight[Throwable])) {
-        _.map { result =>
+        _.runWith(Sink.head).map { result =>
           client.close()
           result.some.asRight[Throwable]
         }

@@ -79,34 +79,49 @@ export default class Method extends Component {
   }
 
   _streaming (id, service, method, server) {
+    let timer
     const ws = new WebSocket(
       `ws${location.protocol.replace('http', '')}//${
         location.host
       }/grpc/streaming/${id}/${service}/${method}?server=${server}`
     )
-    ws.onopen = e => {
+    ws.onopen = function (e) {
       ws.send(this.state.value)
       this.setState({ executeInProgress: true })
-    }
-    ws.onerror = e => {
+      timer = setInterval(() => ws.send(new Uint8Array(1)), 10 * 1000)
+    }.bind(this)
+
+    ws.onerror = function (e) {
       this.setState({
         executeInProgress: false,
         response: { status: 404, data: 'not found' }
       })
-    }
-    ws.onmessage = e => {
+    }.bind(this)
+
+    ws.onmessage = function (e) {
       const data = JSON.parse(e.data)
-      let response = {}
+      let response = this.state.response || { data: '' }
       if (data.error) {
-        response = { status: 400, data: data.error }
+        response = {
+          status: 400,
+          data: `---\n>\n\n${this.state.value}\n\n<\n\n${data.error}\n${response.data}`
+        }
       } else {
-        response = { status: 200, data: stringify(data.success) }
+        response = {
+          status: 200,
+          data: `---\n>\n\n${this.state.value}\n\n<\n\n${stringify(
+            data.success
+          )}\n${response.data}`
+        }
       }
       this.setState({ executeInProgress: false, response })
-    }
-    ws.onclose = e => {
-      this.setState({ executeInProgress: false, response: null, ws: null })
-    }
+    }.bind(this)
+
+    ws.onclose = function (e) {
+      if (timer) clearInterval(timer)
+      this.setState({ executeInProgress: false, ws: null })
+    }.bind(this)
+
     this.setState({ ws })
   }
 

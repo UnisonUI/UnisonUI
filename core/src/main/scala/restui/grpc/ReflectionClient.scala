@@ -90,7 +90,7 @@ class ReflectionClientImpl(implicit sys: ClassicActorSystemProvider)
 
   private def doRequest(request: Json, client: Client): Source[Json, _] = Source
     .single(request)
-    .pipe(client.streamingRequest("ServerReflectionInfo", _))
+    .pipe(client.request("ServerReflectionInfo", _))
     .fold(Source.empty[Json])(identity(_))
 
   private def extractFileDescriptorsFromJson(json: Json): Vector[Array[Byte]] =

@@ -74,8 +74,7 @@ object StreamingConnection extends LazyLogging {
                 .withTls(useTls)
             val client = new Client(schema.services(service), settings)
             client
-              .streamingRequest(method,
-                                parsedSource.mapMaterializedValue(_ => NotUsed))
+              .request(method, parsedSource.mapMaterializedValue(_ => NotUsed))
               .map { out =>
                 Flow
                   .fromSinkAndSourceCoupled(
@@ -87,10 +86,7 @@ object StreamingConnection extends LazyLogging {
                       .map(json => TextMessage(json.noSpaces))
                   )
                   .watchTermination()((_, fut) =>
-                    fut.flatMap { _ =>
-                      logger.info("connection closed")
-                      client.close()
-                    })
+                    fut.flatMap(_ => client.close()))
               }
         }.flatten
       }
