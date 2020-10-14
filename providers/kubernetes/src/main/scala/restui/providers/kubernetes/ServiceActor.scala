@@ -1,102 +1,101 @@
 package restui.providers.kubernetes
 
-import akka.actor.{Actor, ActorLogging, ActorSystem}
+import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorSystem, Behavior}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpRequest, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.stream.scaladsl.SourceQueueWithComplete
+import com.typesafe.scalalogging.LazyLogging
 import restui.grpc.ReflectionClient
 import restui.models._
 import skuber.{Service => KubernetesService}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import scala.util.chaining._
 
-class ServiceActor(settingsLabels: Labels,
-                   reflectionClient: ReflectionClient,
-                   queue: SourceQueueWithComplete[ServiceEvent])
-    extends Actor
-    with ActorLogging {
-  import ServiceActor._
-  private implicit val system: ActorSystem                = context.system
-  private implicit val executionContext: ExecutionContext = context.dispatcher
+object ServiceActor extends LazyLogging {
+  private type ServiceFoundWithFile =
+    (String, String, String, String, Boolean, Option[String])
+  private val Namespace = "namespace"
 
-  override def receive: Actor.Receive = handleMessage(Map.empty)
-
-  private def handleMessage(
-      servicesByNamespaces: Map[String, List[KubernetesService]]): Receive = {
-    case (namespace: String, newServices: List[KubernetesService]) =>
-      servicesByNamespaces.get(namespace) match {
-        case None =>
-          val filteredServices = newServices.filter(service =>
-            getLabels(service.metadata.labels).isDefined)
-          filteredServices.flatMap(createEndpoint).foreach {
-            case (id,
-                  serviceName,
-                  specificationPath,
-                  file,
-                  useProxy,
-                  grpcEndpoint) =>
-              for {
-                _ <- downloadFile(
-                  Service
-                    .OpenApi(id,
-                             serviceName,
-                             file,
-                             Map(Metadata.Provider -> "kubernetes",
-                                 Metadata.File     -> specificationPath,
-                                 Namespace         -> namespace),
-                             useProxy = useProxy))
-                _ <- loadSchema(id, serviceName, namespace, grpcEndpoint)
-              } yield ()
-          }
-          context.become(
-            handleMessage(
-              servicesByNamespaces + (namespace -> filteredServices)))
-        case Some(services) =>
-          val filteredServices = newServices.filter(service =>
-            getLabels(service.metadata.labels).isDefined)
-          val removed =
-            services.filter(service => !filteredServices.contains(service))
-          val added =
-            filteredServices.filter(service => !services.contains(service))
-
-          removed.flatMap(createEndpoint).foreach { case (id, _, _, _, _, _) =>
-            queue.offer(ServiceEvent.ServiceDown(id))
-          }
-          added.flatMap(createEndpoint).foreach {
-            case (id,
-                  serviceName,
-                  specificationPath,
-                  file,
-                  useProxy,
-                  grpcEndpoint) =>
-              for {
-                _ <- downloadFile(
-                  Service
-                    .OpenApi(id,
-                             serviceName,
-                             file,
-                             Map(Metadata.Provider -> "kubernetes",
-                                 Metadata.File     -> specificationPath,
-                                 Namespace         -> namespace),
-                             useProxy = useProxy))
-                _ <- loadSchema(id, serviceName, namespace, grpcEndpoint)
-              } yield ()
-          }
-
-          context.become(
-            handleMessage(
-              servicesByNamespaces + (namespace -> filteredServices)))
-      }
-      sender() ! Ack
-    case Init     => sender() ! Ack
-    case Complete => sender() ! Ack
+  sealed trait Message
+  object Message {
+    final case class Add(namespace: String, services: List[KubernetesService])
+        extends Message
   }
+  def apply(settingsLabels: Labels,
+            queue: SourceQueueWithComplete[ServiceEvent],
+            servicesByNamespaces: Map[String, List[KubernetesService]] =
+              Map.empty)(implicit
+      system: ActorSystem[_],
+      executionContext: ExecutionContext,
+      reflectionClient: ReflectionClient): Behavior[Message] =
+    Behaviors.receive { (_, message) =>
+      message match {
+        case Message.Add(namespace, newServices) =>
+          val filteredServices = newServices.filter(service =>
+            getLabels(settingsLabels, service.metadata.labels).isDefined)
+          servicesByNamespaces
+            .get(namespace)
+            .fold(filteredServices) { services =>
+              services
+                .filter(service => !filteredServices.contains(service))
+                .flatMap(createEndpoint(settingsLabels, _))
+                .foreach { case (id, _, _, _, _, _) =>
+                  queue.offer(ServiceEvent.ServiceDown(id))
+                }
+
+              filteredServices
+                .filter(service => !services.contains(service))
+
+            }
+            .pipe(notifyServiceEvent(_, settingsLabels, namespace, queue))
+
+          apply(settingsLabels,
+                queue,
+                servicesByNamespaces + (namespace -> filteredServices))
+      }
+    }
+
+  private def notifyServiceEvent(
+      services: List[KubernetesService],
+      settingsLabels: Labels,
+      namespace: String,
+      queue: SourceQueueWithComplete[ServiceEvent])(implicit
+      system: ActorSystem[_],
+      executionContext: ExecutionContext,
+      reflectionClient: ReflectionClient) =
+    services
+      .flatMap(createEndpoint(settingsLabels, _))
+      .foreach {
+        case (id,
+              serviceName,
+              specificationPath,
+              file,
+              useProxy,
+              grpcEndpoint) =>
+          for {
+            _ <- downloadFile(
+              queue,
+              Service
+                .OpenApi(id,
+                         serviceName,
+                         file,
+                         Map(Metadata.Provider -> "kubernetes",
+                             Metadata.File     -> specificationPath,
+                             Namespace         -> namespace),
+                         useProxy = useProxy)
+            )
+            _ <- loadSchema(queue, id, serviceName, namespace, grpcEndpoint)
+          } yield ()
+      }
 
   private def createEndpoint(
-      service: KubernetesService): Option[ServiceFoundWithFile] =
-    getLabels(service.metadata.labels).map {
+      settingsLabels: Labels,
+      service: KubernetesService): List[ServiceFoundWithFile] =
+    getLabels(settingsLabels, service.metadata.labels).map {
       case Labels(protocol, port, specificationPath, useProxy, grpcEndpoint) =>
         val address =
           s"$protocol://${service.copySpec.clusterIP}:$port$specificationPath"
@@ -107,9 +106,12 @@ class ServiceActor(settingsLabels: Labels,
          address,
          useProxyValue,
          grpcEndpoint)
-    }
+    }.toList
 
-  private def downloadFile(openapi: Service.OpenApi): Future[Unit] =
+  private def downloadFile(queue: SourceQueueWithComplete[ServiceEvent],
+                           openapi: Service.OpenApi)(implicit
+      system: ActorSystem[_],
+      executionContext: ExecutionContext): Future[Unit] =
     Http()
       .singleRequest(HttpRequest(uri = openapi.file))
       .flatMap { response =>
@@ -121,12 +123,15 @@ class ServiceActor(settingsLabels: Labels,
           .map(_ => ())
       }
       .recover { throwable =>
-        log.warning("There was an error while download the file {}", throwable)
+        logger.warn("There was an error while download the file {}", throwable)
       }
-  private def loadSchema(id: String,
+  private def loadSchema(queue: SourceQueueWithComplete[ServiceEvent],
+                         id: String,
                          serviceName: String,
                          namespace: String,
-                         grpcEndpoint: Option[String]): Future[Unit] =
+                         grpcEndpoint: Option[String])(implicit
+      reflectionClient: ReflectionClient,
+      executionContext: ExecutionContext): Future[Unit] =
     grpcEndpoint.fold(Future.unit) { endpoint =>
       val correctedEndoint =
         if (!endpoint.contains("//")) s"http://$endpoint" else endpoint
@@ -156,12 +161,13 @@ class ServiceActor(settingsLabels: Labels,
             .map(_ => ())
         }
         .recover { throwable =>
-          log.warning("There was an error while retrieving the schema {}",
+          logger.warn("There was an error while retrieving the schema {}",
                       throwable)
         }
     }
 
-  private def getLabels(labels: Map[String, String]): Option[Labels] =
+  private def getLabels(settingsLabels: Labels,
+                        labels: Map[String, String]): Option[Labels] =
     for {
       port <- labels.get(settingsLabels.port)
       specificationPath =
@@ -169,16 +175,7 @@ class ServiceActor(settingsLabels: Labels,
                          "/specification.yaml")
       protocol     = labels.getOrElse(settingsLabels.protocol, "http")
       useProxy     = labels.getOrElse(settingsLabels.useProxy, "false")
-      grpcEndpoint = settingsLabels.grpcEndpoint.flatMap(labels.get)
+      grpcEndpoint = settingsLabels.grpcEndpoint.flatMap(labels.get(_))
     } yield Labels(protocol, port, specificationPath, useProxy, grpcEndpoint)
 
-}
-
-object ServiceActor {
-  private type ServiceFoundWithFile =
-    (String, String, String, String, Boolean, Option[String])
-  private val Namespace = "namespace"
-  case object Init
-  case object Complete
-  case object Ack
 }
