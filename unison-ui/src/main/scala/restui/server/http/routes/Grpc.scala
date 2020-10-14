@@ -9,6 +9,7 @@ import akka.grpc.GrpcClientSettings
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import akka.stream.scaladsl.Sink
 import akka.util.Timeout
 import cats.syntax.either._
 import cats.syntax.option._
@@ -24,7 +25,6 @@ import restui.server.service.{ServiceActor, StreamingConnection}
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.chaining._
-import akka.stream.scaladsl.Sink
 
 object Grpc extends LazyLogging {
   final case class Input(server: String, data: Json)
