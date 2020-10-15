@@ -21,8 +21,7 @@ object DockerSettings {
             "bash")
         entryPoint(s"$targetDir/entrypoint.sh", executableScriptName.value)
         workDir(targetDir)
-        user("daemon")
-        copy(appDir, targetDir, chown = "daemon:daemon")
+        copy(appDir, targetDir)
       }
     },
     imageNames in docker := Seq(

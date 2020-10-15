@@ -33,7 +33,7 @@ class DockerClientSpec
   }
   private val settings = Settings(
     "myDocker.sock",
-    Labels("name", "port", "specification", "useProxy", None))
+    Labels("name", "port", "specification", "useProxy", None, "false"))
   private val MatchingContainerLabels = Map("name" -> ServiceName,
                                             "port"          -> "9999",
                                             "specification" -> "/openapi.yaml")

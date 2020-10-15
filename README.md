@@ -92,10 +92,12 @@ restui {
 
     // Labels name use to detect RestUI compatible container
     labels {
-      port  = "restui.specification.endpoint.port" // Label specifying the port on which the OpenApi spec is available.
-      service-name = "restui.specification.endpoint.service-name" // Label specifying the service name for RestUI.
-      specification-path = "restui.specification.endpoint.specification-path" // Label of the path where the OpenApi spec file is.
-      use-proxy = "restui.specification.endpoint.use-proxy" // Label of use to enable the usage of the proxy.
+      service-name = "restui.service-name" // Label specifying the service name for RestUI.
+      port  = "restui.specification.port" // Label specifying the port on which the OpenApi spec is available.
+      specification-path = "restui.specification.path" // Label of the path where the OpenApi spec file is.
+      use-proxy = "restui.specification.use-proxy" // Label uses to enable the usage of the proxy.
+      grpc-port = "restui.grpc.port" // Label specifying the port of the grpc endpoint.
+      grpc-tls = "restui.grpc.tls" // Label specifying the grpc endpoint uses tls (false by default).
     }
 
   }
@@ -106,10 +108,12 @@ restui {
     polling-interval = "1 minute" // Interval between each polling
 
     labels {
-      port  = "restui.specification.endpoint.port" // Label specifying the port on which the OpenApi spec is available.
-      protocol = "restui.specification.endpoint.protocol" // Label specifying which protocol the OpenApi spec is exposed.
-      specification-path = "restui.specification.endpoint.specification-path" // Label of the path where the OpenApi spec file is.
-      use-proxy = "restui.specification.endpoint.use-proxy" // Label of use to enable the usage of the proxy.
+      port  = "restui.specification.port" // Label specifying the port on which the OpenApi spec is available.
+      protocol = "restui.specification.eprotocol" // Label specifying which protocol the OpenApi spec is exposed.
+      specification-path = "restui.specification.path" // Label of the path where the OpenApi spec file is.
+      use-proxy = "restui.specification.use-proxy" // Label use to enable the usage of the proxy.
+      grpc-port = "restui.grpc.port" // Label specifying the port of the grpc endpoint.
+      grpc-tls = "restui.grpc.tls" // Label specifying the grpc endpoint uses tls (false by default).
     }
   }
 

@@ -69,10 +69,13 @@ class DockerClient(private val client: HttpClient,
     container(id).async.flatMapConcat { container =>
       findEndpoint(container.labels, container.ip).fold(
         Source.empty[ServiceEvent]) {
-        case (serviceName, address, useProxy, grpcEndpoint) =>
+        case ServiceNameWithAddress(serviceName,
+                                    address,
+                                    useProxy,
+                                    grpcServer) =>
           Source.combine(
             downloadFile(id, serviceName, address, useProxy).async,
-            loadSchema(id, serviceName, grpcEndpoint).async)(Merge(_))
+            loadSchema(id, serviceName, grpcServer).async)(Merge(_))
       }
     }
 
@@ -100,67 +103,62 @@ class DockerClient(private val client: HttpClient,
 
   private def downloadFile(id: String,
                            serviceName: String,
-                           uri: String,
+                           maybeUri: Option[String],
                            useProxy: Boolean): Source[ServiceEvent, NotUsed] =
-    Source.futureSource {
-      client
-        .downloadFile(uri)
-        .map { content =>
-          val metadata = Map(
-            Metadata.Provider -> "docker",
-            Metadata.File     -> Uri(uri).path.toString.substring(1)
-          )
-
-          Source.single(
-            ServiceEvent.ServiceUp(
-              Service.OpenApi(id,
-                              serviceName,
-                              content,
-                              metadata,
-                              useProxy = useProxy)
+    maybeUri.fold(Source.empty[ServiceEvent]) { uri =>
+      Source.futureSource {
+        client
+          .downloadFile(uri)
+          .map { content =>
+            val metadata = Map(
+              Metadata.Provider -> "docker",
+              Metadata.File     -> Uri(uri).path.toString.substring(1)
             )
-          )
-        }
-        .recover { throwable =>
-          logger.warn("There was an error while download the file", throwable)
-          Source.empty[ServiceEvent]
-        }
-    }.mapMaterializedValue(_ => NotUsed)
+
+            Source.single(
+              ServiceEvent.ServiceUp(
+                Service.OpenApi(id,
+                                serviceName,
+                                content,
+                                metadata,
+                                useProxy = useProxy)
+              )
+            )
+          }
+          .recover { throwable =>
+            logger.warn("There was an error while download the file", throwable)
+            Source.empty[ServiceEvent]
+          }
+      }.mapMaterializedValue(_ => NotUsed)
+    }
 
   private def loadSchema(
       id: String,
       serviceName: String,
-      grpcEndpoint: Option[String]): Source[ServiceEvent, NotUsed] =
-    grpcEndpoint.fold(Source.empty[ServiceEvent]) { endpoint =>
-      val correctedEndoint =
-        if (!endpoint.contains("//")) s"http://$endpoint" else endpoint
-      val uri = Uri(correctedEndoint)
-      val tls = uri.scheme == "https"
-      val server =
-        Service.Grpc.Server(uri.authority.host.toString,
-                            uri.authority.port,
-                            tls)
-
+      grpcServer: Option[Service.Grpc.Server]): Source[ServiceEvent, NotUsed] =
+    grpcServer.fold(Source.empty[ServiceEvent]) { server =>
+      val address = s"${server.address}:${server.port}"
       Source.futureSource {
         reflectionClient
           .loadSchema(server)
           .map { schema =>
             val metadata = Map(
               Metadata.Provider -> "docker",
-              Metadata.File     -> s"${uri.authority}"
+              Metadata.File     -> address
             )
             Source.single(
               ServiceEvent.ServiceUp(
                 Service.Grpc(id,
                              serviceName,
                              schema,
-                             Map(uri.authority.toString -> server),
+                             Map(address -> server),
                              metadata)
               )
             )
           }
           .recover { throwable =>
-            logger.warn("There was an error while download the file", throwable)
+            logger.warn("There was an error while retrieving the schema",
+                        throwable)
             Source.empty[ServiceEvent]
           }
       }.mapMaterializedValue(_ => NotUsed)
@@ -172,27 +170,37 @@ class DockerClient(private val client: HttpClient,
     for {
       labels    <- findMatchingLabels(labels)
       ipAddress <- maybeIpAddress
-      useProxy     = Try(labels.useProxy.toBoolean).getOrElse(false)
-      grpcEndpoint = labels.grpcEndpoint
+      specificationPort = Try(labels.port.toInt).toOption.flatMap {
+        case 0    => None
+        case port => Some(port)
+      }
+      endpoint = specificationPort.map(port =>
+        s"http://$ipAddress:${port}${labels.specificationPath}")
+      useProxy   = Try(labels.useProxy.toBoolean).getOrElse(false)
+      grpcPort   = labels.grpcPort.flatMap(v => Try(v.toInt).toOption)
+      grpcTls    = Try(labels.useProxy.toBoolean).getOrElse(false)
+      grpcServer = grpcPort.map(Service.Grpc.Server(ipAddress, _, grpcTls))
     } yield
-      (labels.serviceName,
-       s"http://$ipAddress:${labels.port.toInt}${labels.specificationPath}",
-       useProxy,
-       grpcEndpoint)
+      ServiceNameWithAddress(labels.serviceName, endpoint, useProxy, grpcServer)
 
   private def findMatchingLabels(labels: Map[String, String]): Option[Labels] =
     for {
       serviceName <- labels.get(settings.labels.serviceName)
-      port        <- labels.get(settings.labels.port)
+      port     = labels.getOrElse(settings.labels.port, "0")
       useProxy = labels.getOrElse(settings.labels.useProxy, "false")
       specificationPath = labels.getOrElse(settings.labels.specificationPath,
                                            "/specification.yaml")
-      grpcEndpoint = settings.labels.grpcEndpoint.flatMap(labels.get(_))
-    } yield Labels(serviceName, port, specificationPath, useProxy, grpcEndpoint)
+      grpcPort = settings.labels.grpcPort.flatMap(labels.get(_))
+      grpcTls  = labels.getOrElse(settings.labels.grpcTls, "false")
+    } yield
+      Labels(serviceName, port, specificationPath, useProxy, grpcPort, grpcTls)
 }
 
 object DockerClient {
-  private type ServiceNameWithAddress =
-    (String, String, Boolean, Option[String])
+  private final case class ServiceNameWithAddress(
+      serviceName: String,
+      address: Option[String],
+      useProxy: Boolean,
+      grpcPort: Option[Service.Grpc.Server])
   private val MaximumFrameSize: Int = 10000
 }

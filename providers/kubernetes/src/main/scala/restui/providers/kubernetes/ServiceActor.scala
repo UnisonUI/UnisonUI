@@ -3,7 +3,7 @@ package restui.providers.kubernetes
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior}
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpRequest, Uri}
+import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.stream.scaladsl.SourceQueueWithComplete
 import com.typesafe.scalalogging.LazyLogging
@@ -16,8 +16,13 @@ import scala.util.Try
 import scala.util.chaining._
 
 object ServiceActor extends LazyLogging {
-  private type ServiceFoundWithFile =
-    (String, String, String, String, Boolean, Option[String])
+  private final case class ServiceFoundWithFile(
+      id: String,
+      service: String,
+      specificationPath: String,
+      address: Option[String],
+      useProxyValue: Boolean,
+      grpcServer: Option[Service.Grpc.Server])
   private val Namespace = "namespace"
 
   sealed trait Message
@@ -43,8 +48,8 @@ object ServiceActor extends LazyLogging {
               services
                 .filter(service => !filteredServices.contains(service))
                 .flatMap(createEndpoint(settingsLabels, _))
-                .foreach { case (id, _, _, _, _, _) =>
-                  queue.offer(ServiceEvent.ServiceDown(id))
+                .foreach { service =>
+                  queue.offer(ServiceEvent.ServiceDown(service.id))
                 }
 
               filteredServices
@@ -70,25 +75,27 @@ object ServiceActor extends LazyLogging {
     services
       .flatMap(createEndpoint(settingsLabels, _))
       .foreach {
-        case (id,
-              serviceName,
-              specificationPath,
-              file,
-              useProxy,
-              grpcEndpoint) =>
+        case ServiceFoundWithFile(id,
+                                  serviceName,
+                                  specificationPath,
+                                  maybeFile,
+                                  useProxy,
+                                  grpcServer) =>
           for {
-            _ <- downloadFile(
-              queue,
-              Service
-                .OpenApi(id,
-                         serviceName,
-                         file,
-                         Map(Metadata.Provider -> "kubernetes",
-                             Metadata.File     -> specificationPath,
-                             Namespace         -> namespace),
-                         useProxy = useProxy)
-            )
-            _ <- loadSchema(queue, id, serviceName, namespace, grpcEndpoint)
+            _ <- maybeFile.fold(Future.unit) { file =>
+              downloadFile(
+                queue,
+                Service
+                  .OpenApi(id,
+                           serviceName,
+                           file,
+                           Map(Metadata.Provider -> "kubernetes",
+                               Metadata.File     -> specificationPath,
+                               Namespace         -> namespace),
+                           useProxy = useProxy)
+              )
+            }
+            _ <- loadSchema(queue, id, serviceName, namespace, grpcServer)
           } yield ()
       }
 
@@ -96,16 +103,30 @@ object ServiceActor extends LazyLogging {
       settingsLabels: Labels,
       service: KubernetesService): List[ServiceFoundWithFile] =
     getLabels(settingsLabels, service.metadata.labels).map {
-      case Labels(protocol, port, specificationPath, useProxy, grpcEndpoint) =>
-        val address =
-          s"$protocol://${service.copySpec.clusterIP}:$port$specificationPath"
+      case Labels(protocol,
+                  port,
+                  specificationPath,
+                  useProxy,
+                  grpcPort,
+                  grpcTls) =>
+        val address = Try(port.toInt).toOption.flatMap {
+          case 0    => None
+          case port => Some(port)
+        }.map(port =>
+          s"$protocol://${service.copySpec.clusterIP}:$port$specificationPath")
         val useProxyValue = Try(useProxy.toBoolean).getOrElse(false)
-        (service.uid,
-         service.name,
-         specificationPath,
-         address,
-         useProxyValue,
-         grpcEndpoint)
+        val server = grpcPort
+          .flatMap(port => Try(port.toInt).toOption)
+          .map(port =>
+            Service.Grpc.Server(service.copySpec.clusterIP,
+                                port,
+                                Try(grpcTls.toBoolean).getOrElse(false)))
+        ServiceFoundWithFile(service.uid,
+                             service.name,
+                             specificationPath,
+                             address,
+                             useProxyValue,
+                             server)
     }.toList
 
   private def downloadFile(queue: SourceQueueWithComplete[ServiceEvent],
@@ -129,35 +150,22 @@ object ServiceActor extends LazyLogging {
                          id: String,
                          serviceName: String,
                          namespace: String,
-                         grpcEndpoint: Option[String])(implicit
+                         grpcServer: Option[Service.Grpc.Server])(implicit
       reflectionClient: ReflectionClient,
       executionContext: ExecutionContext): Future[Unit] =
-    grpcEndpoint.fold(Future.unit) { endpoint =>
-      val correctedEndoint =
-        if (!endpoint.contains("//")) s"http://$endpoint" else endpoint
-      val uri = Uri(correctedEndoint)
-      val tls = uri.scheme == "https"
-      val server =
-        Service.Grpc.Server(uri.authority.host.toString,
-                            uri.authority.port,
-                            tls)
-
+    grpcServer.fold(Future.unit) { server =>
+      val address = s"${server.address}:${server.port}"
       reflectionClient
         .loadSchema(server)
         .flatMap { schema =>
           val metadata = Map(
             Metadata.Provider -> "kubernetes",
-            Metadata.File     -> s"${uri.authority}",
+            Metadata.File     -> address,
             Namespace         -> namespace
           )
           queue
-            .offer(
-              ServiceEvent.ServiceUp(
-                Service.Grpc(id,
-                             serviceName,
-                             schema,
-                             Map(uri.authority.toString -> server),
-                             metadata)))
+            .offer(ServiceEvent.ServiceUp(Service
+              .Grpc(id, serviceName, schema, Map(address -> server), metadata)))
             .map(_ => ())
         }
         .recover { throwable =>
@@ -173,9 +181,10 @@ object ServiceActor extends LazyLogging {
       specificationPath =
         labels.getOrElse(settingsLabels.specificationPath,
                          "/specification.yaml")
-      protocol     = labels.getOrElse(settingsLabels.protocol, "http")
-      useProxy     = labels.getOrElse(settingsLabels.useProxy, "false")
-      grpcEndpoint = settingsLabels.grpcEndpoint.flatMap(labels.get(_))
-    } yield Labels(protocol, port, specificationPath, useProxy, grpcEndpoint)
-
+      protocol = labels.getOrElse(settingsLabels.protocol, "http")
+      useProxy = labels.getOrElse(settingsLabels.useProxy, "false")
+      grpcPort = settingsLabels.grpcPort.flatMap(labels.get(_))
+      grpcTls  = labels.getOrElse(settingsLabels.grpcTls, "false")
+    } yield
+      Labels(protocol, port, specificationPath, useProxy, grpcPort, grpcTls)
 }
