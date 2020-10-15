@@ -79,7 +79,6 @@ export default class Method extends Component {
   }
 
   _streaming (id, service, method, server) {
-    let timer
     const ws = new WebSocket(
       `ws${location.protocol.replace('http', '')}//${
         location.host
@@ -88,7 +87,6 @@ export default class Method extends Component {
     ws.onopen = function (e) {
       ws.send(this.state.value)
       this.setState({ executeInProgress: true })
-      timer = setInterval(() => ws.send(new Uint8Array(1)), 10 * 1000)
     }.bind(this)
 
     ws.onerror = function (e) {
@@ -100,25 +98,23 @@ export default class Method extends Component {
 
     ws.onmessage = function (e) {
       const data = JSON.parse(e.data)
-      let response = this.state.response || { data: '' }
+      const response = this.state.response || []
       if (data.error) {
-        response = {
+        response.unshift({
           status: 400,
-          data: `---\n>\n\n${this.state.value}\n\n<\n\n${data.error}\n${response.data}`
-        }
+          data: data.error
+        })
       } else {
-        response = {
+        response.unshift({
           status: 200,
-          data: `---\n>\n\n${this.state.value}\n\n<\n\n${stringify(
-            data.success
-          )}\n${response.data}`
-        }
+          data: stringify(data.success)
+        })
       }
+      if (this.state.executeInProgress) { response.unshift({ value: this.state.value }) }
       this.setState({ executeInProgress: false, response })
     }.bind(this)
 
     ws.onclose = function (e) {
-      if (timer) clearInterval(timer)
       this.setState({ executeInProgress: false, ws: null })
     }.bind(this)
 

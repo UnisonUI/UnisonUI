@@ -14,7 +14,7 @@ import io.circe.parser.parse
 import restui.grpc.Client
 import restui.models.Service
 import restui.protobuf.data.{Method, Service => ProtobufService}
-
+import scala.util.chaining._
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -85,6 +85,13 @@ object StreamingConnection extends LazyLogging {
                         .mapMaterializedValue(_ => NotUsed))
                       .map(json => TextMessage(json.noSpaces))
                   )
+                  .recover(
+                    _.getMessage
+                      .pipe(Json.fromString)
+                      .pipe("error" -> _)
+                      .pipe(Json.obj(_))
+                      .noSpaces
+                      .pipe(TextMessage(_)))
                   .watchTermination()((_, fut) =>
                     fut.flatMap(_ => client.close()))
               }

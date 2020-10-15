@@ -54,8 +54,8 @@ class ReflectionSpec
     new ReflectionClientImpl()
       .loadSchema(Server("127.0.0.1", 9000, false))
       .map {
-        _ shouldBe expectedSchema.copy(services = Map(
-          "helloworld.Greeter" -> Service(
+        _ shouldBe expectedSchema
+          .copy(services = Map("helloworld.Greeter" -> Service(
             "Greeter",
             "helloworld.Greeter",
             Vector(

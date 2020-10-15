@@ -1,14 +1,12 @@
 package restui.server.http.routes
 
-import java.nio.charset.StandardCharsets
-import java.{util => ju}
-
 import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.scaladsl.{Sink, Source}
+import restui.server.http.Base64
 
 import scala.concurrent.Future
 import scala.util.chaining._
@@ -26,7 +24,7 @@ object Proxy {
   private def proxy(request: HttpRequest)(implicit
       actorSystem: ActorSystem[_]): Future[HttpResponse] = {
     val proxyURL =
-      request.uri.path.tail.toString.pipe(decode)
+      request.uri.path.tail.toString.pipe(Base64.decode)
     val uri = Uri(proxyURL)
     val port = uri.authority.port match {
       case 0 =>
@@ -56,19 +54,11 @@ object Proxy {
               .map(_.value)
               .get
               .trim
-              .pipe(encode)
+              .pipe(Base64.encode)
           proxy(
             request.withUri(request.uri.withPath(Uri.Path(s"/$urlEncoded"))))
         case response => Future.successful(response)
       }
       .runWith(Sink.head)
   }
-  private def encode(input: String): String =
-    input
-      .getBytes(StandardCharsets.UTF_8)
-      .pipe(ju.Base64.getEncoder.encodeToString)
-
-  private def decode(input: String): String =
-    new String(
-      input.getBytes(StandardCharsets.UTF_8).pipe(ju.Base64.getDecoder.decode))
 }

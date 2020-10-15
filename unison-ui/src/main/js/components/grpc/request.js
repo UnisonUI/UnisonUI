@@ -22,7 +22,7 @@ export default class Request extends Component {
     return this.props.isExecute ? (
       <RequestEditor value={value} onChange={this.onChange} />
     ) : (
-      <HighlightCode code={value} />
+      <HighlightCode code={value} className="example" />
     )
   }
 }

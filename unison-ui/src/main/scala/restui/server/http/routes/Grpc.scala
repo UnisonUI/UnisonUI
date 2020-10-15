@@ -1,8 +1,5 @@
 package restui.server.http.routes
 
-import java.nio.charset.StandardCharsets
-import java.{util => ju}
-
 import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.{ActorRef, ActorSystem}
 import akka.grpc.GrpcClientSettings
@@ -20,11 +17,11 @@ import io.circe.{DecodingFailure, Json}
 import restui.grpc.Client
 import restui.models.Service
 import restui.protobuf.data.{Method, Service => ProtobufService}
+import restui.server.http.Base64
 import restui.server.service.{ServiceActor, StreamingConnection}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.chaining._
 
 object Grpc extends LazyLogging {
   final case class Input(server: String, data: Json)
@@ -35,7 +32,7 @@ object Grpc extends LazyLogging {
       executionContext: ExecutionContext): Route =
     (path("grpc" / "streaming" / Segment / Segment / Segment) & parameter(
       "server") & get) { (base64Id, service, method, server) =>
-      val id = decode(base64Id)
+      val id = Base64.decode(base64Id)
       val response = StreamingConnection
         .start(serviceActorRef, id, service, method, server)
         .map(_.asRight[Throwable])
@@ -56,7 +53,7 @@ object Grpc extends LazyLogging {
     } ~
       (path("grpc" / Segment / Segment / Segment) & post & entity(as[Input])) {
         (base64Id, service, method, input) =>
-          val id = decode(base64Id)
+          val id = Base64.decode(base64Id)
           val response: Future[Either[Throwable, Option[Json]]] =
             serviceActorRef
               .ask(ServiceActor.Get(_, id))
@@ -118,11 +115,4 @@ object Grpc extends LazyLogging {
         }
       }
   }
-
-  private def decode(input: String): String =
-    new String(
-      input
-        .replaceAll("_", "/")
-        .getBytes(StandardCharsets.UTF_8)
-        .pipe(ju.Base64.getDecoder.decode))
 }
