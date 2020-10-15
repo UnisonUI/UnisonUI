@@ -14,9 +14,10 @@ import io.circe.parser.parse
 import restui.grpc.Client
 import restui.models.Service
 import restui.protobuf.data.{Method, Service => ProtobufService}
-import scala.util.chaining._
+
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.chaining._
 
 object StreamingConnection extends LazyLogging {
   implicit val timeout: Timeout = 5.seconds
