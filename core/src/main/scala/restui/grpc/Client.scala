@@ -40,16 +40,6 @@ class Client(service: Service, settings: GrpcClientSettings)(implicit
   def request(methodName: String, source: SourceJson): Option[SourceJson] = {
     val fqName = s"${service.fullName}.$methodName"
     service.methods.collectFirst {
-      case method @ Method(name, _, _, false, false) if name == methodName =>
-        val descriptor =
-          methodDescriptor(MethodDescriptor.MethodType.UNARY, method)
-        val builder =
-          new ScalaUnaryRequestBuilder(descriptor,
-                                       clientState.internalChannel,
-                                       options,
-                                       settings)
-        source
-          .flatMapConcat(input => Source.future(builder.invoke(input)))
       case method @ Method(name, _, _, true, true) if name == methodName =>
         val descriptor =
           methodDescriptor(MethodDescriptor.MethodType.BIDI_STREAMING, method)
@@ -60,6 +50,7 @@ class Client(service: Service, settings: GrpcClientSettings)(implicit
           options,
           settings)
           .invoke(source)
+// $COVERAGE-OFF$
       case method @ Method(name, _, _, true, false) if name == methodName =>
         val descriptor =
           methodDescriptor(MethodDescriptor.MethodType.SERVER_STREAMING, method)
@@ -80,8 +71,20 @@ class Client(service: Service, settings: GrpcClientSettings)(implicit
                                                  options,
                                                  settings)
         Source.future(builder.invoke(source))
+      case method @ Method(name, _, _, false, false) if name == methodName =>
+        val descriptor =
+          methodDescriptor(MethodDescriptor.MethodType.UNARY, method)
+        val builder =
+          new ScalaUnaryRequestBuilder(descriptor,
+                                       clientState.internalChannel,
+                                       options,
+                                       settings)
+        source
+          .flatMapConcat(input => Source.future(builder.invoke(input)))
+// $COVERAGE-ON$
     }
   }
+
   def close(): Future[Done] = clientState.close()
 
   private def methodDescriptor(`type`: MethodDescriptor.MethodType,
