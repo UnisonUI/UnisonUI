@@ -1,4 +1,4 @@
-# RestUI
+# UnisonUI
 
 [![Github Actions](https://github.com/UnisonUI/UnisonUI/workflows/Scala%20CI/badge.svg)](https://github.com/UnisonUI/UnisonUI/actions)
 [![codecov](https://codecov.io/gh/UnisonUI/UnisonUI/branch/master/graph/badge.svg)](https://codecov.io/gh/UnisonUI/UnisonUI)
@@ -21,7 +21,7 @@ Currently, RestUI can discover your API descriptions through `Docker`, `Kubernet
 ### Requirements
 
 - JDK 11+
-- NodeJS/Npm: Front the react application
+- NodeJS/Npm: Front the React application
 
 ### React application
 
@@ -67,7 +67,7 @@ RestUI uses a HOCON format for its configuration.
 
 Here is the default configuration used by RestUI.
 ```hocon
-restui {
+unisonui {
   // List of active providers
   // By default all available providers are activated
   // You can activate the the providers you want by overriding this field
@@ -75,9 +75,10 @@ restui {
   self-specification = no // Should the webhook's specification be available in RestUI
 
   providers = [
-    "restui.providers.git.GitProvider",
-    "restui.providers.docker.DockerProvider",
-    "restui.providers.kubernetes.KubernetesProvider"
+    "tech.unisonui.providers.git.GitProvider",
+    "tech.unisonui.providers.docker.DockerProvider",
+    "tech.unisonui.providers.kubernetes.KubernetesProvider",
+    "tech.unisonui.providers.webhook.WebhookProvider"
   ]
 
   http {
@@ -92,12 +93,12 @@ restui {
 
     // Labels name use to detect RestUI compatible container
     labels {
-      service-name = "restui.service-name" // Label specifying the service name for RestUI.
-      port  = "restui.specification.port" // Label specifying the port on which the OpenApi spec is available.
-      specification-path = "restui.specification.path" // Label of the path where the OpenApi spec file is.
-      use-proxy = "restui.specification.use-proxy" // Label uses to enable the usage of the proxy.
-      grpc-port = "restui.grpc.port" // Label specifying the port of the grpc endpoint.
-      grpc-tls = "restui.grpc.tls" // Label specifying the grpc endpoint uses tls (false by default).
+      service-name = "unisonui.service-name" // Label specifying the service name for RestUI.
+      port  = "unisonui.specification.port" // Label specifying the port on which the OpenApi spec is available.
+      specification-path = "unisonui.specification.path" // Label of the path where the OpenApi spec file is.
+      use-proxy = "unisonui.specification.use-proxy" // Label uses to enable the usage of the proxy.
+      grpc-port = "unisonui.grpc.port" // Label specifying the port of the grpc endpoint.
+      grpc-tls = "unisonui.grpc.tls" // Label specifying the grpc endpoint uses tls (false by default).
     }
 
   }
@@ -108,12 +109,12 @@ restui {
     polling-interval = "1 minute" // Interval between each polling
 
     labels {
-      port  = "restui.specification.port" // Label specifying the port on which the OpenApi spec is available.
-      protocol = "restui.specification.eprotocol" // Label specifying which protocol the OpenApi spec is exposed.
-      specification-path = "restui.specification.path" // Label of the path where the OpenApi spec file is.
-      use-proxy = "restui.specification.use-proxy" // Label use to enable the usage of the proxy.
-      grpc-port = "restui.grpc.port" // Label specifying the port of the grpc endpoint.
-      grpc-tls = "restui.grpc.tls" // Label specifying the grpc endpoint uses tls (false by default).
+      port  = "unisonui.specification.port" // Label specifying the port on which the OpenApi spec is available.
+      protocol = "unisonui.specification.eprotocol" // Label specifying which protocol the OpenApi spec is exposed.
+      specification-path = "unisonui.specification.path" // Label of the path where the OpenApi spec file is.
+      use-proxy = "unisonui.specification.use-proxy" // Label use to enable the usage of the proxy.
+      grpc-port = "unisonui.grpc.port" // Label specifying the port of the grpc endpoint.
+      grpc-tls = "unisonui.grpc.tls" // Label specifying the grpc endpoint uses tls (false by default).
     }
   }
 
@@ -157,7 +158,7 @@ rest-ui my-config.conf
 ```
 2. Pass parameter fields and override the values to system properties:
 ```sh
-rest-ui -Drestui.providers.0=Provider1, -Drestui.providers.1=Provider2, ...
+rest-ui -Dunisonui.providers.0=Provider1, -Dunisonui.providers.1=Provider2, ...
 ```
 
 ## Providers
@@ -170,19 +171,19 @@ The docker provider list and detect all running containers in real time.
 
 A compatible container **MUST** include the following labels:
 
-- A label specifying the service's name `restui.specification.endpoint.service-name`
-- A label specifying the port where the OpenApi spec lays `restui.specification.endpoint.port`
+- A label specifying the service's name `unisonui.service-name`
+- A label specifying the port where the OpenApi spec lays `unisonui.specification.port`
 
 Optional labels:
 
-- A label specifying the path where the OpenApi spec lays `restui.specification.endpoint.specification-path`.
+- A label specifying the path where the OpenApi spec lays `unisonui.specification.path`.
   
   Default path: `/specification.yaml`
 
 Example:
 
 ```sh
-docker  run --rm -l "restui.specification.endpoint.port=80" -l "restui.specification.endpoint.service-name=nginx" -v $(pwd):/usr/share/nginx/html:ro nginx:alpine
+docker  run --rm -l "unisonui.port=80" -l "unisonui.service-name=nginx" -v $(pwd):/usr/share/nginx/html:ro nginx:alpine
 ```
 
 ------------------------------------------------------------------------------------------------
@@ -198,12 +199,12 @@ The value for the interval is defined by `polling-interval` which default to `1 
 
 A compatible service **MUST** have the following labels on it:
 
-- A label specifying the protocol `restui.specification.endpoint.protocol`
-- A label specifying the port where the OpenApi spec lays `restui.specification.endpoint.port`
+- A label specifying the protocol `unisonui.specification.protocol`
+- A label specifying the port where the OpenApi spec lays `unisonui.specification.port`
 
 Optional labels:
 
-- A label specifying the path where the OpenApi spec lays `restui.specification.endpoint.specification-path`.
+- A label specifying the path where the OpenApi spec lays `unisonui.specification.path`.
   
   Default path is: `/specification.yaml`
 
@@ -216,8 +217,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    restui.specification.port: "80"
-    restui.specification.protocol: http
+    unisonui.specification.port: "80"
+    unisonui.specification.protocol: http
   name: specification
   namespace: default
 spec:
@@ -304,18 +305,18 @@ The object follows this schema:
                 // or a regex (the string **MUST** starts and ends with `/`)
   branch = "" // Branch to clone (default to `master` or inferred from the default branch in Github)
   specification-paths = [] // List of OpenApi spec files or directories containing those kind of files
-                     // inside your repository. Those paths are overrided by the restui configuration file inside
+                     // inside your repository. Those paths are overrided by the unisonui configuration file inside
                      // of your repository.
   use-proxy = no // Just enable the proxy or not for this repository
 }
 ```
 
-If the repository contains a file at the root level called `.restui.yaml` then Git provider will
+If the repository contains a file at the root level called `.unisonui.yaml` then Git provider will
 read the OpenApi spec files specified in that file.
 
 Example:
 
-`.restui.yaml`
+`.unisonui.yaml`
 
 ```yaml
 name: "Test"
@@ -366,9 +367,9 @@ You will need to allow:
 ### Docker
 
 ```sh
-docker pull ghcr.io/maethornaur/restui
+docker pull unisonui/unisonui
 
-docker run -p 8080:8080 ghcr.io/maethornaur/restui
+docker run -p 8080:8080 unisonui/unisonui
 
 ```
 
@@ -378,16 +379,16 @@ To override the default value for a configuration entry (found in the
 `reference.conf` files) just pass the `HOCON` path preceded by `-D`
 
 ```sh
-docker run -p 8081:8081 ghcr.io/maethornaur/restui -Drestui.http.port=8081
+docker run -p 8081:8081 unisonui/unisonui -Dunisonui.http.port=8081
 ```
 
 There is a special case for configuration fields that are arrays.
 You need to append the path by the index:
-`restui.providers.0=restui.servicediscovery.docker.DockerProvider`
+`unisonui.providers.0=unisonui.providers.docker.DockerProvider`
 
 If you prefer you can use an environment variable instead.
 For that take the path, uppercase it and replace the `.` by `_` and `-` by `__`.
 
 ```sh
-docker run -p 8081:8081 -e RESTUI_HTTP_PORT=8081 maethornaur/rest-ui
+docker run -p 8081:8081 -e RESTUI_HTTP_PORT=8081 unisonui/unisonui
 ```

@@ -21,7 +21,7 @@ lazy val unisonUi = Projects.unisonUi
              providerWebhook)
   .settings(Dependencies.unisonUi)
   .settings(DockerSettings.settings)
-  .settings(mainClass in Compile := Some("restui.server.Main"))
+  .settings(mainClass in Compile := Some("tech.unisonui.server.Main"))
   .settings(Tasks.tasks)
   .enablePlugins(JavaAppPackaging, sbtdocker.DockerPlugin)
 

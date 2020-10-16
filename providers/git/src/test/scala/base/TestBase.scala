@@ -7,7 +7,7 @@ import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import cats.syntax.either._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.{AnyWordSpecLike, AsyncWordSpecLike}
-import restui.protobuf.ProtobufCompiler
+import tech.unisonui.protobuf.ProtobufCompiler
 
 import scala.concurrent.ExecutionContext
 abstract class AsyncTestBase
