@@ -87,11 +87,21 @@ object Git extends LazyLogging {
           .fold(
             (repository,
              Option.empty[Boolean],
-             Map.empty[String, GrpcSetting])) {
+             Map.empty[String, ProtobufSetting])) {
             case RestUI(serviceName,
                         specificationPaths,
-                        grpcSettings,
+                        maybeGrpcSettings,
                         useProxy) =>
+              val grpcSettings =
+                maybeGrpcSettings.fold(Map.empty[String, ProtobufSetting]) {
+                  settings =>
+                    settings.protobufFiles.view.mapValues {
+                      case setting @ ProtobufSetting(_, servers)
+                          if servers.isEmpty =>
+                        setting.copy(servers = settings.servers)
+                      case setting => setting
+                    }.toMap
+                }
               (repository.copy(specificationPaths = specificationPaths,
                                serviceName = serviceName),
                useProxy,
@@ -217,7 +227,7 @@ object Git extends LazyLogging {
   private def filterSpecificationsFiles(
       repo: Repository,
       files: List[(Option[String], Path)],
-      grpcSettings: Map[String, GrpcSetting],
+      grpcSettings: Map[String, ProtobufSetting],
       rootUseProxy: Option[Boolean]): List[GitFileEvent] = {
     val repoPath = repo.directory.get.toPath
     val specificationPaths = repo.specificationPaths.map {
@@ -237,7 +247,7 @@ object Git extends LazyLogging {
         }.orElse {
           grpcSettings.find { case (path, _) =>
             path.pipe(repoPath.resolve).normalize.pipe(file.startsWith)
-          }.map { case (_, GrpcSetting(name, servers)) =>
+          }.map { case (_, ProtobufSetting(name, servers)) =>
             GitFileEvent.UpsertedGrpc(name, file, servers)
           }
         }

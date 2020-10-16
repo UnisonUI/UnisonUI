@@ -19,10 +19,12 @@ class GitSpec extends TestBase with Inside {
   private val grpcSpecs = """specifications:
            |  - test
            |grpc:
-           | "helloworld.proto":
-           |    servers:
-           |      - address: 127.0.0.1
-           |        port: 8080
+           |  servers:
+           |    - address: 127.0.0.1
+           |      port: 8080
+           |  protobufs:
+           |   "helloworld.proto": {}
+           |      
            |""".stripMargin
   trait StubRepository {
     import sys.process._

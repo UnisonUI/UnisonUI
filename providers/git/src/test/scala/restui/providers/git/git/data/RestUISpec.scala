@@ -24,7 +24,7 @@ class RestUISpec extends AnyFlatSpec with Matchers {
       UnnamedSpecification("file.yaml") :: NamedSpecification("another service",
                                                               "other.yaml",
                                                               None) :: Nil,
-      Map.empty,
+      None,
       None)
   }
   it should "decode a restui config file with grpc" in {
@@ -34,17 +34,18 @@ class RestUISpec extends AnyFlatSpec with Matchers {
 | - name: "another service"
 |   path: "other.yaml"
 |grpc:
-|  "path/spec.proto":
-|    servers:
-|      - address: 127.0.0.1
-|        port: 8080
-|  "path/spec2.proto":
-|    name: test
-|    servers:
-|      - address: 127.0.0.1
-|        port: 8080
-|        name: other server
-|        useTls: true
+|  protobufs:
+|    "path/spec.proto":
+|      servers:
+|        - address: 127.0.0.1
+|          port: 8080
+|    "path/spec2.proto":
+|      name: test
+|      servers:
+|        - address: 127.0.0.1
+|          port: 8080
+|          name: other server
+|          useTls: true
 """.stripMargin
     val restui = parser
       .parse(input)
@@ -55,20 +56,19 @@ class RestUISpec extends AnyFlatSpec with Matchers {
       UnnamedSpecification("file.yaml") :: NamedSpecification("another service",
                                                               "other.yaml",
                                                               None) :: Nil,
-      Map(
-        "path/spec.proto" -> GrpcSetting(
-          None,
-          Map(
-            "127.0.0.1:8080" -> Service.Grpc.Server("127.0.0.1",
-                                                    8080,
-                                                    useTls = false))),
-        "path/spec2.proto" -> GrpcSetting(
-          "test".some,
-          Map(
-            "other server" -> Service.Grpc.Server("127.0.0.1",
-                                                  8080,
-                                                  useTls = true)))
-      ),
+      GrpcSetting(
+        Map.empty,
+        Map(
+          "path/spec.proto" -> ProtobufSetting(
+            None,
+            Map("127.0.0.1:8080" -> Service.Grpc
+              .Server("127.0.0.1", 8080, useTls = false))),
+          "path/spec2.proto" -> ProtobufSetting(
+            "test".some,
+            Map("other server" -> Service.Grpc
+              .Server("127.0.0.1", 8080, useTls = true)))
+        )
+      ).some,
       None
     )
   }

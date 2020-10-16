@@ -216,8 +216,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    restui.specification.endpoint.port: "80"
-    restui.specification.endpoint.protocol: http
+    restui.specification.port: "80"
+    restui.specification.protocol: http
   name: specification
   namespace: default
 spec:
@@ -326,6 +326,19 @@ specifications:
   - name: "Name used for this file"
     path: "foobar.yaml"
     useProxy: true
+grpc:
+  servers:
+    - address: 127.0.0.1
+      port: 8080
+  protobufs:
+    "path/spec.proto": {}
+    "path/spec2.proto":
+      name: test
+      servers:
+        - address: 127.0.0.1
+          port: 8080
+          name: other server
+          useTls: true
 ```
 
 ```yaml
@@ -365,7 +378,7 @@ To override the default value for a configuration entry (found in the
 `reference.conf` files) just pass the `HOCON` path preceded by `-D`
 
 ```sh
-docker run -p 8081:8081 maethornaur/rest-ui -Drestui.http.port=8081
+docker run -p 8081:8081 ghcr.io/maethornaur/restui -Drestui.http.port=8081
 ```
 
 There is a special case for configuration fields that are arrays.

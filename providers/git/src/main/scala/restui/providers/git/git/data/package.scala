@@ -29,11 +29,14 @@ package object data {
 
   final case class RestUI(name: Option[String],
                           specifications: List[Specification],
-                          grpc: Map[String, GrpcSetting],
+                          grpc: Option[GrpcSetting],
                           useProxy: Option[Boolean])
 
-  final case class GrpcSetting(maybeName: Option[String],
-                               servers: Map[String, Service.Grpc.Server])
+  final case class GrpcSetting(servers: Map[String, Service.Grpc.Server],
+                               protobufFiles: Map[String, ProtobufSetting])
+
+  final case class ProtobufSetting(maybeName: Option[String],
+                                   servers: Map[String, Service.Grpc.Server])
 
   sealed trait GitFileEvent extends Product with Serializable
 
@@ -73,16 +76,28 @@ package object data {
         name           <- cursor.get[Option[String]]("name")
         specifications <- cursor.get[List[Specification]]("specifications")
         useProxy       <- cursor.get[Option[Boolean]]("useProxy")
-        grpc           <- cursor.getOrElse[Map[String, GrpcSetting]]("grpc")(Map.empty)
+        grpc           <- cursor.get[Option[GrpcSetting]]("grpc")
       } yield RestUI(name, specifications, grpc, useProxy)
   }
 
   object GrpcSetting {
+    import ProtobufSetting.serverDecoder
     implicit val decoder: Decoder[GrpcSetting] = (cursor: HCursor) =>
       for {
+        servers <- cursor
+          .getOrElse[List[(String, Service.Grpc.Server)]]("servers")(Nil)
+        protobufFiles <- cursor.getOrElse[Map[String, ProtobufSetting]](
+          "protobufs")(Map.empty)
+      } yield GrpcSetting(servers.toMap, protobufFiles)
+  }
+
+  object ProtobufSetting {
+    implicit val decoder: Decoder[ProtobufSetting] = (cursor: HCursor) =>
+      for {
         maybeName <- cursor.get[Option[String]]("name")
-        servers   <- cursor.get[List[(String, Service.Grpc.Server)]]("servers")
-      } yield GrpcSetting(maybeName, servers.toMap)
+        servers <- cursor
+          .getOrElse[List[(String, Service.Grpc.Server)]]("servers")(Nil)
+      } yield ProtobufSetting(maybeName, servers.toMap)
 
     implicit val serverDecoder: Decoder[(String, Service.Grpc.Server)] =
       (cursor: HCursor) =>
