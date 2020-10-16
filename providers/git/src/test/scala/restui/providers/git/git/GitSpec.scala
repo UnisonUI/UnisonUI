@@ -24,7 +24,6 @@ class GitSpec extends TestBase with Inside {
            |      port: 8080
            |  protobufs:
            |   "helloworld.proto": {}
-           |      
            |""".stripMargin
   trait StubRepository {
     import sys.process._
