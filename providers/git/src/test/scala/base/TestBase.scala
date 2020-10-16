@@ -1,28 +1,28 @@
 package base
 
-import scala.concurrent.ExecutionContext
+import java.io.File
+import java.nio.file.Path
 
-import akka.actor.ActorSystem
-import akka.testkit.{ImplicitSender, TestKit}
-import org.scalatest.BeforeAndAfterAll
+import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
+import cats.syntax.either._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.{AnyWordSpecLike, AsyncWordSpecLike}
+import restui.protobuf.ProtobufCompiler
 
+import scala.concurrent.ExecutionContext
 abstract class AsyncTestBase
-    extends TestKit(ActorSystem("test"))
-    with ImplicitSender
+    extends ScalaTestWithActorTestKit
     with AsyncWordSpecLike
     with Matchers
-    with BeforeAndAfterAll {
-  implicit val ec: ExecutionContext = system.dispatcher
-
-  override def afterAll(): Unit =
-    TestKit.shutdownActorSystem(system)
-}
-
-abstract class TestBase extends TestKit(ActorSystem("test")) with ImplicitSender with AnyWordSpecLike with Matchers with BeforeAndAfterAll {
-  implicit val ec: ExecutionContext = system.dispatcher
-
-  override def afterAll(): Unit =
-    TestKit.shutdownActorSystem(system)
+abstract class TestBase
+    extends ScalaTestWithActorTestKit
+    with AnyWordSpecLike
+    with Matchers {
+  implicit val compiler: ProtobufCompiler = new ProtobufCompiler {
+    override def compile(path: Path): Either[Throwable, File] =
+      new File(s"${path.toAbsolutePath.toString}set").asRight[Throwable]
+    override def clean(file: File): Either[Throwable, Unit] = ().asRight
+  }
+  implicit val executionContext: ExecutionContext =
+    testKit.system.executionContext
 }

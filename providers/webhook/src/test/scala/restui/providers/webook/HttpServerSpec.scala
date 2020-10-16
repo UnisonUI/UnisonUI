@@ -1,44 +1,58 @@
 package restui.providers.webook
 
-import akka.actor.ActorSystem
+import java.io.File
+import java.nio.file.Path
+
+import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshalling.Marshal
-import akka.http.scaladsl.model.{HttpMethods, HttpRequest, RequestEntity, StatusCodes, Uri}
+import akka.http.scaladsl.model.{
+  HttpMethods,
+  HttpRequest,
+  RequestEntity,
+  StatusCodes,
+  Uri
+}
 import akka.stream.scaladsl.Sink
-import akka.testkit.{TestKit, TestProbe}
+import cats.syntax.either._
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport
 import io.circe.generic.auto._
-import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 import restui.models.{Metadata, Service, ServiceEvent}
+import restui.protobuf.ProtobufCompiler
 import restui.providers.webhook.HttpServer
 import restui.providers.webhook.models.{Service => WebhookService}
 
 class HttpServerSpec
-    extends TestKit(ActorSystem("test"))
+    extends ScalaTestWithActorTestKit
     with AsyncWordSpecLike
     with Matchers
-    with BeforeAndAfterAll
     with FailFastCirceSupport {
-
-  override def afterAll(): Unit =
-    TestKit.shutdownActorSystem(system)
-
+  implicit val compiler: ProtobufCompiler = new ProtobufCompiler {
+    override def compile(path: Path): Either[Throwable, File] =
+      new File(s"${path.toAbsolutePath.toString}set").asRight[Throwable]
+    override def clean(file: File): Either[Throwable, Unit] = ().asRight
+  }
   "Sending a service to the webhook server" should {
     "receive a no content response" in {
-      val probe = TestProbe()
-
-      val body            = WebhookService("test", "content")
-      val expectedService = Service("webhook:test", "test", "content", Map(Metadata.Provider -> "webhook", Metadata.File -> "test"))
+      val probe = testKit.createTestProbe[ServiceEvent]()
+      val body  = WebhookService.OpenApi("test", "content")
+      val expectedService = Service.OpenApi("webhook:test",
+                                            "test",
+                                            "content",
+                                            Map(Metadata.Provider -> "webhook",
+                                                Metadata.File     -> "test"))
       for {
         source <- HttpServer.start("localhost", 3000)
-        _ = source.to(Sink.actorRef(probe.ref, "completed", _ => ())).run()
+        _ = source.to(Sink.foreach(e => probe.ref ! e)).run()
         entity <- Marshal(body).to[RequestEntity]
-        response <-
-          Http().singleRequest(HttpRequest(method = HttpMethods.POST, uri = Uri("http://localhost:3000/services"), entity = entity))
+        response <- Http().singleRequest(
+          HttpRequest(method = HttpMethods.POST,
+                      uri = Uri("http://localhost:3000/services"),
+                      entity = entity))
       } yield {
-        probe.expectMsg(ServiceEvent.ServiceUp(expectedService))
+        probe.expectMessage(ServiceEvent.ServiceUp(expectedService))
         response.status shouldBe StatusCodes.NoContent
       }
     }

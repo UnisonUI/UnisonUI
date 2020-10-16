@@ -1,10 +1,6 @@
 package restui.providers.docker.client.impl
-import scala.concurrent.duration.Duration
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
-
 import akka.NotUsed
-import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.{HttpMethods, HttpRequest, HttpResponse, Uri}
 import akka.http.scaladsl.settings.ConnectionPoolSettings
@@ -14,23 +10,32 @@ import com.typesafe.scalalogging.LazyLogging
 import restui.providers.docker.client.transport.DockerSock
 import restui.providers.docker.client.{HttpClient => HttpClientInterface}
 
-class HttpClient(private val uri: String)(implicit actorSystem: ActorSystem) extends HttpClientInterface with LazyLogging {
+import scala.concurrent.duration.Duration
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
-  implicit val executionContext: ExecutionContext = actorSystem.dispatcher
+class HttpClient(private val uri: String)(implicit actorSystem: ActorSystem[_])
+    extends HttpClientInterface
+    with LazyLogging {
+
+  implicit val executionContext: ExecutionContext = actorSystem.executionContext
 
   private val settings = ConnectionPoolSettings(actorSystem)
 
   private val (base, connectionSettings) =
     if (uri.startsWith("unix://"))
-      (Uri("http://localhost"), settings.withTransport(new DockerSock(uri.replace("unix://", ""))))
+      (Uri("http://localhost"),
+       settings.withTransport(new DockerSock(uri.replace("unix://", ""))))
     else (Uri(uri.replace("tcp", "http")), settings)
 
   override def get(path: Uri): Future[HttpResponse] =
-    request(HttpRequest(uri = path.resolvedAgainst(base), method = HttpMethods.GET))
+    request(
+      HttpRequest(uri = path.resolvedAgainst(base), method = HttpMethods.GET))
 
   override def watch(path: Uri): Source[HttpResponse, NotUsed] =
     Source
-      .single(HttpRequest(uri = path.resolvedAgainst(base), method = HttpMethods.GET) -> NotUsed)
+      .single(HttpRequest(uri = path.resolvedAgainst(base),
+                          method = HttpMethods.GET) -> NotUsed)
       .via(Http().newHostConnectionPool[NotUsed](
         host = base.authority.host.address,
         port = base.authority.port,
@@ -55,6 +60,7 @@ class HttpClient(private val uri: String)(implicit actorSystem: ActorSystem) ext
         Unmarshaller.stringUnmarshaller(response.entity)
       }
 
-  private def request(httpRequest: HttpRequest): Future[HttpResponse] = Http().singleRequest(httpRequest, settings = connectionSettings)
+  private def request(httpRequest: HttpRequest): Future[HttpResponse] =
+    Http().singleRequest(httpRequest, settings = connectionSettings)
 
 }

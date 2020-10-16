@@ -3,12 +3,16 @@ package restui.providers.git.github
 import java.io.{PrintWriter, StringWriter}
 import java.nio.charset.StandardCharsets
 
-import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
-
-import akka.actor.ActorSystem
+import akka.actor.typed.ActorSystem
 import akka.http.scaladsl.model.headers.{Authorization, OAuth2BearerToken}
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity, HttpHeader, HttpMethods, HttpRequest, RequestEntity}
+import akka.http.scaladsl.model.{
+  ContentTypes,
+  HttpEntity,
+  HttpHeader,
+  HttpMethods,
+  HttpRequest,
+  RequestEntity
+}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.scaladsl.{Merge, Source => AkkaSource}
 import com.typesafe.scalalogging.LazyLogging
@@ -18,13 +22,20 @@ import restui.providers.git._
 import restui.providers.git.github.data._
 import restui.providers.git.settings.GithubSettings
 
-final case class GithubClient(settings: GithubSettings, requestExecutor: RequestExecutor)
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
+
+final case class GithubClient(settings: GithubSettings,
+                              requestExecutor: RequestExecutor)
 
 object GithubClient extends LazyLogging {
 
-  private def graphqlQuery(cursor: Option[String]) = s"""${cursor.map(_ => "query($cursor: String!)").getOrElse("")}{
+  private def graphqlQuery(cursor: Option[String]) =
+    s"""${cursor.map(_ => "query($cursor: String!)").getOrElse("")}{
   viewer {
-    repositories(${cursor.map(_ => "after: $cursor, ").getOrElse("")}first: 100) {
+    repositories(${cursor
+      .map(_ => "after: $cursor, ")
+      .getOrElse("")}first: 100) {
       pageInfo {
         endCursor
         hasNextPage
@@ -41,11 +52,14 @@ object GithubClient extends LazyLogging {
 }
 """
 
-  def listRepositories(githubClient: GithubClient)(implicit system: ActorSystem, executionContext: ExecutionContext): Source[Node] =
+  def listRepositories(githubClient: GithubClient)(implicit
+      system: ActorSystem[_],
+      executionContext: ExecutionContext): Source[Node] =
     graphqlRecursiveSource(githubClient)
 
-  private def graphqlRecursiveSource(githubClient: GithubClient, cursor: Option[String] = None)(implicit
-      system: ActorSystem,
+  private def graphqlRecursiveSource(githubClient: GithubClient,
+                                     cursor: Option[String] = None)(implicit
+      system: ActorSystem[_],
       executionContext: ExecutionContext): Source[Node] =
     AkkaSource.future(executeRequest(githubClient, cursor)).flatMapConcat {
       case Error(error) =>
@@ -55,13 +69,17 @@ object GithubClient extends LazyLogging {
       case Repository(nodes, maybeCursor) =>
         val nodesSource = AkkaSource(nodes)
         maybeCursor match {
-          case None   => nodesSource
-          case cursor => AkkaSource.combine(nodesSource, graphqlRecursiveSource(githubClient, cursor))(Merge(_))
+          case None => nodesSource
+          case cursor =>
+            AkkaSource.combine(
+              nodesSource,
+              graphqlRecursiveSource(githubClient, cursor))(Merge(_))
         }
     }
 
-  private def executeRequest(githubClient: GithubClient, cursor: Option[String])(implicit
-      system: ActorSystem,
+  private def executeRequest(githubClient: GithubClient,
+                             cursor: Option[String])(implicit
+      system: ActorSystem[_],
       executionContext: ExecutionContext) = {
     val request = createRequest(githubClient.settings, cursor)
     githubClient
@@ -69,7 +87,7 @@ object GithubClient extends LazyLogging {
       .flatMap { response =>
         response.entity.contentType match {
           case ContentTypes.`application/json` =>
-            Unmarshal(response.entity).to[GrahpQL]
+            Unmarshal(response.entity).to[GraphQL]
           case _ =>
             response.entity.toStrict(5.seconds).map { body =>
               val msg = body.data.decodeString(StandardCharsets.UTF_8)
@@ -81,11 +99,12 @@ object GithubClient extends LazyLogging {
         val sw = new StringWriter()
         val pw = new PrintWriter(sw)
         exception.printStackTrace(pw)
-        Error(List(exception.getMessage, sw.toString()))
+        Error(List(exception.getMessage, sw.toString))
       }
   }
 
-  private def createRequest(github: GithubSettings, cursor: Option[String]): HttpRequest =
+  private def createRequest(github: GithubSettings,
+                            cursor: Option[String]): HttpRequest =
     HttpRequest(
       uri = github.apiUri,
       method = HttpMethods.POST,
@@ -104,5 +123,6 @@ object GithubClient extends LazyLogging {
     HttpEntity(ContentTypes.`application/json`, json.noSpaces)
   }
 
-  private def authenticationHeader(token: String): HttpHeader = Authorization(OAuth2BearerToken(token))
+  private def authenticationHeader(token: String): HttpHeader =
+    Authorization(OAuth2BearerToken(token))
 }

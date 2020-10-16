@@ -4,22 +4,30 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.{FileSystemException, Files, Path, Paths}
 
-import scala.concurrent.duration.FiniteDuration
-import scala.jdk.CollectionConverters._
-import scala.util._
-import scala.util.chaining._
-
 import akka.stream.SourceShape
-import akka.stream.scaladsl.{Broadcast, Flow => AkkaFlow, GraphDSL, Merge, Source => AkkaSource}
+import akka.stream.scaladsl.{
+  Broadcast,
+  Flow => AkkaFlow,
+  GraphDSL,
+  Merge,
+  Source => AkkaSource
+}
 import cats.syntax.either._
 import com.typesafe.scalalogging.LazyLogging
 import io.circe.generic.auto._
 import io.circe.yaml.parser
 import restui.models.{Metadata, Service, ServiceEvent}
+import restui.protobuf.ProtobufCompiler
+import restui.protobuf.data.Schema._
 import restui.providers.git._
 import restui.providers.git.git.data._
 import restui.providers.git.process.{Process, ProcessArgs}
 import restui.providers.git.settings.{Location, RepositorySettings}
+
+import scala.concurrent.duration.FiniteDuration
+import scala.jdk.CollectionConverters._
+import scala.util._
+import scala.util.chaining._
 
 object Git extends LazyLogging {
   private val GitCmd        = "git"
@@ -30,54 +38,84 @@ object Git extends LazyLogging {
   private type FilesWithSha          = (Files, Option[String])
   private type FilesWithShaWithEvent = (FileEvents, Option[String])
 
-  private val outboundFlow: Flow[FilesWithShaWithEvent, ServiceEvent] =
-    AkkaFlow[FilesWithShaWithEvent].flatMapConcat { case (files, _) => retrieveSpecificationFiles(files) }
-
-  private val cloneOrFetch: Flow[RepositoryWithSha, FilesWithSha] =
-    AkkaFlow[RepositoryWithSha].flatMapConcat {
-      case (repository, hash) =>
-        val source = hash match {
-          case None =>
-            cloneRepository(repository).map { repository =>
-              val localFiles = Files
-                .walk(repository.directory.get.toPath)
-                .iterator
-                .asScala
-                .to(LazyList)
-                .filter(Files.isRegularFile(_))
-                .map(path => None -> path.normalize)
-                .toList
-              repository -> localFiles
-
-            }
-          case Some(sha1) => pullRepository(repository).flatMapConcat(changedFiles(_, sha1))
-        }
-        source.map(_ -> hash)
+  private def outboundFlow(implicit protobufCompiler: ProtobufCompiler)
+      : Flow[FilesWithShaWithEvent, ServiceEvent] =
+    AkkaFlow[FilesWithShaWithEvent].flatMapConcat { case (files, _) =>
+      retrieveSpecificationFiles(files)
     }
 
-  private def changedFiles(repository: Repository, sha1: String): Source[Files] =
-    execute("diff" :: "--name-only" :: sha1 :: "HEAD" :: Nil, repository.directory).flatMapConcat {
+  private val cloneOrFetch: Flow[RepositoryWithSha, FilesWithSha] =
+    AkkaFlow[RepositoryWithSha].flatMapConcat { case (repository, hash) =>
+      val source = hash match {
+        case None =>
+          cloneRepository(repository).map { repository =>
+            val localFiles = Files
+              .walk(repository.directory.get.toPath)
+              .iterator
+              .asScala
+              .to(LazyList)
+              .filter(Files.isRegularFile(_))
+              .map(path => None -> path.normalize)
+              .toList
+            repository -> localFiles
+
+          }
+        case Some(sha1) =>
+          pullRepository(repository).flatMapConcat(changedFiles(_, sha1))
+      }
+      source.map(_ -> hash)
+    }
+
+  private def changedFiles(repository: Repository,
+                           sha1: String): Source[Files] =
+    execute("diff" :: "--name-only" :: sha1 :: "HEAD" :: Nil,
+            repository.directory).flatMapConcat {
       case Right(files) =>
         val repoPath = repository.directory.get.toPath
-        AkkaSource.single(repository -> files.map(file => None -> repoPath.resolve(Paths.get(file)).normalize))
+        AkkaSource.single(repository -> files.map(file =>
+          None -> repoPath.resolve(Paths.get(file)).normalize))
       case Left(exception) =>
         logger.warn(s"Error during changed: $exception")
         AkkaSource.empty[Files]
     }
 
-  private val findSpecificationFiles: Flow[FilesWithSha, FilesWithShaWithEvent] = AkkaFlow[FilesWithSha].map {
+  private val findSpecificationFiles
+      : Flow[FilesWithSha, FilesWithShaWithEvent] = AkkaFlow[FilesWithSha].map {
     case ((repository, files), sha1) =>
-      val (repositoryWithNewPath, rootUseProxy) =
-        findRestUIConfig(repository.directory.get.toPath).fold(repository -> Option.empty[Boolean]) {
-          case RestUI(serviceName, specificationPaths, useProxy) =>
-            repository.copy(specificationPaths = specificationPaths, serviceName = serviceName) -> useProxy
-        }
+      val (repositoryWithNewPath, rootUseProxy, grpcSettings) =
+        findRestUIConfig(repository.directory.get.toPath)
+          .fold(
+            (repository,
+             Option.empty[Boolean],
+             Map.empty[String, ProtobufSetting])) {
+            case RestUI(serviceName,
+                        specificationPaths,
+                        maybeGrpcSettings,
+                        useProxy) =>
+              val grpcSettings =
+                maybeGrpcSettings.fold(Map.empty[String, ProtobufSetting]) {
+                  settings =>
+                    settings.protobufFiles.view.mapValues {
+                      case setting @ ProtobufSetting(_, servers)
+                          if servers.isEmpty =>
+                        setting.copy(servers = settings.servers)
+                      case setting => setting
+                    }.toMap
+                }
+              (repository.copy(specificationPaths = specificationPaths,
+                               serviceName = serviceName),
+               useProxy,
+               grpcSettings)
+          }
 
       val repoPath = repository.directory.get.toPath
-
-      val toAdd = filterSpecificationsFiles(repositoryWithNewPath, files, rootUseProxy)
+      val toAdd = filterSpecificationsFiles(repositoryWithNewPath,
+                                            files,
+                                            grpcSettings,
+                                            rootUseProxy)
       val toDelete = repository.specificationPaths.filter { spec =>
-        !repositoryWithNewPath.specificationPaths.exists(newSpec => newSpec.path == spec.path)
+        !repositoryWithNewPath.specificationPaths.exists(newSpec =>
+          newSpec.path == spec.path)
       }.map { spec =>
         spec.path
           .pipe(repoPath.resolve)
@@ -88,39 +126,55 @@ object Git extends LazyLogging {
       (repositoryWithNewPath -> events -> sha1)
   }
 
-  private val latestSha1: Flow[FilesWithShaWithEvent, FilesWithShaWithEvent] = AkkaFlow[FilesWithShaWithEvent].flatMapConcat {
-    case ((repository, files), _) =>
-      execute("rev-parse" :: "--verify" :: repository.branch :: Nil, repository.directory).flatMapConcat {
-        case Right(sha1 :: _) => AkkaSource.single(repository -> files, Some(sha1))
-        case Right(Nil) =>
-          logger.warn("Error during latest sha1")
-          AkkaSource.empty[FilesWithShaWithEvent]
-        case Left(exception) =>
-          logger.warn("Error during latest sha1", exception)
-          AkkaSource.empty[FilesWithShaWithEvent]
-      }
-  }
+  private val latestSha1: Flow[FilesWithShaWithEvent, FilesWithShaWithEvent] =
+    AkkaFlow[FilesWithShaWithEvent].flatMapConcat {
+      case ((repository, files), _) =>
+        execute("rev-parse" :: "--verify" :: repository.branch :: Nil,
+                repository.directory).flatMapConcat {
+          case Right(sha1 :: _) =>
+            AkkaSource.single(repository -> files, Some(sha1))
+          case Right(Nil) =>
+            logger.warn("Error during latest sha1")
+            AkkaSource.empty[FilesWithShaWithEvent]
+          case Left(exception) =>
+            logger.warn("Error during latest sha1", exception)
+            AkkaSource.empty[FilesWithShaWithEvent]
+        }
+    }
 
-  def fromSettings(cacheDuration: FiniteDuration, repositories: Seq[RepositorySettings]): Source[ServiceEvent] =
+  def fromSettings(cacheDuration: FiniteDuration,
+                   repositories: Seq[RepositorySettings])(implicit
+      protobufCompiler: ProtobufCompiler): Source[ServiceEvent] =
     fromSource(
       cacheDuration,
       AkkaSource(repositories.collect {
-        case RepositorySettings(Location.Uri(uri), branch, specificationPaths, useProxy) =>
-          Repository(uri, branch.getOrElse(DefaultBranch), specificationPaths.map(UnnamedSpecification(_)), useProxy = useProxy)
+        case RepositorySettings(Location.Uri(uri),
+                                branch,
+                                specificationPaths,
+                                useProxy) =>
+          Repository(uri,
+                     branch.getOrElse(DefaultBranch),
+                     specificationPaths.map(UnnamedSpecification(_)),
+                     useProxy = useProxy)
       })
     )
 
-  def fromSource(cacheDuration: FiniteDuration, repositories: Source[Repository]): Source[ServiceEvent] =
+  def fromSource(cacheDuration: FiniteDuration,
+                 repositories: Source[Repository])(implicit
+      protobufCompiler: ProtobufCompiler): Source[ServiceEvent] =
     AkkaSource.fromGraph(GraphDSL.create() { implicit builder =>
       import GraphDSL.Implicits._
 
       val delayFlow: Flow[FilesWithShaWithEvent, RepositoryWithSha] =
-        AkkaFlow[FilesWithShaWithEvent].delay(cacheDuration).map { case ((repository, _), sha1) => repository -> sha1 }
-      val init      = builder.add(repositories.map(_ -> None))
-      val outbound  = builder.add(outboundFlow.async)
-      val delay     = builder.add(delayFlow)
-      val merge     = builder.add(Merge[RepositoryWithSha](2))
-      val broadcast = builder.add(Broadcast[FilesWithShaWithEvent](2, eagerCancel = true))
+        AkkaFlow[FilesWithShaWithEvent].delay(cacheDuration).map {
+          case ((repository, _), sha1) => repository -> sha1
+        }
+      val init     = builder.add(repositories.map(_ -> None))
+      val outbound = builder.add(outboundFlow.async)
+      val delay    = builder.add(delayFlow)
+      val merge    = builder.add(Merge[RepositoryWithSha](2))
+      val broadcast =
+        builder.add(Broadcast[FilesWithShaWithEvent](2, eagerCancel = true))
 
       // format: OFF
       init ~> merge ~> cloneOrFetch ~> findSpecificationFiles ~> latestSha1 ~> broadcast ~> outbound
@@ -130,7 +184,8 @@ object Git extends LazyLogging {
     })
 
   private def cloneRepository(repo: Repository): Source[Repository] = {
-    val repoWithDirectory = repo.copy(directory = Some(Files.createTempDirectory("restui-git-clone").toFile))
+    val repoWithDirectory = repo.copy(directory =
+      Some(Files.createTempDirectory("restui-git-clone").toFile))
     execute(
       "clone" :: "--branch" :: repo.branch :: "--single-branch" :: "--depth" :: "1" :: repo.uri :: repoWithDirectory.directory.get.getAbsolutePath :: Nil).flatMapConcat {
       case Right(_) => AkkaSource.single(repoWithDirectory)
@@ -148,12 +203,15 @@ object Git extends LazyLogging {
         AkkaSource.empty[Repository]
     }
 
-  private def execute(args: List[String], cwd: Option[File] = None): Source[Either[String, List[String]]] =
+  private def execute(
+      args: List[String],
+      cwd: Option[File] = None): Source[Either[String, List[String]]] =
     AkkaSource.single(ProcessArgs(GitCmd :: args, cwd)).via(Process.execute)
 
   private def findRestUIConfig(path: Path): Option[RestUI] =
     Try {
-      val yaml = new String(Files.readAllBytes(path.resolve(".restui.yaml")), StandardCharsets.UTF_8)
+      val yaml = new String(Files.readAllBytes(path.resolve(".restui.yaml")),
+                            StandardCharsets.UTF_8)
       parser
         .parse(yaml)
         .flatMap(_.as[RestUI])
@@ -166,29 +224,39 @@ object Git extends LazyLogging {
         None
     }
 
-  private def filterSpecificationsFiles(repo: Repository,
-                                        files: List[(Option[String], Path)],
-                                        rootUseProxy: Option[Boolean]): List[GitFileEvent] = {
+  private def filterSpecificationsFiles(
+      repo: Repository,
+      files: List[(Option[String], Path)],
+      grpcSettings: Map[String, ProtobufSetting],
+      rootUseProxy: Option[Boolean]): List[GitFileEvent] = {
     val repoPath = repo.directory.get.toPath
     val specificationPaths = repo.specificationPaths.map {
-      case UnnamedSpecification(path)               => (None, repoPath.resolve(path).normalize, rootUseProxy)
-      case NamedSpecification(name, path, useProxy) => (Some(name), repoPath.resolve(path).normalize, useProxy.orElse(rootUseProxy))
+      case UnnamedSpecification(path) =>
+        (None, repoPath.resolve(path).normalize, rootUseProxy)
+      case NamedSpecification(name, path, useProxy) =>
+        (Some(name),
+         repoPath.resolve(path).normalize,
+         useProxy.orElse(rootUseProxy))
     }
     files.collect {
-      Function.unlift {
-        case (_, file) =>
-          specificationPaths.find {
-            case (_, specificationPath, _) =>
-              file.startsWith(specificationPath)
-          }.map {
-            case (name, _, useProxy) =>
-              GitFileEvent.Upserted(name, file, useProxy)
+      Function.unlift { case (_, file) =>
+        specificationPaths.find { case (_, specificationPath, _) =>
+          file.startsWith(specificationPath)
+        }.map { case (name, _, useProxy) =>
+          GitFileEvent.UpsertedOpenApi(name, file, useProxy)
+        }.orElse {
+          grpcSettings.find { case (path, _) =>
+            path.pipe(repoPath.resolve).normalize.pipe(file.startsWith)
+          }.map { case (_, ProtobufSetting(name, servers)) =>
+            GitFileEvent.UpsertedGrpc(name, file, servers)
           }
+        }
       }
     }
   }
 
-  private def retrieveSpecificationFiles(repoWithFiles: FileEvents): Source[ServiceEvent] = {
+  private def retrieveSpecificationFiles(repoWithFiles: FileEvents)(implicit
+      protobufCompiler: ProtobufCompiler): Source[ServiceEvent] = {
     val (repo, files) = repoWithFiles
 
     val uri         = akka.http.scaladsl.model.Uri(repo.uri)
@@ -197,19 +265,34 @@ object Git extends LazyLogging {
     AkkaSource(files)
       .flatMapConcat(loadFile(_).async)
       .map {
-        case Right((maybeName, path, content, maybeUseProxy)) =>
-          val serviceName = maybeName.getOrElse(repo.serviceName.getOrElse(nameFromUri))
-          val filePath    = repo.directory.get.toPath.relativize(path).toString
-          val id          = s"$nameFromUri:$filePath"
-          val provider    = uri.authority.host.address.split('.').head
-          val useProxy    = maybeUseProxy.getOrElse(repo.useProxy)
+        case LoadedContent.OpenApi(maybeName, path, content, maybeUseProxy) =>
+          val serviceName =
+            maybeName.getOrElse(repo.serviceName.getOrElse(nameFromUri))
+          val filePath = repo.directory.get.toPath.relativize(path).toString
+          val id       = s"$nameFromUri:$filePath"
+          val provider = uri.authority.host.address.split('.').head
+          val useProxy = maybeUseProxy.getOrElse(repo.useProxy)
           val metadata =
             Map(
               Metadata.Provider -> provider,
               Metadata.File     -> filePath
             )
-          ServiceEvent.ServiceUp(Service(id, serviceName, content, metadata, useProxy))
-        case Left(path) =>
+          ServiceEvent.ServiceUp(
+            Service.OpenApi(id, serviceName, content, metadata, useProxy))
+        case LoadedContent.Grpc(maybeName, path, schema, servers) =>
+          val serviceName =
+            maybeName.getOrElse(repo.serviceName.getOrElse(nameFromUri))
+          val filePath = repo.directory.get.toPath.relativize(path).toString
+          val id       = s"$nameFromUri:$filePath"
+          val provider = uri.authority.host.address.split('.').head
+          val metadata =
+            Map(
+              Metadata.Provider -> provider,
+              Metadata.File     -> filePath
+            )
+          ServiceEvent.ServiceUp(
+            Service.Grpc(id, serviceName, schema, servers, metadata))
+        case LoadedContent.Deleted(path) =>
           val filePath = repo.directory.get.toPath.relativize(path).toString
           val id       = s"$nameFromUri:$filePath"
           ServiceEvent.ServiceDown(id)
@@ -218,17 +301,30 @@ object Git extends LazyLogging {
 
   }
 
-  private def loadFile(event: GitFileEvent): Source[Either[Path, (Option[String], Path, String, Option[Boolean])]] =
+  private def loadFile(event: GitFileEvent)(implicit
+      protobufCompiler: ProtobufCompiler): Source[LoadedContent] =
     event match {
       case GitFileEvent.Deleted(path) =>
-        AkkaSource.single(Left(path))
-      case GitFileEvent.Upserted(maybeName, path, useProxy) =>
-        Try(new String(Files.readAllBytes(path), StandardCharsets.UTF_8)) match {
+        AkkaSource.single(LoadedContent.Deleted(path))
+      case GitFileEvent.UpsertedOpenApi(maybeName, path, useProxy) =>
+        Try(
+          new String(Files.readAllBytes(path), StandardCharsets.UTF_8)) match {
           case Success(content) =>
-            AkkaSource.single(Right((maybeName, path, content, useProxy)))
+            AkkaSource.single(
+              LoadedContent.OpenApi(maybeName, path, content, useProxy))
           case Failure(exception) =>
             logger.warn(s"Error while reading $path", exception)
-            AkkaSource.single(Left(path))
+            AkkaSource.single(LoadedContent.Deleted(path))
+        }
+      case GitFileEvent.UpsertedGrpc(maybeName, path, servers) =>
+        path.toSchema match {
+          case Right(schema) =>
+            AkkaSource.single(
+              LoadedContent.Grpc(maybeName, path, schema, servers))
+          case Left(exception) =>
+            logger.warn(s"Error while reading $path", exception)
+            AkkaSource.single(LoadedContent.Deleted(path))
+
         }
     }
 }

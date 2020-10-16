@@ -6,7 +6,8 @@ import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class ConfigurationSpec extends AnyWordSpec with Matchers {
-  private def checkConfiguration(config: Config, value: String = "configuration"): Assertion =
+  private def checkConfiguration(config: Config,
+                                 value: String = "configuration"): Assertion =
     config.getString("test") shouldBe value
 
   "Getting the configuration" when {
@@ -16,19 +17,25 @@ class ConfigurationSpec extends AnyWordSpec with Matchers {
     "providing an external configuration" should {
       "fallback to default configuration" when {
         "the file does not exist" in {
-          checkConfiguration(Configuration.config(Some("not-existing-file.conf")))
+          checkConfiguration(
+            Configuration.config(Some("not-existing-file.conf")))
         }
         "the file is not a valid HOCON file" in {
-          checkConfiguration(Configuration.config(Some("src/test/resources/invalid.conf")))
+          checkConfiguration(
+            Configuration.config(Some("src/test/resources/invalid.conf")))
         }
       }
       "get the value from the file" in {
-        checkConfiguration(Configuration.config(Some("src/test/resources/valid.conf")), "valid")
+        checkConfiguration(
+          Configuration.config(Some("src/test/resources/valid.conf")),
+          "valid")
       }
       "get the value from the system property over the file" in {
         System.setProperty("test", "property")
         ConfigFactory.invalidateCaches()
-        checkConfiguration(Configuration.config(Some("src/test/resources/valid.conf")), "property")
+        checkConfiguration(
+          Configuration.config(Some("src/test/resources/valid.conf")),
+          "property")
       }
     }
   }

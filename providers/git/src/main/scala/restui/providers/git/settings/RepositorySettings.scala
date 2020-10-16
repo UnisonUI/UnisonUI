@@ -2,9 +2,9 @@ package restui.providers.git.settings
 
 import java.{util => ju}
 
-import scala.jdk.CollectionConverters._
-
 import com.typesafe.config.{Config, ConfigFactory}
+
+import scala.jdk.CollectionConverters._
 
 final case class RepositorySettings(location: Location,
                                     branch: Option[String] = None,
@@ -13,11 +13,14 @@ final case class RepositorySettings(location: Location,
 
 object RepositorySettings {
 
-  def getListOfRepositories(config: Config, path: String): List[RepositorySettings] =
+  def getListOfRepositories(config: Config,
+                            path: String): List[RepositorySettings] =
     if (config.hasPath(path))
       config.getAnyRefList(path).asScala.toList.map {
-        case location: String          => RepositorySettings(Location.fromString(location), useProxy = false)
-        case config: ju.Map[String, _] => fromConfig(ConfigFactory.parseMap(config))
+        case location: String =>
+          RepositorySettings(Location.fromString(location), useProxy = false)
+        case config: ju.Map[String, _] =>
+          fromConfig(ConfigFactory.parseMap(config))
       }
     else Nil
 
@@ -27,7 +30,8 @@ object RepositorySettings {
       if (config.hasPath("branch")) Some(config.getString("branch"))
       else None
     val specificationPaths =
-      if (config.hasPath("specification-paths")) config.getStringList("specification-paths").asScala.toList
+      if (config.hasPath("specification-paths"))
+        config.getStringList("specification-paths").asScala.toList
       else Nil
     val useProxy = config.hasPath("use-proxy") && config.getBoolean("use-proxy")
     RepositorySettings(location, branch, specificationPaths, useProxy)
@@ -49,7 +53,10 @@ object Location {
   }
   def fromString(location: String): Location =
     if (location.isEmpty) Regex(DefaultRegex)
-    else RegexPattern.findFirstMatchIn(location).fold[Location](Uri(location))(m => Regex(m.group(1)))
+    else
+      RegexPattern
+        .findFirstMatchIn(location)
+        .fold[Location](Uri(location))(m => Regex(m.group(1)))
 
   final case class Uri(uri: String) extends Location {
     override def isMatching(input: String): Boolean = uri == input

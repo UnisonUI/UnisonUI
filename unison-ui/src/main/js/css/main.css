@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*, *:after, *:before { -webkit-box-sizing: border-box; box-sizing: border-box; }
+
+html {
+  @apply h-full;
+}
+
+body {
+  @apply font-body w-full h-full text-gray-800 bg-gray-200;
+  margin: inherit;
+}
+
+#app {
+  @apply h-full;
+}
+
+main {
+  @apply h-full px-32 pt-16;
+  overflow: auto;
+}
+
+#no-service {
+  @apply absolute text-6xl font-black;
+  left: 25%;
+  top: 50%;
+}
+
+.bm-burger-button {
+  position: fixed;
+  width: 36px;
+  height: 30px;
+  left: 36px;
+  top: 36px;
+}
+
+.bm-burger-bars {
+  @apply bg-gray-800;
+}
+
+.bm-cross-button {
+  @apply nm-flat-gray-800 rounded-full;
+
+  &:hover {
+   @apply nm-flat-gray-800-lg;
+  }
+}
+
+.bm-cross {
+  @apply bg-gray-200;
+}
+
+.bm-menu-wrap {
+  position: fixed;
+  height: 100%;
+}
+
+.bm-menu {
+  @apply bg-gray-800;
+  font-size: 1.15em;
+}
+
+.bm-morph-shape {
+  fill: #373a47;
+}
+
+.bm-item-list {
+  padding: 0.8em;
+}
+
+.bm-overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.bm-item {
+  @apply text-xl text-gray-200;
+  @apply inline-block nm-flat-gray-800 rounded-lg;
+  @apply p-4 mb-5;
+  @apply transition duration-500 ease-in-out;
+ 
+  &:hover {
+   @apply nm-flat-gray-800-lg;
+  }
+
+  &:focus {
+    @apply outline-none;
+  }
+
+  &.active {
+    @apply nm-inset-gray-800 cursor-default;
+    a {
+      @apply text-red-700;
+    }
+  }
+
+  a {
+    transition: color 0.3s;
+    &:hover, &:focus {
+      @apply text-red-700;
+    }
+ 
+  }
+  .title {
+    .name {
+      @apply mr-4;
+    }
+
+    .type {
+      @apply rounded-full font-semibold text-xs px-2 tracking-wide inline-block capitalize;
+      &[data-type="openapi"] {
+        @apply bg-teal-200 text-teal-800;
+      }
+      &[data-type="grpc"] {
+        @apply bg-blue-200 text-blue-800;
+      }
+    }
+  }
+}
+
+h1.bm-item {
+  @apply text-4xl;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.metadata {
+  display: none;
+
+  &.open {
+    display: block;
+  }
+  li {
+    @apply text-sm;
+  }
+ }
+
+ .search {
+  @apply border-0 appearance-none rounded-full;
+  @apply w-full my-6 leading-tight nm-inset-gray-800;
+  @apply text-sm text-gray-200 cursor-text;
+  &:hover {
+   @apply nm-inset-gray-800;
+  }
+ }

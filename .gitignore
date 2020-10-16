@@ -58,7 +58,8 @@ project/project/project/metals.sbt
 *.log
 *.metals
 .bloop/
+.bsp/
 .metals/
 node_modules/
-/rest-ui/src/main/resources/web/
+/unison-ui/src/main/resources/web/
 # End of https://www.gitignore.io/api/sbt,scala,intellij

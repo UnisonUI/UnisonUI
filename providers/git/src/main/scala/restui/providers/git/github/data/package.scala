@@ -5,8 +5,8 @@ import cats.syntax.functor._
 import io.circe.{Decoder, Encoder, HCursor, Json}
 
 package object data {
-  sealed trait GrahpQL
-  final case class Error(messages: List[String]) extends GrahpQL
+  sealed trait GraphQL
+  final case class Error(messages: List[String]) extends GraphQL
 
   object Error {
     implicit val encoder: Encoder[Error] = (error: Error) =>
@@ -27,7 +27,8 @@ package object data {
         .map(Error(_))
   }
 
-  final case class Repository(repositories: Seq[Node], cursor: Option[String]) extends GrahpQL
+  final case class Repository(repositories: Seq[Node], cursor: Option[String])
+      extends GraphQL
   final case class Node(name: String, url: String, branch: String)
 
   object Repository {
@@ -56,10 +57,12 @@ package object data {
       )
 
     implicit val decoder: Decoder[Repository] = (cursor: HCursor) => {
-      val hcursor  = cursor.downField("data").downField("viewer").downField("repositories")
+      val hcursor =
+        cursor.downField("data").downField("viewer").downField("repositories")
       val pageInfo = hcursor.downField("pageInfo")
       val maybeCursor =
-        if (pageInfo.get[Boolean]("hasNextPage").getOrElse(false)) pageInfo.get[String]("endCursor").toOption
+        if (pageInfo.get[Boolean]("hasNextPage").getOrElse(false))
+          pageInfo.get[String]("endCursor").toOption
         else None
       hcursor
         .get[List[Json]]("nodes")
@@ -67,16 +70,22 @@ package object data {
           val nodes = jsonNodes.flatMap { json =>
             val cursor = json.hcursor
             for {
-              name   <- cursor.get[String]("nameWithOwner").toOption
-              url    <- cursor.get[String]("url").toOption
-              branch <- cursor.downField("defaultBranchRef").get[String]("name").toOption
+              name <- cursor.get[String]("nameWithOwner").toOption
+              url  <- cursor.get[String]("url").toOption
+              branch <-
+                cursor
+                  .downField("defaultBranchRef")
+                  .get[String]("name")
+                  .toOption
             } yield Node(name, url, branch)
           }
           Repository(nodes, maybeCursor)
         }
     }
   }
-  object GrahpQL {
-    implicit val decoder: Decoder[GrahpQL] = List[Decoder[GrahpQL]](Decoder[Error].widen, Decoder[Repository].widen).reduceLeft(_ or _)
+  object GraphQL {
+    implicit val decoder: Decoder[GraphQL] =
+      List[Decoder[GraphQL]](Decoder[Error].widen, Decoder[Repository].widen)
+        .reduceLeft(_ or _)
   }
 }

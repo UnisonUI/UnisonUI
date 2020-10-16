@@ -10,13 +10,14 @@ object BaseSettings {
 
   lazy val defaultSettings = Seq(
     startYear := Some(2020),
-    organization := "restui",
+    organization := "unisonui",
     scalaVersion := ScalaVersion,
     parallelExecution in Test := false,
     javacOptions ++= Seq("-source", "11"),
     fork in Test := true,
     cancelable in Global := true,
-    addCompilerPlugin("org.scalameta" % "semanticdb-scalac" % "4.3.22" cross CrossVersion.full),
+    addCompilerPlugin(
+      "org.scalameta" % "semanticdb-scalac" % "4.3.24" cross CrossVersion.full),
     scalacOptions += "-Yrangepos",
     test in assembly := {},
     scalacOptions in Compile ++= ScalacOptions.options,

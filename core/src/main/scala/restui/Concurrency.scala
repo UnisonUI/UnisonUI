@@ -1,5 +1,5 @@
 package restui
 
 object Concurrency {
-  val AvailableCore = Runtime.getRuntime().availableProcessors()
+  val AvailableCore: Int = Runtime.getRuntime.availableProcessors()
 }

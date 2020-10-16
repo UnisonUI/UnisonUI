@@ -2,7 +2,9 @@ package restui.providers.webhook.settings
 
 import com.typesafe.config.Config
 
-final case class Settings(interface: String, port: Int, selfSpecification: Boolean)
+final case class Settings(interface: String,
+                          port: Int,
+                          selfSpecification: Boolean)
 
 object Settings {
   private val Namespace = "restui.provider.webhook"

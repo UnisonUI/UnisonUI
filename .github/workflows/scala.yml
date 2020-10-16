@@ -31,23 +31,18 @@ jobs:
         restore-keys: ${{ runner.os }}-m2-
     - name: Run tests
       run: sbt ";checkFix; checkFmt; coverage; test; coverageReport; coverageAggregate"
-    - name: Copy test reports
-      run: |
-        mkdir target/test-reports
-        cp core/target/test-reports/* target/test-reports || true
-        cp rest-ui/target/test-reports/* target/test-reports || true
-        cp service-discovery/docker/target/test-reports/* target/test-reports || true
-        cp service-discovery/kubernetes/target/test-reports/* target/test-reports || true
     - name: Codecov
       uses: codecov/codecov-action@v1.0.13
     - name: action-slack
       uses: 8398a7/action-slack@v3
       with:
         author_name: Github action
+        icon_emoji: ':octocat:'
         mention: 'here'
         if_mention: failure
         status: ${{ job.status }}
-        fields: message,commit,author
+        fields: message,commit,author,took
+      if: always()
       env:
         GITHUB_TOKEN: ${{ github.token }}
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

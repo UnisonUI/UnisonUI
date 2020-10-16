@@ -1,88 +1,190 @@
 package restui.providers.kubernetes
 
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
-
-import akka.actor.{Actor, ActorLogging, ActorSystem}
+import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.{ActorSystem, Behavior}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model.HttpRequest
 import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.stream.scaladsl.SourceQueueWithComplete
+import com.typesafe.scalalogging.LazyLogging
+import restui.grpc.ReflectionClient
 import restui.models._
 import skuber.{Service => KubernetesService}
 
-class ServiceActor(settingsLabels: Labels, queue: SourceQueueWithComplete[ServiceEvent]) extends Actor with ActorLogging {
-  import ServiceActor._
-  private implicit val system: ActorSystem                = context.system
-  private implicit val executionContext: ExecutionContext = context.dispatcher
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
+import scala.util.chaining._
 
-  override def receive: Actor.Receive = handleMessage(Map.empty)
+object ServiceActor extends LazyLogging {
+  private final case class ServiceFoundWithFile(
+      id: String,
+      service: String,
+      specificationPath: String,
+      address: Option[String],
+      useProxyValue: Boolean,
+      grpcServer: Option[Service.Grpc.Server])
+  private val Namespace = "namespace"
 
-  private def handleMessage(servicesByNamespaces: Map[String, List[KubernetesService]]): Receive = {
-    case (namespace: String, newServices: List[KubernetesService]) =>
-      servicesByNamespaces.get(namespace) match {
-        case None =>
-          val filteredServices = newServices.filter(service => getLabels(service.metadata.labels).isDefined)
-          filteredServices.flatMap(createEndpoint).foreach {
-            case (id, serviceName, specificationPath, file, useProxy) =>
-              val metadata = Map(Metadata.Provider -> "kubernetes", Metadata.File -> specificationPath, Namespace -> namespace)
-              downloadFile(Service(id, serviceName, file, metadata, useProxy = useProxy))
-          }
-          context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
-        case Some(services) =>
-          val filteredServices = newServices.filter(service => getLabels(service.metadata.labels).isDefined)
-          val removed          = services.filter(service => !filteredServices.contains(service))
-          val added            = filteredServices.filter(service => !services.contains(service))
-
-          removed.flatMap(createEndpoint).foreach { case (id, _, _, _, _) => queue.offer(ServiceEvent.ServiceDown(id)) }
-          added.flatMap(createEndpoint).foreach {
-            case (id, serviceName, specificationPath, file, useProxy) =>
-              val metadata = Map(Metadata.Provider -> "kubernetes", Metadata.File -> specificationPath, Namespace -> namespace)
-              downloadFile(Service(id, serviceName, file, metadata, useProxy = useProxy))
-          }
-
-          context.become(handleMessage(servicesByNamespaces + (namespace -> filteredServices)))
-      }
-      sender() ! Ack
-    case Init     => sender() ! Ack
-    case Complete => sender() ! Ack
+  sealed trait Message
+  object Message {
+    final case class Add(namespace: String, services: List[KubernetesService])
+        extends Message
   }
+  def apply(settingsLabels: Labels,
+            queue: SourceQueueWithComplete[ServiceEvent],
+            servicesByNamespaces: Map[String, List[KubernetesService]] =
+              Map.empty)(implicit
+      system: ActorSystem[_],
+      executionContext: ExecutionContext,
+      reflectionClient: ReflectionClient): Behavior[Message] =
+    Behaviors.receive { (_, message) =>
+      message match {
+        case Message.Add(namespace, newServices) =>
+          val filteredServices = newServices.filter(service =>
+            getLabels(settingsLabels, service.metadata.labels).isDefined)
+          servicesByNamespaces
+            .get(namespace)
+            .fold(filteredServices) { services =>
+              services
+                .filter(service => !filteredServices.contains(service))
+                .flatMap(createEndpoint(settingsLabels, _))
+                .foreach { service =>
+                  queue.offer(ServiceEvent.ServiceDown(service.id))
+                }
 
-  private def downloadFile(service: Service): Future[Unit] =
+              filteredServices
+                .filter(service => !services.contains(service))
+
+            }
+            .pipe(notifyServiceEvent(_, settingsLabels, namespace, queue))
+
+          apply(settingsLabels,
+                queue,
+                servicesByNamespaces + (namespace -> filteredServices))
+      }
+    }
+
+  private def notifyServiceEvent(
+      services: List[KubernetesService],
+      settingsLabels: Labels,
+      namespace: String,
+      queue: SourceQueueWithComplete[ServiceEvent])(implicit
+      system: ActorSystem[_],
+      executionContext: ExecutionContext,
+      reflectionClient: ReflectionClient) =
+    services
+      .flatMap(createEndpoint(settingsLabels, _))
+      .foreach {
+        case ServiceFoundWithFile(id,
+                                  serviceName,
+                                  specificationPath,
+                                  maybeFile,
+                                  useProxy,
+                                  grpcServer) =>
+          for {
+            _ <- maybeFile.fold(Future.unit) { file =>
+              downloadFile(
+                queue,
+                Service
+                  .OpenApi(id,
+                           serviceName,
+                           file,
+                           Map(Metadata.Provider -> "kubernetes",
+                               Metadata.File     -> specificationPath,
+                               Namespace         -> namespace),
+                           useProxy = useProxy)
+              )
+            }
+            _ <- loadSchema(queue, id, serviceName, namespace, grpcServer)
+          } yield ()
+      }
+
+  private def createEndpoint(
+      settingsLabels: Labels,
+      service: KubernetesService): List[ServiceFoundWithFile] =
+    getLabels(settingsLabels, service.metadata.labels).map {
+      case Labels(protocol,
+                  port,
+                  specificationPath,
+                  useProxy,
+                  grpcPort,
+                  grpcTls) =>
+        val address = Try(port.toInt).toOption.flatMap {
+          case 0    => None
+          case port => Some(port)
+        }.map(port =>
+          s"$protocol://${service.copySpec.clusterIP}:$port$specificationPath")
+        val useProxyValue = Try(useProxy.toBoolean).getOrElse(false)
+        val server = grpcPort
+          .flatMap(port => Try(port.toInt).toOption)
+          .map(port =>
+            Service.Grpc.Server(service.copySpec.clusterIP,
+                                port,
+                                Try(grpcTls.toBoolean).getOrElse(false)))
+        ServiceFoundWithFile(service.uid,
+                             service.name,
+                             specificationPath,
+                             address,
+                             useProxyValue,
+                             server)
+    }.toList
+
+  private def downloadFile(queue: SourceQueueWithComplete[ServiceEvent],
+                           openapi: Service.OpenApi)(implicit
+      system: ActorSystem[_],
+      executionContext: ExecutionContext): Future[Unit] =
     Http()
-      .singleRequest(HttpRequest(uri = service.file))
+      .singleRequest(HttpRequest(uri = openapi.file))
       .flatMap { response =>
         Unmarshaller.stringUnmarshaller(response.entity)
       }
       .flatMap { content =>
-        queue.offer(ServiceEvent.ServiceUp(service.copy(file = content))).map(_ => ())
+        queue
+          .offer(ServiceEvent.ServiceUp(openapi.copy(file = content)))
+          .map(_ => ())
       }
       .recover { throwable =>
-        log.warning("There was an error while download the file {}", throwable)
+        logger.warn("There was an error while download the file {}", throwable)
       }
-
-  private def createEndpoint(service: KubernetesService): Option[ServiceFoundWithFile] =
-    getLabels(service.metadata.labels).map {
-      case Labels(protocol, port, specificationPath, useProxy) =>
-        val address       = s"$protocol://${service.copySpec.clusterIP}:$port$specificationPath"
-        val useProxyValue = Try(useProxy.toBoolean).getOrElse(false)
-        (service.uid, service.name, specificationPath, address, useProxyValue)
+  private def loadSchema(queue: SourceQueueWithComplete[ServiceEvent],
+                         id: String,
+                         serviceName: String,
+                         namespace: String,
+                         grpcServer: Option[Service.Grpc.Server])(implicit
+      reflectionClient: ReflectionClient,
+      executionContext: ExecutionContext): Future[Unit] =
+    grpcServer.fold(Future.unit) { server =>
+      val address = s"${server.address}:${server.port}"
+      reflectionClient
+        .loadSchema(server)
+        .flatMap { schema =>
+          val metadata = Map(
+            Metadata.Provider -> "kubernetes",
+            Metadata.File     -> address,
+            Namespace         -> namespace
+          )
+          queue
+            .offer(ServiceEvent.ServiceUp(Service
+              .Grpc(id, serviceName, schema, Map(address -> server), metadata)))
+            .map(_ => ())
+        }
+        .recover { throwable =>
+          logger.warn("There was an error while retrieving the schema {}",
+                      throwable)
+        }
     }
 
-  private def getLabels(labels: Map[String, String]): Option[Labels] =
+  private def getLabels(settingsLabels: Labels,
+                        labels: Map[String, String]): Option[Labels] =
     for {
       port <- labels.get(settingsLabels.port)
-      specificationPath = labels.get(settingsLabels.specificationPath).getOrElse("/specification.yaml")
-      protocol          = labels.get(settingsLabels.protocol).getOrElse("http")
-      useProxy          = labels.get(settingsLabels.useProxy).getOrElse("false")
-    } yield Labels(protocol, port, specificationPath, useProxy)
-
-}
-
-object ServiceActor {
-  private type ServiceFoundWithFile = (String, String, String, String, Boolean)
-  private val Namespace = "namespace"
-  case object Init
-  case object Complete
-  case object Ack
+      specificationPath =
+        labels.getOrElse(settingsLabels.specificationPath,
+                         "/specification.yaml")
+      protocol = labels.getOrElse(settingsLabels.protocol, "http")
+      useProxy = labels.getOrElse(settingsLabels.useProxy, "false")
+      grpcPort = settingsLabels.grpcPort.flatMap(labels.get(_))
+      grpcTls  = labels.getOrElse(settingsLabels.grpcTls, "false")
+    } yield
+      Labels(protocol, port, specificationPath, useProxy, grpcPort, grpcTls)
 }

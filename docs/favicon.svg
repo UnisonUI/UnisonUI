@@ -3,13 +3,15 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 32 32" style="enable-background:new 0 0 32 32;" xml:space="preserve">
 <style type="text/css">
-	.st0{fill:#1F729B;}
-	.st1{font-family:'FiraCode-Bold';}
-	.st2{font-size:39.4369px;}
-	.st3{font-size:26.2913px;}
+	.st0{fill:#3182CE;}
 </style>
+<circle class="st0" cx="16.1" cy="16" r="15"/>
 <g>
-	<text transform="matrix(0.5796 0 0 1 -4.882812e-04 29.5674)" class="st0 st1 st2">R</text>
-	<text transform="matrix(0.5796 0 0 1 13.7144 29.5674)" class="st0 st1 st3">ui</text>
+	<g>
+		<path d="M24,19.9c0,1.6-0.3,3-1,4.2c-0.7,1.2-1.6,2.2-2.8,2.8c-1.2,0.7-2.6,1-4.3,1c-2.5,0-4.4-0.7-5.9-2.2
+			C8.7,24.3,8,22.4,8,19.9V5.7C8,4.8,8.8,4,9.7,4h0c0.9,0,1.7,0.8,1.7,1.7v13.9c0,3.7,1.5,5.5,4.5,5.5c3,0,4.6-1.8,4.6-5.5l0.1-7.3
+			c0-0.9,0.8-1.7,1.7-1.7l0,0c0.9,0,1.8,0.8,1.8,1.7L24,19.9z"/>
+	</g>
 </g>
+<circle cx="22.1" cy="6" r="2"/>
 </svg>

@@ -1,0 +1,161 @@
+.swagger-ui {
+  .pointer {
+    @apply cursor-pointer;
+  }
+
+  section.models {
+    h4 {
+      @apply flex flex-row;
+      @apply items-center;
+      @apply text-4xl font-bold capitalize cursor-pointer;
+      @apply p-2 mb-3;
+
+      span {
+        @apply flex-1;
+      }
+
+      svg {
+        @apply transition-all duration-500;
+      }
+    }
+    h5 {
+      @apply mt-0 mr-0 ml-2 mb-2;
+      @apply text-4xl;
+    }
+
+    .model {
+      &-jump-to-path {
+        @apply relative;
+        top: 5px;
+      }
+
+      &-container {
+        @apply relative mt-0 mr-4 ml-3 mb-3 rounded-sm;
+        @apply transition-all duration-500 nm-flat-indigo-200;
+
+        &:hover {
+          @apply nm-flat-indigo-300;
+        }
+
+        .models-jump-to-path {
+          @apply absolute opacity-75;
+          top: 8px;
+          right: 5px;
+        }
+      }
+
+      &-box {
+        background: none;
+      }
+    }
+
+  }
+  .model {
+    @apply text-sm font-code font-light;
+
+    td {
+      @apply border-0;
+    }
+
+    .deprecated {
+      span, td {
+        @apply text-gray-700;
+      }
+  
+      > td:first-of-type {
+        @apply line-through;
+      }
+    }
+    &-box {
+      @apply inline-block rounded-lg p-2;
+      @apply bg-gray-800 bg-opacity-25;
+      .models-jump-to-path {
+        @apply relative;
+        top: 4px;
+      }
+
+      &.deprecated {
+        @apply opacity-50;
+      }
+    }
+
+    &-toggle {
+      @apply text-sm relative inline-block;
+      @apply cursor-pointer;
+      @apply transition-transform transform rotate-0 duration-200 ease-in;
+      transform-origin: 50% 50%;
+      top: 6px;
+      margin: auto .3em;
+
+      &.collapsed {
+        @apply transform -rotate-90;
+      }
+
+      &::after {
+        @apply block;
+        width: 20px;
+        height: 20px;
+        content: '';
+        background: url(../mixins/chevron-down.svg) center center no-repeat;
+        background-size: 100%;
+      }
+    }
+
+    &-jump-to-path {
+      @apply relative cursor-pointer;
+      .view-line-link {
+        @apply absolute cursor-pointer;
+        top: -.4em;
+      }
+    }
+
+    &-title {
+      @apply relative;
+      @apply text-xl text-gray-700;
+      &:hover .model-hint {
+        @apply visible;
+      }
+    }
+
+    &-deprecated-warning {
+      @apply text-lg text-red-400 font-bold;
+      @apply mr-4;
+    }
+
+    &-hint {
+      @apply absolute invisible p-1 whitespace-no-wrap;
+      @apply rounded-sm bg-gray-800 bg-opacity-75 text-gray-200;
+    }
+
+    p {
+      @apply mt-0 mr-0 ml-4 mb-4;
+    }
+  }
+
+  span {
+    > span.model {
+      .brace-close {
+        @apply pt-0 pr-0 pl-0 pb-2;
+      }
+    }
+  }
+
+  .prop {
+    &-name {
+      @apply inline-block mr-4;
+    }
+
+    &-type {
+      @apply text-purple-800;
+    }
+
+    &-enum {
+      @apply block;
+    }
+
+    &-format {
+      @apply text-gray-700;
+    }
+  }
+
+}

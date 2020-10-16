@@ -1,8 +1,8 @@
 # RestUI
 
-[![Github Actions](https://github.com/MaethorNaur/restui/workflows/Scala%20CI/badge.svg)](https://github.com/MaethorNaur/restui/actions)
-[![codecov](https://codecov.io/gh/MaethorNaur/restui/branch/master/graph/badge.svg)](https://codecov.io/gh/MaethorNaur/restui)
-[![CodeFactor](https://www.codefactor.io/repository/github/maethornaur/restui/badge)](https://www.codefactor.io/repository/github/maethornaur/restui)
+[![Github Actions](https://github.com/UnisonUI/UnisonUI/workflows/Scala%20CI/badge.svg)](https://github.com/UnisonUI/UnisonUI/actions)
+[![codecov](https://codecov.io/gh/UnisonUI/UnisonUI/branch/master/graph/badge.svg)](https://codecov.io/gh/UnisonUI/UnisonUI)
+[![CodeFactor](https://www.codefactor.io/repository/github/unisonui/UnisonUI/badge)](https://www.codefactor.io/repository/github/unisonui/UnisonUI)
 
 RestUI is intended to be a centralised UI for all your **OpenApi Specification** files.
 
@@ -92,10 +92,12 @@ restui {
 
     // Labels name use to detect RestUI compatible container
     labels {
-      port  = "restui.specification.endpoint.port" // Label specifying the port on which the OpenApi spec is available.
-      service-name = "restui.specification.endpoint.service-name" // Label specifying the service name for RestUI.
-      specification-path = "restui.specification.endpoint.specification-path" // Label of the path where the OpenApi spec file is.
-      use-proxy = "restui.specification.endpoint.use-proxy" // Label of use to enable the usage of the proxy.
+      service-name = "restui.service-name" // Label specifying the service name for RestUI.
+      port  = "restui.specification.port" // Label specifying the port on which the OpenApi spec is available.
+      specification-path = "restui.specification.path" // Label of the path where the OpenApi spec file is.
+      use-proxy = "restui.specification.use-proxy" // Label uses to enable the usage of the proxy.
+      grpc-port = "restui.grpc.port" // Label specifying the port of the grpc endpoint.
+      grpc-tls = "restui.grpc.tls" // Label specifying the grpc endpoint uses tls (false by default).
     }
 
   }
@@ -106,10 +108,12 @@ restui {
     polling-interval = "1 minute" // Interval between each polling
 
     labels {
-      port  = "restui.specification.endpoint.port" // Label specifying the port on which the OpenApi spec is available.
-      protocol = "restui.specification.endpoint.protocol" // Label specifying which protocol the OpenApi spec is exposed.
-      specification-path = "restui.specification.endpoint.specification-path" // Label of the path where the OpenApi spec file is.
-      use-proxy = "restui.specification.endpoint.use-proxy" // Label of use to enable the usage of the proxy.
+      port  = "restui.specification.port" // Label specifying the port on which the OpenApi spec is available.
+      protocol = "restui.specification.eprotocol" // Label specifying which protocol the OpenApi spec is exposed.
+      specification-path = "restui.specification.path" // Label of the path where the OpenApi spec file is.
+      use-proxy = "restui.specification.use-proxy" // Label use to enable the usage of the proxy.
+      grpc-port = "restui.grpc.port" // Label specifying the port of the grpc endpoint.
+      grpc-tls = "restui.grpc.tls" // Label specifying the grpc endpoint uses tls (false by default).
     }
   }
 
@@ -212,8 +216,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    restui.specification.endpoint.port: "80"
-    restui.specification.endpoint.protocol: http
+    restui.specification.port: "80"
+    restui.specification.protocol: http
   name: specification
   namespace: default
 spec:
@@ -322,6 +326,19 @@ specifications:
   - name: "Name used for this file"
     path: "foobar.yaml"
     useProxy: true
+grpc:
+  servers:
+    - address: 127.0.0.1
+      port: 8080
+  protobufs:
+    "path/spec.proto": {}
+    "path/spec2.proto":
+      name: test
+      servers:
+        - address: 127.0.0.1
+          port: 8080
+          name: other server
+          useTls: true
 ```
 
 ```yaml
@@ -361,7 +378,7 @@ To override the default value for a configuration entry (found in the
 `reference.conf` files) just pass the `HOCON` path preceded by `-D`
 
 ```sh
-docker run -p 8081:8081 maethornaur/rest-ui -Drestui.http.port=8081
+docker run -p 8081:8081 ghcr.io/maethornaur/restui -Drestui.http.port=8081
 ```
 
 There is a special case for configuration fields that are arrays.

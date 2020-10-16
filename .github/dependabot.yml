@@ -6,6 +6,6 @@
 version: 2
 updates:
   - package-ecosystem: "npm" # See documentation for possible values
-    directory: "/rest-ui" # Location of package manifests
+    directory: "/unison-ui" # Location of package manifests
     schedule:
       interval: "daily"
