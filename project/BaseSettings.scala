@@ -4,12 +4,14 @@ import sbt._
 import scalafix.sbt.ScalafixPlugin.autoImport._
 import sbtassembly.AssemblyPlugin.autoImport._
 import Dependencies._
+
 object BaseSettings {
 
   val ScalaVersion = "2.13.3"
 
   lazy val defaultSettings = Seq(
     startYear := Some(2020),
+    version := "0.8.1",
     organization := "unisonui",
     scalaVersion := ScalaVersion,
     parallelExecution in Test := false,
