@@ -7,7 +7,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import tech.unisonui.models.Service
 
-class RestUISpec extends AnyFlatSpec with Matchers {
+class ConfigurationSpec extends AnyFlatSpec with Matchers {
   it should "decode a unisonui config file" in {
     val input = """name: "test"
 |specifications:
@@ -17,22 +17,25 @@ class RestUISpec extends AnyFlatSpec with Matchers {
 """.stripMargin
     val unisonui = parser
       .parse(input)
-      .flatMap(_.as[RestUI])
+      .flatMap(_.as[Configuration])
       .valueOr(throw _)
-    unisonui shouldBe RestUI(
+    unisonui shouldBe Configuration(
       "test".some,
-      UnnamedSpecification("file.yaml") :: NamedSpecification("another service",
-                                                              "other.yaml",
-                                                              None) :: Nil,
-      None,
+      OpenApiSetting(
+        UnnamedOpenApi("file.yaml") :: NamedOpenApi("another service",
+                                                    "other.yaml",
+                                                    None) :: Nil,
+        useProxy = false).some,
       None)
   }
   it should "decode a unisonui config file with grpc" in {
     val input = """name: "test"
-|specifications:
-| - "file.yaml"
-| - name: "another service"
-|   path: "other.yaml"
+|openapi:
+|  useProxy: true
+|  specifications:
+|   - "file.yaml"
+|   - name: "another service"
+|     path: "other.yaml"
 |grpc:
 |  protobufs:
 |    "path/spec.proto":
@@ -49,13 +52,15 @@ class RestUISpec extends AnyFlatSpec with Matchers {
 """.stripMargin
     val unisonui = parser
       .parse(input)
-      .flatMap(_.as[RestUI])
+      .flatMap(_.as[Configuration])
       .valueOr(throw _)
-    unisonui shouldBe RestUI(
+    unisonui shouldBe Configuration(
       "test".some,
-      UnnamedSpecification("file.yaml") :: NamedSpecification("another service",
-                                                              "other.yaml",
-                                                              None) :: Nil,
+      OpenApiSetting(
+        UnnamedOpenApi("file.yaml") :: NamedOpenApi("another service",
+                                                    "other.yaml",
+                                                    None) :: Nil,
+        useProxy = true).some,
       GrpcSetting(
         Map.empty,
         Map(
@@ -68,8 +73,7 @@ class RestUISpec extends AnyFlatSpec with Matchers {
             Map("other server" -> Service.Grpc
               .Server("127.0.0.1", 8080, useTls = true)))
         )
-      ).some,
-      None
+      ).some
     )
   }
 

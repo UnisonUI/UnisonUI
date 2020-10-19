@@ -320,13 +320,14 @@ Example:
 
 ```yaml
 name: "Test"
-useProxy: false
-specifications:
-  - "foo-service.yaml"
-  - "/openapi/bar-service.yaml"
-  - name: "Name used for this file"
-    path: "foobar.yaml"
-    useProxy: true
+openapi:
+  useProxy: false
+  specifications:
+    - "foo-service.yaml"
+    - "/openapi/bar-service.yaml"
+    - name: "Name used for this file"
+      path: "foobar.yaml"
+      useProxy: true
 grpc:
   servers:
     - address: 127.0.0.1
@@ -352,7 +353,6 @@ grpc:
 # This list can be a mixed of string (path)
 # or an object:
 #   name: Name of this service
-#   path: Path of files
 #   useProxy: activate the proxy for the interface. Otherwise your service might needs to activate CORS
 specifications = []
 ```

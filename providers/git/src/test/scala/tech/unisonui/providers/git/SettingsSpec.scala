@@ -14,14 +14,12 @@ class SettingsSpec extends AnyWordSpec with Matchers {
   private val longRepositories = """ repositories = [
 |       {
 |         location = "https://github.com/myOrg/Test"
-|         specification-paths = ["test/"]
 |       },
 |     ]
 |""".stripMargin
   private val repositories     = """ repositories = [
 |       {
 |         location = "myOrg/Test"
-|         specification-paths = ["test/"]
 |       },
 |       {
 |         location = "/myOrg\/.+/"
@@ -85,17 +83,10 @@ class SettingsSpec extends AnyWordSpec with Matchers {
                 "https://api.github.com/graphql",
                 1.hours,
                 RepositorySettings(Location.Uri("myOrg/Test"),
-                                   None,
-                                   List("test/"),
-                                   useProxy = false) :: RepositorySettings(
+                                   None) :: RepositorySettings(
                   Location.Regex("myOrg/.+"),
-                  None,
-                  Nil,
-                  useProxy = false) :: RepositorySettings(
-                  Location.Uri("unisonui"),
-                  None,
-                  Nil,
-                  useProxy = false) :: Nil
+                  None) :: RepositorySettings(Location.Uri("unisonui"),
+                                              None) :: Nil
               )
             )
           )
@@ -117,10 +108,7 @@ class SettingsSpec extends AnyWordSpec with Matchers {
                 "test",
                 "https://api.github.com/graphql",
                 1.hours,
-                RepositorySettings(Location.Uri("myOrg/Test"),
-                                   None,
-                                   List("test/"),
-                                   useProxy = false) :: Nil
+                RepositorySettings(Location.Uri("myOrg/Test"), None) :: Nil
               )
             )
           )
@@ -141,16 +129,10 @@ class SettingsSpec extends AnyWordSpec with Matchers {
         List(
           GitSettings(
             RepositorySettings(Location.Uri("myOrg/Test"),
-                               None,
-                               List("test/"),
-                               useProxy = false) :: RepositorySettings(
+                               None) :: RepositorySettings(
               Location.Regex("myOrg/.+"),
-              None,
-              Nil,
-              useProxy = false) :: RepositorySettings(Location.Uri("unisonui"),
-                                                      None,
-                                                      Nil,
-                                                      useProxy = false) :: Nil)
+              None) :: RepositorySettings(Location.Uri("unisonui"),
+                                          None) :: Nil)
         )
       )
     }

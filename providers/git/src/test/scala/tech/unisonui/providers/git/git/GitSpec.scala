@@ -4,6 +4,7 @@ import java.nio.file.{Files, Path, Paths}
 
 import akka.stream.scaladsl.{Sink, Source}
 import base.TestBase
+import cats.syntax.option._
 import org.scalatest.Inside
 import tech.unisonui.models.{Metadata, Service, ServiceEvent}
 import tech.unisonui.protobuf.data.Schema
@@ -12,11 +13,14 @@ import tech.unisonui.providers.git.git.data._
 import scala.concurrent.duration._
 
 class GitSpec extends TestBase with Inside {
-  private val duration  = 50.millis
-  private val specs     = """specifications:
+  private val duration     = 50.millis
+  private val defaultSpecs = """specifications:
+           |  - test
+           |""".stripMargin
+  private val specs        = """specifications:
            |  - test2
            |""".stripMargin
-  private val grpcSpecs = """specifications:
+  private val grpcSpecs    = """specifications:
            |  - test
            |grpc:
            |  servers:
@@ -37,6 +41,7 @@ class GitSpec extends TestBase with Inside {
       .!(hideStdErr)
 
     commit("init", "init")
+    commit(".unisonui.yaml", defaultSpecs)
 
     def commit(file: Path): Unit = {
       Process(Seq("git", "add", file.toAbsolutePath.toString), repo.toFile)
@@ -81,8 +86,7 @@ class GitSpec extends TestBase with Inside {
       val tempDir = Files.createTempDirectory("unisonui-git-test-clone").toFile
       val repo = Repository(s"file://${fixture.repo.toAbsolutePath}",
                             "i-do-not-exists",
-                            List(UnnamedSpecification("test")),
-                            Some(tempDir))
+                            directory = tempDir.some)
 
       val probe = testKit.createTestProbe[ServiceEvent]()
       Git
@@ -102,8 +106,7 @@ class GitSpec extends TestBase with Inside {
             Files.createTempDirectory("unisonui-git-test-clone").toFile
           val repo = Repository(s"file://${fixture.repo.toAbsolutePath}",
                                 "master",
-                                List(UnnamedSpecification("test")),
-                                Some(tempDir))
+                                directory = tempDir.some)
 
           val probe = testKit.createTestProbe[ServiceEvent]()
           Git
@@ -122,8 +125,7 @@ class GitSpec extends TestBase with Inside {
             Files.createTempDirectory("unisonui-git-test-clone").toFile
           val repo = Repository(s"file://${fixture.repo.toAbsolutePath}",
                                 "master",
-                                List(UnnamedSpecification("test")),
-                                Some(tempDir))
+                                directory = tempDir.some)
 
           val probe = testKit.createTestProbe[ServiceEvent]()
           Git
@@ -144,8 +146,38 @@ class GitSpec extends TestBase with Inside {
             Files.createTempDirectory("unisonui-git-test-clone").toFile
           val repo = Repository(s"file://${fixture.repo.toAbsolutePath}",
                                 "master",
-                                List(UnnamedSpecification("test")),
-                                Some(tempDir))
+                                directory = tempDir.some)
+
+          val probe = testKit.createTestProbe[ServiceEvent]()
+          Git
+            .fromSource(duration, Source.single(repo))
+            .to(Sink.foreach(e => probe.ref ! e))
+            .run()
+
+          inside(probe.expectMessageType[ServiceEvent]) {
+            case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _)) =>
+              file shouldBe "test"
+          }
+
+          fixture.commit("test2", "test2")
+          fixture.commit(".unisonui.yaml", specs)
+
+          probe.expectMessageType[ServiceEvent.ServiceDown]
+          inside(probe.expectMessageType[ServiceEvent]) {
+            case ServiceEvent.ServiceUp(Service.OpenApi(_, _, file, _, _)) =>
+              file shouldBe "test2"
+          }
+
+        }
+
+        "a file content has been changed" in {
+          val fixture = new StubRepository {}
+          fixture.commit("test", "test")
+          val tempDir =
+            Files.createTempDirectory("unisonui-git-test-clone").toFile
+          val repo = Repository(s"file://${fixture.repo.toAbsolutePath}",
+                                "master",
+                                directory = tempDir.some)
 
           val probe = testKit.createTestProbe[ServiceEvent]()
           Git
@@ -174,8 +206,7 @@ class GitSpec extends TestBase with Inside {
             Files.createTempDirectory("unisonui-git-test-clone").toFile
           val repo = Repository(s"file://${fixture.repo.toAbsolutePath}",
                                 "master",
-                                List(UnnamedSpecification("test")),
-                                Some(tempDir))
+                                directory = tempDir.some)
 
           val probe = testKit.createTestProbe[ServiceEvent]()
           Git
@@ -200,8 +231,7 @@ class GitSpec extends TestBase with Inside {
             Files.createTempDirectory("unisonui-git-test-clone").toFile
           val repo = Repository(s"file://${fixture.repo.toAbsolutePath}",
                                 "master",
-                                List(UnnamedSpecification("test")),
-                                Some(tempDir))
+                                directory = tempDir.some)
 
           val probe = testKit.createTestProbe[ServiceEvent]()
           Git
@@ -225,8 +255,7 @@ class GitSpec extends TestBase with Inside {
             Files.createTempDirectory("unisonui-git-test-clone").toFile
           val repo = Repository(s"file://${fixture.repo.toAbsolutePath}",
                                 "master",
-                                List(UnnamedSpecification("test")),
-                                Some(tempDir))
+                                directory = tempDir.some)
 
           val probe = testKit.createTestProbe[ServiceEvent]()
           Git
@@ -260,8 +289,7 @@ class GitSpec extends TestBase with Inside {
               Files.createTempDirectory("unisonui-git-test-clone").toFile
             val repo = Repository(s"file://${fixture.repo.toAbsolutePath}",
                                   "master",
-                                  List(UnnamedSpecification("test")),
-                                  Some(tempDir))
+                                  directory = tempDir.some)
 
             val probe = testKit.createTestProbe[ServiceEvent]()
             Git

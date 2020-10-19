@@ -34,7 +34,7 @@ object GithubSettings {
 
   private def correctURI
       : PartialFunction[RepositorySettings, RepositorySettings] = {
-    case repository @ RepositorySettings(Location.Uri(uri), _, _, _) =>
+    case repository @ RepositorySettings(Location.Uri(uri), _) =>
       val path = Uri(uri).path
       val correctedPath =
         if (path.startsWithSlash) path.tail
