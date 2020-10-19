@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 opts=""
 
-while IFS='=' read -r name value ; do
-  if [[ $name == 'RESTUI_'* ]]; then
+while IFS='=' read -r name value; do
+  if [[ $name == 'UNISIOMUI_'* ]]; then
     value=${!name}
     name=${name//__/-}
     name=${name//_/.}
@@ -10,5 +10,9 @@ while IFS='=' read -r name value ; do
     opts="${opts} -D${name}=${value}"
   fi
 done < <(env)
+
+export JAVA_OPTS="${JAVA_OPTS} -Dlogback.configurationFile=/app/logback.xml"
+
+/usr/local/bin/confd -onetime -backend env -prefix / -confdir /app/confd
 
 $(pwd)/bin/$1 $opts ${@:2}

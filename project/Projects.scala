@@ -1,9 +1,9 @@
 import sbt._
 import sbt.Keys._
 import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
+import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
 import sbtassembly.AssemblyPlugin
 import sbtassembly.AssemblyPlugin.autoImport._
-
 import BaseSettings.defaultSettings
 
 object Projects {
@@ -28,7 +28,9 @@ object Projects {
   val unisonUi = createModule("unison-ui", "unison-ui")
     .settings(
       name := "unisonui",
-      mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh")
+      mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh",
+      mappings in Universal ++= directory("docker/confd")
+    )
 
   val providerDocker = createModule("provider-docker", "providers/docker")
   val providerKubernetes =
