@@ -2,14 +2,13 @@ package tech.unisonui.providers.git.settings
 
 import java.{util => ju}
 
+import cats.syntax.option._
 import com.typesafe.config.{Config, ConfigFactory}
 
 import scala.jdk.CollectionConverters._
 
 final case class RepositorySettings(location: Location,
-                                    branch: Option[String] = None,
-                                    specificationPaths: List[String] = Nil,
-                                    useProxy: Boolean)
+                                    branch: Option[String] = None)
 
 object RepositorySettings {
 
@@ -18,7 +17,7 @@ object RepositorySettings {
     if (config.hasPath(path))
       config.getAnyRefList(path).asScala.toList.map {
         case location: String =>
-          RepositorySettings(Location.fromString(location), useProxy = false)
+          RepositorySettings(Location.fromString(location))
         case config: ju.Map[String, _] =>
           fromConfig(ConfigFactory.parseMap(config))
       }
@@ -27,16 +26,12 @@ object RepositorySettings {
   def fromConfig(config: Config): RepositorySettings = {
     val location = Location.fromConfig(config)
     val branch =
-      if (config.hasPath("branch")) Some(config.getString("branch"))
+      if (config.hasPath("branch")) config.getString("branch").some
       else None
-    val specificationPaths =
-      if (config.hasPath("specification-paths"))
-        config.getStringList("specification-paths").asScala.toList
-      else Nil
-    val useProxy = config.hasPath("use-proxy") && config.getBoolean("use-proxy")
-    RepositorySettings(location, branch, specificationPaths, useProxy)
+    RepositorySettings(location, branch)
   }
 }
+
 sealed trait Location {
   def isMatching(input: String): Boolean
 }

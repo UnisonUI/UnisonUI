@@ -36,12 +36,11 @@ class GithubSpec extends TestBase with Inside with Inspectors {
 
   "Retrieving repositories in regular interval" in {
     val github =
-      GithubSettings(
-        "MyAwesomeUser",
-        "MyAwesomeUser",
-        pollingInterval = 800.millis,
-        repos = RepositorySettings(Location.Uri("MyAwesomeUser/MyAwesomeRepo"),
-                                   useProxy = false) :: Nil)
+      GithubSettings("MyAwesomeUser",
+                     "MyAwesomeUser",
+                     pollingInterval = 800.millis,
+                     repos = RepositorySettings(
+                       Location.Uri("MyAwesomeUser/MyAwesomeRepo")) :: Nil)
     val client = GithubClient(github, executor)
 
     val probe = testKit.createTestProbe[GitRepository]()
@@ -53,13 +52,10 @@ class GithubSpec extends TestBase with Inside with Inspectors {
     probe.expectNoMessage(1.second)
 
     forAll(results) { result =>
-      inside(result) {
-        case GitRepository(uri, branch, _, specification, ref, useProxy) =>
-          uri shouldBe "https://MyAwesomeUser@github.com/MyAwesomeUser/MyAwesomeRepo"
-          branch shouldBe "master"
-          specification shouldBe empty
-          useProxy shouldBe false
-          ref should not be Symbol("defined")
+      inside(result) { case GitRepository(uri, branch, specification, _, _) =>
+        uri shouldBe "https://MyAwesomeUser@github.com/MyAwesomeUser/MyAwesomeRepo"
+        branch shouldBe "master"
+        specification shouldBe empty
       }
     }
   }

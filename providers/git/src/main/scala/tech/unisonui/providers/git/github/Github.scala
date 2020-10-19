@@ -13,7 +13,7 @@ import akka.stream.scaladsl.{
 import com.typesafe.scalalogging.LazyLogging
 import tech.unisonui.Concurrency
 import tech.unisonui.providers.git.Source
-import tech.unisonui.providers.git.git.data.{Repository, UnnamedSpecification}
+import tech.unisonui.providers.git.git.data.Repository
 import tech.unisonui.providers.git.github.data.Node
 
 import scala.concurrent.ExecutionContext
@@ -34,17 +34,13 @@ object Github extends LazyLogging {
               case Node(name, url, branch) if !oldRepositories.contains(name) =>
                 githubClient.settings.repos
                   .find(_.location.isMatching(name))
-                  .map { repository =>
+                  .map { _ =>
                     logger.debug(s"Matching repository: $name")
                     val uri = Uri(url)
                     val uriWithToken =
                       uri.withAuthority(uri.authority.copy(userinfo =
                         githubClient.settings.apiToken))
-                    Repository(uriWithToken.toString,
-                               branch,
-                               repository.specificationPaths.map(
-                                 UnnamedSpecification(_)),
-                               useProxy = repository.useProxy)
+                    Repository(uriWithToken.toString, branch)
                   }
 
             }.collect { case Some(repository) => repository }
