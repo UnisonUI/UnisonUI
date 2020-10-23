@@ -70,7 +70,7 @@
     "natives": "1.1.6"
   },
   "dependencies": {
-    "@loadable/component": "^5.13.2",
+    "@loadable/component": "^5.14.1",
     "axios": "^0.20.0",
     "eventsource": "^1.0.7",
     "react": "^16.13.1",
