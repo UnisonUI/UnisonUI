@@ -33,7 +33,7 @@ module.exports = {
       colors: {
         cyan: '#9cdbff',
         background: 'var(--background)',
-        primary: 'var(--primary)',
+        primary: 'var(--primary)'
       },
       spacing: {
         96: '24rem',
