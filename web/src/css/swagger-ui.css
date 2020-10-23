@@ -15,7 +15,8 @@
 
 .swagger-ui {
   .wrapper {
-    @apply nm-flat-gray-200 rounded-lg p-4 mx-4 my-8 w-full;
+    @apply rounded-lg p-4 mx-4 my-8 w-full;
+    @mixin nm-flat background;
   }
   .svg-assets {
     @apply hidden;
@@ -42,8 +43,8 @@
         height: 64px;
         margin: 8px;
         border-radius: 50%;
-        border: 6px solid theme('colors.gray.700');
-        border-color: theme('colors.gray.700') transparent theme('colors.gray.700') transparent;
+        border: 6px solid theme('colors.primary');
+        border-color: theme('colors.primary') transparent theme('colors.primary') transparent;
         animation: lds-dual-ring 1.2s linear infinite;
         @keyframes lds-dual-ring {
           0% {

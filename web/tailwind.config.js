@@ -31,7 +31,9 @@ module.exports = {
     },
     extend: {
       colors: {
-        cyan: '#9cdbff'
+        cyan: '#9cdbff',
+        background: 'var(--background)',
+        primary: 'var(--primary)'
       },
       spacing: {
         96: '24rem',

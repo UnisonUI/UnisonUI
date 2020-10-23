@@ -1,5 +1,6 @@
 @define-mixin select $prev {
-  @apply rounded-lg nm-flat-gray-200 leading-5 flex-grow relative;
+  @apply rounded-lg leading-5 flex-grow relative text-primary;
+  @mixin nm-flat background;
 
   select {
     @apply appearance-none w-full px-8 py-4 bg-transparent font-semibold;

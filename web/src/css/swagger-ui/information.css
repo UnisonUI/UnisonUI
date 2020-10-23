@@ -30,7 +30,7 @@
       margin: 0;
 
       small {
-        @apply relative;
+        @apply relative text-background;
         @apply rounded-full;
         @apply nm-convex-gray-100-sm;
         @apply inline-block;
