@@ -80,9 +80,10 @@
   }
 
   .opblock {
-    @apply nm-flat-gray-200 rounded-lg;
+    @apply rounded-lg;
     @apply m-3; 
-    @apply transition-all duration-500 ease-in-out;
+    @apply transition-all duration-500 ease-in-out text-gray-900;
+    @mixin nm-flat background;
     .tab-header {
       @apply flex flex-1;
       .tab-item {

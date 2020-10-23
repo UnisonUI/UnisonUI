@@ -1,4 +1,5 @@
 import loadable from '@loadable/component'
+import { Moon, Sun } from 'react-feather'
 import { createBrowserHistory } from 'history'
 import React, { Component } from 'react'
 import { HashRouter as Router } from 'react-router-dom'
@@ -6,7 +7,6 @@ import Menu from 'react-burger-menu/lib/menus/push'
 import ServiceLink from './serviceLink'
 import axios from 'axios'
 import * as cornify from '../cornified'
-
 import Konami from 'react-konami-code'
 import NoService from './noService'
 
@@ -19,10 +19,12 @@ export default class App extends Component {
     super(props)
     this.state = {
       menuOpen: false,
+      darkMode: localStorage.getItem('darkMode') === 'true',
       services: {},
       filtered: {}
     }
     this.eventSource = new EventSource('/events')
+    this._toggleTheme = this._toggleTheme.bind(this)
   }
 
   handleStateChange (state) {
@@ -31,6 +33,12 @@ export default class App extends Component {
 
   closeMenu () {
     this.setState({ menuOpen: false })
+  }
+
+  _toggleTheme () {
+    const newTheme = !this.state.darkMode
+    localStorage.setItem('darkMode', newTheme)
+    this.setState({ darkMode: newTheme })
   }
 
   componentDidMount () {
@@ -195,7 +203,14 @@ export default class App extends Component {
       type = service.type
     }
     return (
-      <div id="outer-container" style={{ height: '100%' }}>
+      <div
+        id="outer-container"
+        style={{ height: '100%' }}
+        className={this.state.darkMode ? 'dark' : ''}
+      >
+        <button className="themeSwitch" onClick={this._toggleTheme}>
+          {this.state.darkMode ? <Sun size={42} /> : <Moon size={42} />}
+        </button>
         <Konami
           action={() => cornify.pizzazz()}
           timeout="15000"

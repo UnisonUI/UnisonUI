@@ -2,9 +2,9 @@
   .btn {
     @apply font-bold leading-5;
     @apply py-4 px-8;
-    @apply rounded-full nm-flat-gray-200-sm transform;
+    @apply rounded-full text-primary transform;
     @apply transition duration-200 ease-in-out;
-    
+    @mixin nm-flat background, 0.1em;
     &.btn-sm {
       @apply py-2 px-4 text-sm;
     }
@@ -18,23 +18,23 @@
     }
     
     &.cancel {
-      @apply nm-flat-red-200-sm !important;
+      @apply nm-flat-red-200-sm  text-gray-900 !important;
     }
 
     &.authorize {
-      @apply nm-flat-green-200-sm !important;
+      @apply nm-flat-green-200-sm text-gray-900  !important;
 
       span {
         @apply float-left pr-4;
       }
 
       svg {
-        fill: theme('colors.gray.800');
+        fill: theme('colors.primary');
       }
     }
 
     &.execute {
-      @apply nm-flat-blue-200-sm !important;
+      @apply nm-flat-blue-200-sm text-gray-900 !important;
     }
   }
 

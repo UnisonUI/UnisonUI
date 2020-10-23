@@ -32,7 +32,7 @@
       &-container {
         @apply relative mt-0 mr-4 ml-3 mb-3 rounded-sm;
         @apply transition-all duration-500 nm-flat-indigo-200;
-
+        @apply text-gray-900;
         &:hover {
           @apply nm-flat-indigo-300;
         }

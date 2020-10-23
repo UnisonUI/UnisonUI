@@ -1,8 +1,9 @@
 .swagger-ui {
   select {
     &[multiple] {
-      @apply nm-flat-gray-200 rounded-lg;
+      @apply rounded-lg;
       @apply my-3 mx-0 p-3;
+      @mixin nm-flat background;
     }
 
     &.invalid {
@@ -32,7 +33,8 @@
   textarea {
     @apply border-0 appearance-none rounded-lg;
     @apply w-full my-6 leading-tight nm-inset-gray-800;
-    @apply text-sm text-gray-200 cursor-text;
+    @apply text-sm text-primary cursor-text;
+    @mixin nm-inset background;
     min-width: 100px;
     margin: 5px 0;
     padding: 8px 10px;
@@ -53,12 +55,12 @@
     }
   }
   input[disabled] {
-    @apply nm-inset-gray-200;
+    @mixin nm-inset background;
   }
 
   textarea, select {
     &[disabled] {
-      @apply bg-gray-200 text-gray-700 cursor-not-allowed;
+      @apply bg-background text-primary cursor-not-allowed;
     }
   }
 
