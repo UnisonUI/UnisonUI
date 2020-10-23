@@ -4,15 +4,17 @@ object Tasks {
   lazy val tasks = Seq[Setting[_]](
     npmInstall := {
       import sys.process._
-      Process(Seq("npm", "install"), baseDirectory.value).!
+      Process(Seq("npm", "install"), baseDirectory.value / ".." / "web").!
     },
     webpackDevTask := {
       import sys.process._
-      Process(Seq("npm", "run", "build:dev"), baseDirectory.value).!
+      Process(Seq("npm", "run", "build:dev"),
+              baseDirectory.value / ".." / "web").!
     },
     webpackProdTask := {
       import sys.process._
-      Process(Seq("npm", "run", "build:prod"), baseDirectory.value).!
+      Process(Seq("npm", "run", "build:prod"),
+              baseDirectory.value / ".." / "web").!
     }
   )
   val npmInstall      = taskKey[Unit]("npm install")

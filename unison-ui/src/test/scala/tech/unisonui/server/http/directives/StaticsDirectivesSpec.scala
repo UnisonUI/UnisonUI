@@ -21,7 +21,9 @@ class StaticsDirectivesSpec
     with StaticsDirectives
     with OptionValues {
   private val route = get(
-    staticsFromResourceDirectory("statics", Encodings.Brotli, Encodings.Gzip))
+    staticsFromDirectory("src/test/resources/statics",
+                         Encodings.Brotli,
+                         Encodings.Gzip))
   private val fileContent = "Test\n"
 
   "Get a non compressed file" when {

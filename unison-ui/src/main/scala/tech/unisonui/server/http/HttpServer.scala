@@ -22,8 +22,10 @@ class HttpServer(private val serviceActorRef: ActorRef[ServiceActor.Message],
   implicit private val executionContext: ExecutionContext =
     actorSystem.executionContext
 
-  def bind(interface: String, port: Int): Future[Http.ServerBinding] =
-    Http().newServerAt(interface, port).bind(routes)
+  def bind(interface: String,
+           port: Int,
+           staticsPath: String): Future[Http.ServerBinding] =
+    Http().newServerAt(interface, port).bind(routes(staticsPath))
 
   private val exceptionHandler = ExceptionHandler { case exception =>
     logger.error("Something bad happened", exception)
@@ -33,9 +35,9 @@ class HttpServer(private val serviceActorRef: ActorRef[ServiceActor.Message],
         "Something bad happened"))
   }
 
-  private val routes =
+  private def routes(staticsPath: String) =
     handleExceptions(exceptionHandler) {
-      Statics.route ~ Realtime.route(eventsSource) ~ Services.route(
-        serviceActorRef) ~ Grpc.route(serviceActorRef) ~ Proxy.route
+      Statics.route(staticsPath) ~ Realtime.route(eventsSource) ~ Services
+        .route(serviceActorRef) ~ Grpc.route(serviceActorRef) ~ Proxy.route
     }
 }
