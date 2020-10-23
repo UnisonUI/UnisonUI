@@ -39,6 +39,41 @@ object Git extends LazyLogging {
   private type FilesWithSha          = (Files, Option[String])
   private type FilesWithShaWithEvent = (FileEvents, Option[String])
 
+  def fromSettings(cacheDuration: FiniteDuration,
+                   repositories: Seq[RepositorySettings])(implicit
+      protobufCompiler: ProtobufCompiler): Source[ServiceEvent] =
+    fromSource(
+      cacheDuration,
+      AkkaSource(repositories.collect {
+        case RepositorySettings(Location.Uri(uri), branch) =>
+          Repository(uri, branch.getOrElse(DefaultBranch))
+      })
+    )
+
+  def fromSource(cacheDuration: FiniteDuration,
+                 repositories: Source[Repository])(implicit
+      protobufCompiler: ProtobufCompiler): Source[ServiceEvent] =
+    AkkaSource.fromGraph(GraphDSL.create() { implicit builder =>
+      import GraphDSL.Implicits._
+
+      val delayFlow: Flow[FilesWithShaWithEvent, RepositoryWithSha] =
+        AkkaFlow[FilesWithShaWithEvent].delay(cacheDuration).map {
+          case ((repository, _), sha1) => repository -> sha1
+        }
+      val init     = builder.add(repositories.map(_ -> None))
+      val outbound = builder.add(outboundFlow.async)
+      val delay    = builder.add(delayFlow)
+      val merge    = builder.add(Merge[RepositoryWithSha](2))
+      val broadcast =
+        builder.add(Broadcast[FilesWithShaWithEvent](2, eagerCancel = true))
+
+      // format: OFF
+      init ~> merge ~> cloneOrFetch ~> findSpecificationFiles ~> latestSha1 ~> broadcast ~> outbound
+              merge <~ delay <~ broadcast
+      // format: ON
+      SourceShape(outbound.out)
+    })
+
   private def outboundFlow(implicit protobufCompiler: ProtobufCompiler)
       : Flow[FilesWithShaWithEvent, ServiceEvent] =
     AkkaFlow[FilesWithShaWithEvent].flatMapConcat { case (files, _) =>
@@ -178,41 +213,6 @@ object Git extends LazyLogging {
             AkkaSource.empty[FilesWithShaWithEvent]
         }
     }
-
-  def fromSettings(cacheDuration: FiniteDuration,
-                   repositories: Seq[RepositorySettings])(implicit
-      protobufCompiler: ProtobufCompiler): Source[ServiceEvent] =
-    fromSource(
-      cacheDuration,
-      AkkaSource(repositories.collect {
-        case RepositorySettings(Location.Uri(uri), branch) =>
-          Repository(uri, branch.getOrElse(DefaultBranch))
-      })
-    )
-
-  def fromSource(cacheDuration: FiniteDuration,
-                 repositories: Source[Repository])(implicit
-      protobufCompiler: ProtobufCompiler): Source[ServiceEvent] =
-    AkkaSource.fromGraph(GraphDSL.create() { implicit builder =>
-      import GraphDSL.Implicits._
-
-      val delayFlow: Flow[FilesWithShaWithEvent, RepositoryWithSha] =
-        AkkaFlow[FilesWithShaWithEvent].delay(cacheDuration).map {
-          case ((repository, _), sha1) => repository -> sha1
-        }
-      val init     = builder.add(repositories.map(_ -> None))
-      val outbound = builder.add(outboundFlow.async)
-      val delay    = builder.add(delayFlow)
-      val merge    = builder.add(Merge[RepositoryWithSha](2))
-      val broadcast =
-        builder.add(Broadcast[FilesWithShaWithEvent](2, eagerCancel = true))
-
-      // format: OFF
-      init ~> merge ~> cloneOrFetch ~> findSpecificationFiles ~> latestSha1 ~> broadcast ~> outbound
-              merge <~ delay <~ broadcast
-      // format: ON
-      SourceShape(outbound.out)
-    })
 
   private def cloneRepository(repo: Repository): Source[Repository] = {
     val repoWithDirectory = repo.copy(directory =

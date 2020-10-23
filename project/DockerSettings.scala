@@ -6,6 +6,9 @@ import sbt.Keys._
 object DockerSettings {
   val settings = Seq(
     dockerfile in docker := {
+      val confdVersion = "0.16.0"
+      val confdUrl =
+        s"https://github.com/kelseyhightower/confd/releases/download/v$confdVersion/confd-$confdVersion-linux-amd64"
       val appDir: File = stage.value
       val entrypointFile: File =
         new File(baseDirectory.value, "../docker/entrypoint.sh")
@@ -18,7 +21,10 @@ object DockerSettings {
             "openjdk11-jre",
             "git",
             "protoc",
-            "bash")
+            "bash",
+            "curl")
+        runShell("curl", "-L", confdUrl, ">", "/usr/local/bin/confd")
+        run("chmod", "+x", "/usr/local/bin/confd")
         entryPoint(s"$targetDir/entrypoint.sh", executableScriptName.value)
         workDir(targetDir)
         copy(appDir, targetDir)

@@ -9,10 +9,13 @@ object Dependencies {
   }
 
   object Logging {
-    private val logback = "ch.qos.logback" % "logback-classic" % "1.2.3"
+    private val logback     = "ch.qos.logback" % "logback-classic" % "1.2.3"
+    private val logbackCore = "ch.qos.logback" % "logback-core"    % "1.2.3"
+    private val logstash =
+      "net.logstash.logback" % "logstash-logback-encoder" % "6.4"
     private val scalaLogging =
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
-    val all = Seq(logback, scalaLogging)
+    val all = Seq(logback, logbackCore, logstash, scalaLogging)
   }
 
   object Circe {
