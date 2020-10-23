@@ -1,6 +1,6 @@
 const plugins = {
-  'postcss-import': { path: ['src/main/js/css'] },
-  'postcss-mixins': { mixinsDir: 'src/main/js/css/mixins' },
+  'postcss-import': { path: ['src/css'] },
+  'postcss-mixins': { mixinsDir: 'src/css/mixins' },
   'postcss-simple-vars': {},
   'postcss-url': {},
   tailwindcss: {},
@@ -15,8 +15,8 @@ const plugins = {
 if (process.env.NODE_ENV === 'production') {
   plugins['@fullhuman/postcss-purgecss'] = {
     content: [
-      'src/main/js/**/*.html',
-      'src/main/js/**/*.js',
+      'src/**/*.html',
+      'src/**/*.js',
       'node_modules/react-burger-menu/**/*.js',
       'node_modules/swagger-ui/**/*.js',
       'node_modules/swagger-ui-react/**/*.js'

@@ -17,7 +17,7 @@
   <logger name="tech.unisonui" level="{{$logLevel}}" additivity="false">
     <appender-ref ref="STDOUT" />
   </logger>
-  <root level="{{$logLevel}}">
+  <root level="WARN">
     <appender-ref ref="STDOUT" />
   </root>
 </configuration>

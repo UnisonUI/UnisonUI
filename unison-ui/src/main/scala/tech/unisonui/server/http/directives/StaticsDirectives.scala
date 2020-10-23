@@ -1,6 +1,7 @@
 package tech.unisonui.server.http.directives
 
-import akka.actor.ActorSystem
+import java.io.File
+
 import akka.event.LoggingAdapter
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.{
@@ -10,29 +11,27 @@ import akka.http.scaladsl.model.headers.{
 }
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.annotation.tailrec
 
-trait StaticsDirectives {
+trait StaticsDirectives extends LazyLogging {
   import akka.http.scaladsl.server.directives.BasicDirectives._
-  import akka.http.scaladsl.server.directives.FileAndResourceDirectives.getFromResource
 
-  private val classLoader = classOf[ActorSystem].getClassLoader
+  def staticsFromDirectory(directory: String,
+                           first: Encoding,
+                           other: Encoding*): Route =
+    staticsFromDirectory(directory, Seq(first +: other: _*))
 
-  def staticsFromResourceDirectory(directory: String,
-                                   first: Encoding,
-                                   other: Encoding*): Route =
-    staticsFromResourceDirectory(directory, Seq(first +: other: _*))
-
-  def staticsFromResourceDirectory(directory: String,
-                                   encodings: Seq[Encoding]): Route = {
+  def staticsFromDirectory(directory: String,
+                           encodings: Seq[Encoding]): Route = {
     val base = withTrailingSlash(directory)
     extractRequest { request =>
       extractUnmatchedPath { path =>
         extractLog { log =>
           val hasRangeHeader     = request.header[Range].isDefined
           val availableEncodings = getAvailableEncodings(request, encodings)
-          safeJoinPaths(base, path, log, separator = '/') match {
+          safeJoinPaths(base, path, log) match {
             case "" => reject
             case resourceName =>
               serveFile(resourceName, hasRangeHeader, availableEncodings)
@@ -54,30 +53,29 @@ trait StaticsDirectives {
   private def withTrailingSlash(path: String): String =
     if (path endsWith "/") path else path + '/'
 
-  private def serveFile(resourceName: String,
+  private def serveFile(path: String,
                         isRange: Boolean,
                         availableEncodings: Seq[Encoding]): Route = {
-    val contentType = ContentType(
-      MediaTypes.forExtension(resourceName.split('.').last),
-      () => HttpCharsets.`UTF-8`)
-    if (isRange) getFromResource(resourceName)
+    val contentType = ContentType(MediaTypes.forExtension(path.split('.').last),
+                                  () => HttpCharsets.`UTF-8`)
+    if (isRange) getFromFile(path)
     else
-      availableEncodings.collectFirst {
-        case encoding
-            if Option(classLoader.getResource(
-              s"$resourceName.${encoding.extension}")).isDefined =>
-          respondWithHeader(`Content-Encoding`(encoding.encoding)) {
-            getFromResource(s"$resourceName.${encoding.extension}",
-                            contentType,
-                            classLoader)
-          }
-      }.getOrElse(getFromResource(resourceName))
+      availableEncodings
+        .map(encoding =>
+          new File(s"$path.${encoding.extension}") -> encoding.encoding)
+        .collectFirst {
+          case (file, encoding) if file.exists =>
+            respondWithHeader(`Content-Encoding`(encoding)) {
+              getFromFile(file, contentType)
+            }
+        }
+        .getOrElse(getFromFile(path))
   }
 
   private def safeJoinPaths(base: String,
                             path: Uri.Path,
                             log: LoggingAdapter,
-                            separator: Char): String = {
+                            separator: Char = File.separatorChar): String = {
     import java.lang.StringBuilder
     @tailrec def rec(p: Uri.Path,
                      result: StringBuilder = new StringBuilder(base)): String =

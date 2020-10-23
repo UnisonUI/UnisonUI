@@ -1,16 +1,15 @@
 const path = require('path')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
-const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
 
 module.exports = {
   entry: {
-    main: path.join(__dirname, 'src', 'main', 'js', 'index.js')
+    main: path.join(__dirname, 'src', 'index.js')
   },
   output: {
-    path: path.join(__dirname, 'src', 'main', 'resources', 'web', 'statics'),
+    path: path.join(__dirname, '..', 'docker', 'statics'),
     publicPath: '/statics'
   },
   optimization: {
@@ -58,13 +57,12 @@ module.exports = {
   },
 
   plugins: [
-    new CleanWebpackPlugin(),
     new CopyPlugin({
-      patterns: [{ from: './src/main/js/images', to: 'images' }]
+      patterns: [{ from: './src/images', to: 'images' }]
     }),
     new HtmlWebPackPlugin({
-      template: './src/main/js/index.html',
-      filename: '../index.html'
+      template: './src/index.html',
+      filename: 'index.html'
     }),
     new CompressionPlugin({
       filename: '[path][base].gz[query]',

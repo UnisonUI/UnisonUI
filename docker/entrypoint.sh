@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-opts=""
+opts="-Dunisonui.http.statics-path=/app/statics/"
 
 while IFS='=' read -r name value; do
   if [[ $name == 'UNISIOMUI_'* ]]; then

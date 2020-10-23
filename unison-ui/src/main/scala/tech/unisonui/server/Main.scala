@@ -23,6 +23,7 @@ object Main extends App with LazyLogging {
 
   val interface                    = config.getString(s"$Namespace.interface")
   val port                         = config.getInt(s"$Namespace.port")
+  val staticsPath                  = config.getString(s"$Namespace.statics-path")
   val selfSpecification            = config.getBoolean("unisonui.self-specification")
   private val (queue, eventSource) = EventSource.createEventSource.run()
   private val serviceActor =
@@ -49,7 +50,7 @@ object Main extends App with LazyLogging {
       serviceActor ! ServiceActor.Add(provider, event)
     })
 
-  httpServer.bind(interface, port).onComplete {
+  httpServer.bind(interface, port, staticsPath).onComplete {
     case Success(binding) =>
       val address = binding.localAddress
       logger.info(

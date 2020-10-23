@@ -29,7 +29,8 @@ object Projects {
     .settings(
       name := "unisonui",
       mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh",
-      mappings in Universal ++= directory("docker/confd")
+      mappings in Universal ++= directory("docker/confd"),
+      mappings in Universal ++= directory("docker/statics")
     )
 
   val providerDocker = createModule("provider-docker", "providers/docker")
