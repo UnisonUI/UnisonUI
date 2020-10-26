@@ -66,7 +66,7 @@
     "react-syntax-highlighter": "^15.2.1",
     "rimraf": "^3.0.1",
     "style-loader": "^2.0.0",
-    "tailwindcss": "^1.9.5",
+    "tailwindcss": "^1.9.6",
     "tailwindcss-neumorphism": "^0.1.0",
     "terser-webpack-plugin": "^4.2.3",
     "webpack": "^4.44.2",
