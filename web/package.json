@@ -84,6 +84,6 @@
     "react-dom": "^16.14.0",
     "react-konami-code": "^2.0.0-beta.1",
     "react-router-dom": "^5.2.0",
-    "swagger-ui-react": "^3.36.0"
+    "swagger-ui-react": "^3.36.1"
   }
 }
