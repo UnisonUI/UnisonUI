@@ -61,7 +61,7 @@
     "postcss-preset-env": "^6.3.0",
     "postcss-simple-vars": "^5.0.2",
     "postcss-url": "^9.0.0",
-    "react-burger-menu": "^2.9.0",
+    "react-burger-menu": "^3.0.2",
     "react-feather": "^2.0.8",
     "react-syntax-highlighter": "^15.2.1",
     "rimraf": "^3.0.1",
