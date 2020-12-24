@@ -39,7 +39,7 @@
 
   {{- $style := slice $font $syntax $main | resources.Concat "/css/style.css" |  resources.PostCSS   -}}
   {{- if hugo.IsProduction -}}
-  {{- $style = $style  | minify | fingerprint  -}}
+  {{- $style = $style  | fingerprint  -}}
   {{- end -}}
   <link href="{{ $style.Permalink }}" rel="stylesheet" type="text/css" />
 </head>
