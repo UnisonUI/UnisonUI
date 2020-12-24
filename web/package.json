@@ -12,10 +12,10 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@babel/core": "^7.12.3",
+    "@babel/core": "^7.12.10",
     "@babel/plugin-proposal-object-rest-spread": "^7.12.1",
     "@babel/plugin-syntax-object-rest-spread": "^7.8.2",
-    "@babel/plugin-transform-runtime": "^7.12.1",
+    "@babel/plugin-transform-runtime": "^7.12.10",
     "@babel/preset-env": "^7.12.1",
     "@babel/preset-react": "^7.12.10",
     "@babel/register": "^7.12.1",
@@ -78,7 +78,7 @@
   },
   "dependencies": {
     "@loadable/component": "^5.14.1",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "eventsource": "^1.0.7",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
