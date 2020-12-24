@@ -15,7 +15,8 @@ jobs:
           node-version: 14.x
       - name: Install tools
         run: |
-          npm install -g postcss postcss-cli @fullhuman/postcss-purgecss tailwindcss postcss-nested autoprefixer esbuild
+          npm install -g postcss postcss-cli esbuild
+          cd site && npm i
       - name: Deploy the site
         uses: MaethorNaur/hugo-deploy-gh-pages@master
         env:
