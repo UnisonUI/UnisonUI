@@ -1,7 +1,8 @@
 name: Hugo
 on:
   push:
-
+    paths:
+      - 'site/**'
 jobs:
   build:
     name: Deploy
