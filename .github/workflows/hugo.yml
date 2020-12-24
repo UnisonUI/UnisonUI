@@ -1,6 +1,8 @@
 name: Hugo
 on:
   push:
+    paths:
+      - 'site/**'
     branches:
       - master
 
@@ -15,7 +17,7 @@ jobs:
       - name: Deploy the site
         uses: benmatselby/hugo-deploy-gh-pages@master
         env:
-          HUGO_VERSION: 0.76.5
+          HUGO_VERSION: 0.79.0
           TARGET_REPO: UnisonUI/unisonui.github.io
           TARGET_BRANCH: master
           TOKEN: ${{ secrets.TOKEN }}
