@@ -13,7 +13,13 @@ jobs:
     steps:
       - name: Checkout master
         uses: actions/checkout@v1
-
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+      - name: Install tools
+        run: |
+          npm install -g postcss postcss-cli @fullhuman/postcss-purgecss tailwindcss postcss-nested autoprefixer esbuild
       - name: Deploy the site
         uses: benmatselby/hugo-deploy-gh-pages@master
         env:
@@ -21,5 +27,5 @@ jobs:
           TARGET_REPO: UnisonUI/unisonui.github.io
           TARGET_BRANCH: master
           TOKEN: ${{ secrets.TOKEN }}
-          HUGO_ARGS: '-s site/ -t academic'
+          HUGO_ARGS: '-s site/'
           CNAME: unisonui.tech
