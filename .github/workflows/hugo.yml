@@ -14,9 +14,10 @@ jobs:
         with:
           node-version: 14.x
       - name: Install tools
-        run: |
-          npm install -g postcss postcss-cli esbuild
-          cd site && npm i
+        run: npm install -g postcss postcss-cli esbuild
+      - name: Install tools
+        run: npm i
+        working-directory: site
       - name: Deploy the site
         uses: MaethorNaur/hugo-deploy-gh-pages@master
         env:
