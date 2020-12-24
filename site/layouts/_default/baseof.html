@@ -36,10 +36,10 @@
   {{- $font := resources.Get "css/font.css"  -}}
   {{- $syntax := resources.Get "css/syntax.css"  -}}
   {{- $main := resources.Get "css/main.css"  -}}
-
-  {{- $style := slice $font $syntax $main | resources.Concat "/css/style.css" |  resources.PostCSS   -}}
+  {{ $options := dict "inlineImports" true }}
+  {{- $style := slice $font $syntax $main | resources.Concat "/css/style.css" |  resources.PostCSS $options  -}}
   {{- if hugo.IsProduction -}}
-  {{- $style = $style  | fingerprint  -}}
+  {{ $styles = $styles | minify | fingerprint | resources.PostProcess }}
   {{- end -}}
   <link href="{{ $style.Permalink }}" rel="stylesheet" type="text/css" />
 </head>
