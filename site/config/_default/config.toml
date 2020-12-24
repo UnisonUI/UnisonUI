@@ -1,0 +1,33 @@
+baseURL = 'https://unisonui.tech/'
+languageCode = 'en-GB'
+title = 'UnisonUI'
+enableEmoji = true
+
+[Params]
+RSSLink = '/index.xml'
+author = 'UnisonUI'
+github = 'UnisonUI'
+twitter = ''
+email = 'MaethorNaur@users.noreply.github.com'
+
+[markup.highlight]
+noClasses = false
+
+[[menu.main]]
+name = 'Docs'
+weight = -100
+url = '/docs/'
+
+[[menu.main]]
+name = 'Releases'
+weight = -100
+external = false
+url = '/releases/'
+
+[[menu.main]]
+name = 'Github'
+weight = 100
+url = 'https://github.com/UnisonUI/UnisonUI'
+
+[menu.main.params]
+external = true

@@ -1,0 +1,17 @@
+{
+  "name": "site",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "devDependencies": {
+    "@fullhuman/postcss-purgecss": "^3.0.0",
+    "autoprefixer": "^10.0.2",
+    "postcss-nested": "^5.0.1",
+    "tailwindcss": "^2.0.1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@foxythemes/hugo-lunr": "^0.0.6"
+  }
+}

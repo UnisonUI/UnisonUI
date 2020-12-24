@@ -62,4 +62,5 @@ project/project/project/metals.sbt
 .metals/
 node_modules/
 /docker/statics/
+resources/
 # End of https://www.gitignore.io/api/sbt,scala,intellij

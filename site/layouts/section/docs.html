@@ -1,0 +1,14 @@
+{{ define "title"}}Documentations{{end}}
+{{ define "header"}} {{ partial "header" .}} {{end}}
+{{ define "main"}}
+<div class="cards">
+  {{ range .Data.Pages.ByWeight }}
+  <div class="card">
+    <h4 class="title"><a href="{{ .Permalink }}">{{ .Title }}</a></h4>
+    <p>{{ .Params.description }}</p>
+  </div>
+  {{ end }}
+</div>
+{{ end }}
+
+{{ define "footer"}} {{ partial "footer" .}} {{end}}

@@ -1,0 +1,23 @@
+name: Hugo
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v1
+
+      - name: Deploy the site
+        uses: benmatselby/hugo-deploy-gh-pages@master
+        env:
+          HUGO_VERSION: 0.76.5
+          TARGET_REPO: UnisonUI/unisonui.github.io
+          TARGET_BRANCH: master
+          TOKEN: ${{ secrets.TOKEN }}
+          HUGO_ARGS: '-s site/ -t academic'
+          CNAME: unisonui.tech
