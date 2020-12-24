@@ -9,15 +9,6 @@ jobs:
     steps:
       - name: Checkout master
         uses: actions/checkout@v1
-      - name: Use Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 14.x
-      - name: Install tools
-        run: npm install -g postcss postcss-cli esbuild
-      - name: Install tools
-        run: npm i
-        working-directory: site
       - name: Deploy the site
         uses: MaethorNaur/hugo-deploy-gh-pages@master
         env:
