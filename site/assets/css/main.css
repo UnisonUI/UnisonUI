@@ -2,8 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-.shell {
+body {
   @apply bg-gray-300;
+}
+
+.shell {
   @apply grid;
   grid-template-columns: 0 1fr 0;
   grid-template-rows: auto 8em 1fr auto;
@@ -13,7 +16,7 @@
   }
 
   .center {
-    @apply w-4/5 mx-auto px-4 sm:px-6 lg:px-8;
+    @apply md:w-4/5 md:mx-auto px-4 sm:px-6 lg:px-8;
   }
 
   &:before {
@@ -47,14 +50,16 @@ header {
     }
     &.mobile {
       @apply px-2 pt-2 pb-3 space-y-1 sm:px-3;
-      a {
-        @apply block;
-      }
     }
 
     a {
       @apply px-3 py-2 rounded-md text-lg font-medium;
       @apply text-gray-300 hover:bg-gray-700 hover:text-white;
+
+      svg {
+        @apply w-6 h-6 mr-1 inline-block;
+      }
+
       &.active {
         @apply bg-gray-900 text-white;
       }
@@ -84,24 +89,35 @@ main {
 }
 
 .content {
-  @apply flex flex-row;
+  @apply flex md:flex-row flex-col;
   a {
     @apply transition-all;
     &:hover {
       @apply font-bold text-blue-600;
     }
   }
+
   .toc {
-    @apply w-1/6;
-    @apply border-r pr-2 sticky overflow-y-auto;
-    height: calc(100vh - 50px);
+    @apply p-4 shadow bg-gray-100 sticky overflow-y-auto;
     top: 50px;
+
+    @screen md {
+      @apply border-r pr-2 p-0;
+      @apply w-1/6;
+      @apply shadow-none bg-white;
+      height: calc(100vh - 50px);
+    }
 
     h1 {
       @apply text-lg pb-4;
     }
 
     #TableOfContents {
+      @apply hidden md:block;
+      &.show {
+        @apply block !important;
+      }
+
       ul {
         @apply px-2;
       }

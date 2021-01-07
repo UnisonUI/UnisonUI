@@ -1,7 +1,7 @@
 +++
 title = "Getting started"
 description = "Up and running in under a minute"
-weight = 10
+weight = -100
 draft = false
 toc = true
 +++

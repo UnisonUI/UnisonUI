@@ -52,7 +52,7 @@
         {{ block "main" . }}{{ end }}
       </div>
     </main>
-    <footer>{{ block "footer" . }}{{ end }}</footer>
+    <footer class="center">{{ block "footer" . }}{{ end }}</footer>
   </div>
   {{- $minify := false -}}
   {{- if hugo.IsProduction -}}
