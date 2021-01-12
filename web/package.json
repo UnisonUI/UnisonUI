@@ -39,7 +39,7 @@
     "exports-loader": "^1.1.1",
     "file-loader": "^6.2.0",
     "history": "^5.0.0",
-    "html-webpack-plugin": "^4.5.0",
+    "html-webpack-plugin": "^4.5.1",
     "icss-utils": "^5.1.0",
     "imports-loader": "^1.2.0",
     "lodash-es": "^4.17.20",
