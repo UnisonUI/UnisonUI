@@ -161,11 +161,17 @@ main {
   }
 }
 
-:not(.chroma) > code {
+:not(pre) > code {
   @apply font-code;
   @apply bg-gray-700 text-white;
   @apply px-2 rounded;
 }
+:not(.highlight) > pre {
+  @apply p-3 rounded-lg;
+  @apply font-code text-white;
+  background-color: #202020;
+}
+
 .highlight {
   @apply py-4;
   .chroma {
