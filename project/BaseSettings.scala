@@ -7,7 +7,7 @@ import Dependencies._
 
 object BaseSettings {
 
-  val ScalaVersion = "2.13.3"
+  val ScalaVersion = "2.13.4"
 
   lazy val defaultSettings = Seq(
     startYear := Some(2020),
@@ -19,7 +19,7 @@ object BaseSettings {
     fork in Test := true,
     cancelable in Global := true,
     addCompilerPlugin(
-      "org.scalameta" % "semanticdb-scalac" % "4.3.24" cross CrossVersion.full),
+      "org.scalameta" % "semanticdb-scalac" % "4.4.6" cross CrossVersion.full),
     scalacOptions += "-Yrangepos",
     test in assembly := {},
     scalacOptions in Compile ++= ScalacOptions.options,

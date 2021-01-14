@@ -4,7 +4,7 @@ import sbt._
 object Dependencies {
 
   object Config {
-    private val config = "com.typesafe" % "config" % "1.4.0"
+    private val config = "com.typesafe" % "config" % "1.4.1"
     val all            = Seq(config)
   }
 
@@ -12,7 +12,7 @@ object Dependencies {
     private val logback     = "ch.qos.logback" % "logback-classic" % "1.2.3"
     private val logbackCore = "ch.qos.logback" % "logback-core"    % "1.2.3"
     private val logstash =
-      "net.logstash.logback" % "logstash-logback-encoder" % "6.4"
+      "net.logstash.logback" % "logstash-logback-encoder" % "6.6"
     private val scalaLogging =
       "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
     val all = Seq(logback, logbackCore, logstash, scalaLogging)
@@ -29,8 +29,8 @@ object Dependencies {
   }
 
   object Grpc {
-    private val grpcVersion     = "1.32.1"
-    private val protobufVersion = "3.13.0"
+    private val grpcVersion     = "1.35.0"
+    private val protobufVersion = "3.14.0"
     private val protobuf =
       "com.google.protobuf" % "protobuf-java" % protobufVersion
     private val grpcCore        = "io.grpc" % "grpc-core"         % grpcVersion
@@ -42,9 +42,9 @@ object Dependencies {
 
   object Akka {
     private val akkaVersion          = "2.6.10"
-    private val akkaHttpVersion      = "10.2.1"
+    private val akkaHttpVersion      = "10.2.2"
     private val alpakkaVersion       = "2.0.2"
-    private val akkaHttpCirceVersion = "1.35.0"
+    private val akkaHttpCirceVersion = "1.35.3"
 
     private val sl4j = "com.typesafe.akka" %% "akka-slf4j" % akkaVersion
     private val akkaActorTyped =
@@ -78,13 +78,13 @@ object Dependencies {
   }
 
   object Testing {
-    private val scalaTest = "org.scalatest" %% "scalatest" % "3.2.2" % Test
-    private val scalamock = "org.scalamock" %% "scalamock" % "5.0.0" % Test
+    private val scalaTest = "org.scalatest" %% "scalatest" % "3.2.3" % Test
+    private val scalamock = "org.scalamock" %% "scalamock" % "5.1.0" % Test
     val all               = Seq(scalaTest, scalamock)
   }
 
   object Cats {
-    private val version = "2.2.0"
+    private val version = "2.3.1"
     private val kernel  = "org.typelevel" %% "cats-kernel" % version
     private val core    = "org.typelevel" %% "cats-core"   % version
     val all             = Seq(kernel, core)
