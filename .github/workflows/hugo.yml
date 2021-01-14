@@ -1,8 +1,7 @@
 name: Hugo
 on:
   push:
-    branches:
-      - "master"
+
     paths:
       - 'site/**'
 jobs:
