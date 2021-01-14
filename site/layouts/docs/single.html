@@ -5,9 +5,9 @@
   {{ partial "toc" .}}
   <article>
     {{ .Content }}
-    <nav>
-      <div class="prev-next">{{with .NextInSection}}<a href="{{.Permalink}}"><- {{.Title}}</a>{{end}}</div>
-      <div class="prev-next">{{with .PrevInSection}}<a href="{{.Permalink}}">{{.Title}} -></a>{{end}}</div>
+    <nav class="previous-next">
+      <div id="previous">{{with .NextInSection}}<a href="{{.Permalink}}">{{.Title}}</a>{{end}}</div>
+      <div id="next">{{with .PrevInSection}}<a href="{{.Permalink}}">{{.Title}}</a>{{end}}</div>
     </nav>
   </article>
 </div>

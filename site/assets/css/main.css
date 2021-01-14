@@ -158,24 +158,40 @@ main {
     h3 {
       @apply text-xl my-4;
     }
+    li {
+      @apply list-inside list-disc;
+    }
+  }
+
+  .previous-next {
+    @apply relative flex justify-between;
+    bottom: -1rem;
+    #previous {
+      a:before {
+        content: "< ";
+      }
+    }
+    #next {
+      a:after {
+        content: " >";
+      }
+    }
   }
 }
 
-:not(pre) > code {
+code {
   @apply font-code;
-  @apply bg-gray-700 text-white;
-  @apply px-2 rounded;
-}
-:not(.highlight) > pre {
-  @apply p-3 rounded-lg;
-  @apply font-code text-white;
-  background-color: #202020;
+  :not(pre) > & {
+    @apply bg-gray-700 text-white;
+    @apply px-2 rounded;
+  }
 }
 
-.highlight {
-  @apply py-4;
-  .chroma {
-    @apply p-3 rounded-lg;
-    @apply font-code;
-  }
+pre {
+  @apply p-3 my-3 rounded-lg;
+}
+
+:not(.highlight) > pre {
+  @apply text-white;
+  background-color: #202020;
 }

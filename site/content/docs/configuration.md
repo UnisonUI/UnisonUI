@@ -37,10 +37,12 @@ unisonui {
 
   // For more information about each provider configuration.
   // Please refered to it
-  provider.docker {}
-  provider.kubernetes {}
-  provider.git {}
-  provider.webhook {}
+  provider {
+    docker {}
+    kubernetes {}
+    git {}
+    webhook {}
+  }
 }
 ```
 
@@ -73,7 +75,9 @@ To set array value you have to follow this format: `property.{index}=value`
 Example:
 
 ```sh
-./unisonui -Dunisonui.providers.0=tech.unisonui.providers.git.GitProvider -Dunisonui.providers.1=tech.unisonui.providers.git.WebhookProvider
+./unisonui \
+  -Dunisonui.providers.0=tech.unisonui.providers.git.GitProvider \
+  -Dunisonui.providers.1=tech.unisonui.providers.git.WebhookProvider
 ```
 
 -----
