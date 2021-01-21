@@ -6,6 +6,18 @@ body {
   @apply bg-gray-300;
 }
 
+h1 {
+  @apply font-title;
+}
+
+h2 {
+  @apply font-title;
+}
+
+h3 {
+  @apply font-title;
+}
+
 .shell {
   @apply grid;
   grid-template-columns: 0 1fr 0;
@@ -158,6 +170,7 @@ main {
     h3 {
       @apply text-xl my-4;
     }
+
     li {
       @apply list-inside list-disc;
     }

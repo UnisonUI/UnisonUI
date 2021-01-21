@@ -7,7 +7,8 @@ module.exports = {
         'Montserrat',
         ...defaultTheme.fontFamily.sans,
       ],
-      code: ['Fira Code', 'sans-serif']
+      code: ['Fira Code', 'sans-serif'],
+      title: ['Raleway', 'sans-serif']
     },
   }
 }

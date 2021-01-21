@@ -10,9 +10,13 @@ toc = true
 
 # Git provider
 
-The git provider can be used to clone git repositories at a regular interval (`cache-duration`).
+## How does it work
 
-You can either provide the list of repositories to clone or use Github to discover repositories.
+The git provider is used to retrieve specification files from **git** repositories.
+
+Each repositories are *cloned* then *pulled* at regular interval (`cache-duration`).
+
+The repositories can be set manually or be discovered from **Github**.
 
 ## Prerequisite
 
@@ -26,6 +30,8 @@ If you are using the docker image, there is **no need** to install them.
 
 ```hocon
 unisonui {
+  providers += "tech.unisonui.providers.git.GitProvider"
+
   provider.git {
     cache-duration = "2 hours" // Interval between each clone....
     vcs {
@@ -44,7 +50,7 @@ unisonui {
 }
 ```
 
-Either you choose using `Github` discovery or plain `git` repositories,
+Either you choose using **Github** discovery or plain **git** repositories,
 each option requires a list of `repositories`.
 This list can be either a **string** corresponding to
 the full URL/Regex (`organization/project` for Github) or on an object.
@@ -147,5 +153,5 @@ This token can be generated *[here](https://github.com/settings/tokens/new)*.
 
 You will need to allow:
 
-* `public_repo` if you want to list public repositories
-* `repo`: if want to list public and private repositories
+* `public_repo` if you want to list only public repositories
+* `repo` if want to list public and private repositories
