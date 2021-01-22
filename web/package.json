@@ -52,7 +52,7 @@
     "postcss-css-variables": "^0.17.0",
     "postcss-font-magician": "^3.0.0",
     "postcss-import": "^14.0.0",
-    "postcss-loader": "^4.1.0",
+    "postcss-loader": "^4.2.0",
     "postcss-mixins": "^7.0.2",
     "postcss-modules-extract-imports": "^3.0.0",
     "postcss-modules-local-by-default": "^4.0.0",
