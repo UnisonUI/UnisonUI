@@ -33,9 +33,8 @@ object Projects {
       mappings in Universal ++= directory("docker/statics")
     )
 
-  val providerDocker = createModule("provider-docker", "providers/docker")
-  val providerKubernetes =
-    createModule("provider-kubernetes", "providers/kubernetes")
+  val providerContainer =
+    createModule("provider-container", "providers/container")
   val providerGit     = createModule("provider-git", "providers/git")
   val providerWebhook = createModule("provider-webhook", "providers/webhook")
 }
