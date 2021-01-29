@@ -102,14 +102,13 @@ object Dependencies {
       Circe.schema,
       Circe.parser)
 
-  lazy val providerDocker =
+  lazy val providerContainer =
     libraryDependencies ++= common ++ Akka.all ++ Circe.all ++ Seq(
-      Akka.unixDomain)
-
-  lazy val providerKubernetes = libraryDependencies ++= common ++ Akka.all ++
-    Seq("io.skuber" %% "skuber" % "2.6.0")
+      Akka.unixDomain,
+      "io.skuber" %% "skuber" % "2.6.0")
 
   lazy val providerGit = libraryDependencies ++= common ++ Akka.all ++ Circe.all
+
   lazy val providerWebhook =
     libraryDependencies ++= common ++ Akka.all ++ Circe.all
 }
