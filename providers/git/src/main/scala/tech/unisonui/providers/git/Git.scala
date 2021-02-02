@@ -1,4 +1,4 @@
-package tech.unisonui.providers.git.git
+package tech.unisonui.providers.git
 
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -20,8 +20,9 @@ import io.circe.yaml.parser
 import tech.unisonui.models.{Metadata, Service, ServiceEvent}
 import tech.unisonui.protobuf.ProtobufCompiler
 import tech.unisonui.protobuf.data.Schema._
-import tech.unisonui.providers.git._
-import tech.unisonui.providers.git.git.data._
+import tech.unisonui.providers._
+import tech.unisonui.providers.git.data._
+import tech.unisonui.providers.git.data.configuration._
 import tech.unisonui.providers.git.process.{Process, ProcessArgs}
 import tech.unisonui.providers.git.settings.{Location, RepositorySettings}
 
@@ -254,7 +255,8 @@ object Git extends LazyLogging {
         new String(Files.readAllBytes(configPath), StandardCharsets.UTF_8)
       parser
         .parse(yaml)
-        .flatMap(_.as[Configuration])
+        .flatMap(_.as[Versioned])
+        .map(_.toConfiguration)
         .valueOr(throw _)
     } match {
       case Success(config)                 => Some(config)

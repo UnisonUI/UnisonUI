@@ -1,4 +1,4 @@
-package tech.unisonui.providers.git.git.data
+package tech.unisonui.providers.git.data
 import cats.syntax.functor._
 import cats.syntax.option._
 import io.circe.{Decoder, HCursor}

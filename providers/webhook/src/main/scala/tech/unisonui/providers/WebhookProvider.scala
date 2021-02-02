@@ -1,4 +1,4 @@
-package tech.unisonui.providers.webhook
+package tech.unisonui.providers
 
 import akka.NotUsed
 import akka.actor.typed.ActorSystem

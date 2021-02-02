@@ -1,4 +1,4 @@
-package tech.unisonui.providers.git.git
+package tech.unisonui.providers.git
 
 import java.nio.file.{Files, Path, Paths}
 
@@ -8,7 +8,7 @@ import cats.syntax.option._
 import org.scalatest.Inside
 import tech.unisonui.models.{Metadata, Service, ServiceEvent}
 import tech.unisonui.protobuf.data.Schema
-import tech.unisonui.providers.git.git.data._
+import tech.unisonui.providers.git.data._
 
 import scala.concurrent.duration._
 

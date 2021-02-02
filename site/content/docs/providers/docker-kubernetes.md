@@ -30,7 +30,7 @@ The docker provider list and detect all running containers in real time.
 
 ```hocon
 unisonui {
-  providers += "tech.unisonui.providers.docker.DockerProvider"
+  providers += "tech.unisonui.providers.DockerProvider"
   provider.docker {
     host =  "unix:///var/run/docker.sock" // Host of the docker daemon
     labels {

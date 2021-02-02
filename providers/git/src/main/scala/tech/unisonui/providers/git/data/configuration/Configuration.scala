@@ -1,8 +1,9 @@
-package tech.unisonui.providers.git.git.data
+package tech.unisonui.providers.git.data.configuration
 
 import io.circe.generic.auto._
 import io.circe.{Decoder, HCursor}
 import tech.unisonui.models.Service
+import tech.unisonui.providers.git.data.OpenApi
 
 final case class Configuration(name: Option[String],
                                openapi: Option[OpenApiSetting],
@@ -16,6 +17,7 @@ final case class GrpcSetting(servers: Map[String, Service.Grpc.Server],
 
 final case class ProtobufSetting(maybeName: Option[String],
                                  servers: Map[String, Service.Grpc.Server])
+
 object Configuration {
   implicit val decoder: Decoder[Configuration] = (cursor: HCursor) =>
     for {

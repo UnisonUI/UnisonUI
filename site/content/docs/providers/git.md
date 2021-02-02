@@ -30,7 +30,7 @@ If you are using the docker image, there is **no need** to install them.
 
 ```hocon
 unisonui {
-  providers += "tech.unisonui.providers.git.GitProvider"
+  providers += "tech.unisonui.providers.GitProvider"
 
   provider.git {
     cache-duration = "2 hours" // Interval between each clone....

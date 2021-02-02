@@ -1,4 +1,4 @@
-package tech.unisonui.providers.git.git
+package tech.unisonui.providers.git
 
 import java.io.File
 import java.nio.file.Path

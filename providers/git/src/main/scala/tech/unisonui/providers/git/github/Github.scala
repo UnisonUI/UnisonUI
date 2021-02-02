@@ -13,7 +13,7 @@ import akka.stream.scaladsl.{
 import com.typesafe.scalalogging.LazyLogging
 import tech.unisonui.Concurrency
 import tech.unisonui.providers.git.Source
-import tech.unisonui.providers.git.git.data.Repository
+import tech.unisonui.providers.git.data.Repository
 import tech.unisonui.providers.git.github.data.Node
 
 import scala.concurrent.ExecutionContext

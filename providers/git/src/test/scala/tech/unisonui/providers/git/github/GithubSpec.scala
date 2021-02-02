@@ -10,7 +10,7 @@ import akka.stream.scaladsl.Sink
 import base.TestBase
 import io.circe.syntax._
 import org.scalatest.{Inside, Inspectors}
-import tech.unisonui.providers.git.git.data.{Repository => GitRepository}
+import tech.unisonui.providers.git.data.{Repository => GitRepository}
 import tech.unisonui.providers.git.github.data.{Node, Repository}
 import tech.unisonui.providers.git.settings.{
   GithubSettings,

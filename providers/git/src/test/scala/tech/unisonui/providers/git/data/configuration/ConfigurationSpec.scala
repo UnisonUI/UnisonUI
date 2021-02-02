@@ -1,4 +1,4 @@
-package tech.unisonui.providers.git.git.data
+package tech.unisonui.providers.git.data.configuration
 
 import cats.syntax.either._
 import cats.syntax.option._
@@ -6,6 +6,7 @@ import io.circe.yaml.parser
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import tech.unisonui.models.Service
+import tech.unisonui.providers.git.data._
 
 class ConfigurationSpec extends AnyFlatSpec with Matchers {
   it should "decode a unisonui config file" in {
@@ -17,19 +18,18 @@ class ConfigurationSpec extends AnyFlatSpec with Matchers {
 """.stripMargin
     val unisonui = parser
       .parse(input)
-      .flatMap(_.as[Configuration])
+      .flatMap(_.as[Versioned])
       .valueOr(throw _)
-    unisonui shouldBe Configuration(
+    unisonui shouldBe Version1(
       "test".some,
-      OpenApiSetting(
-        UnnamedOpenApi("file.yaml") :: NamedOpenApi("another service",
-                                                    "other.yaml",
-                                                    None) :: Nil,
-        useProxy = false).some,
-      None)
+      UnnamedOpenApi("file.yaml") :: NamedOpenApi("another service",
+                                                  "other.yaml",
+                                                  None) :: Nil,
+      useProxy = false)
   }
   it should "decode a unisonui config file with grpc" in {
-    val input = """name: "test"
+    val input = """version: "2"
+|name: "test"
 |openapi:
 |  useProxy: true
 |  specifications:
@@ -52,9 +52,9 @@ class ConfigurationSpec extends AnyFlatSpec with Matchers {
 """.stripMargin
     val unisonui = parser
       .parse(input)
-      .flatMap(_.as[Configuration])
+      .flatMap(_.as[Versioned])
       .valueOr(throw _)
-    unisonui shouldBe Configuration(
+    unisonui shouldBe Version2(
       "test".some,
       OpenApiSetting(
         UnnamedOpenApi("file.yaml") :: NamedOpenApi("another service",
