@@ -30,7 +30,7 @@ object Dependencies {
 
   object Grpc {
     private val grpcVersion     = "1.35.0"
-    private val protobufVersion = "3.13.0"
+    private val protobufVersion = "3.14.0"
     private val protobuf =
       "com.google.protobuf" % "protobuf-java" % protobufVersion
     private val grpcCore        = "io.grpc" % "grpc-core"         % grpcVersion
@@ -43,6 +43,8 @@ object Dependencies {
   object Akka {
     private val akkaVersion          = "2.6.12"
     private val akkaHttpVersion      = "10.2.3"
+    private val akkaVersion          = "2.6.10"
+    private val akkaHttpVersion      = "10.2.2"
     private val alpakkaVersion       = "2.0.2"
     private val akkaHttpCirceVersion = "1.35.3"
 
@@ -102,14 +104,13 @@ object Dependencies {
       Circe.schema,
       Circe.parser)
 
-  lazy val providerDocker =
+  lazy val providerContainer =
     libraryDependencies ++= common ++ Akka.all ++ Circe.all ++ Seq(
-      Akka.unixDomain)
-
-  lazy val providerKubernetes = libraryDependencies ++= common ++ Akka.all ++
-    Seq("io.skuber" %% "skuber" % "2.6.0")
+      Akka.unixDomain,
+      "io.skuber" %% "skuber" % "2.6.0")
 
   lazy val providerGit = libraryDependencies ++= common ++ Akka.all ++ Circe.all
+
   lazy val providerWebhook =
     libraryDependencies ++= common ++ Akka.all ++ Circe.all
 }

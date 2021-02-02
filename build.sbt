@@ -14,11 +14,7 @@ lazy val root = Project("UnisonUI", file("."))
   .settings(aliases)
 
 lazy val unisonUi = Projects.unisonUi
-  .dependsOn(unisonUiCore,
-             providerDocker,
-             providerKubernetes,
-             providerGit,
-             providerWebhook)
+  .dependsOn(unisonUiCore, providerContainer, providerGit, providerWebhook)
   .settings(Dependencies.unisonUi)
   .settings(DockerSettings.settings)
   .settings(mainClass in Compile := Some("tech.unisonui.server.Main"))
@@ -29,7 +25,7 @@ lazy val unisonUiCore = Projects.unisonUiCore
   .settings(Dependencies.unisonUiCore)
 
 lazy val providers = (project in file("providers"))
-  .aggregate(providerDocker, providerKubernetes, providerGit, providerWebhook)
+  .aggregate(providerContainer, providerGit, providerWebhook)
 
 lazy val providerWebhook = Projects.providerWebhook
   .dependsOn(unisonUiCore)
@@ -39,13 +35,9 @@ lazy val providerGit = Projects.providerGit
   .dependsOn(unisonUiCore)
   .settings(Dependencies.providerGit)
 
-lazy val providerKubernetes = Projects.providerKubernetes
+lazy val providerContainer = Projects.providerContainer
   .dependsOn(unisonUiCore)
-  .settings(Dependencies.providerKubernetes)
-
-lazy val providerDocker = Projects.providerDocker
-  .dependsOn(unisonUiCore)
-  .settings(Dependencies.providerDocker)
+  .settings(Dependencies.providerContainer)
 
 val projects: Seq[ProjectReference] = Seq(
   unisonUiCore,
