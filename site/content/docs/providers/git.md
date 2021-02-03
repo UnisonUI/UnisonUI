@@ -28,7 +28,7 @@ If you are using the docker image, there is **no need** to install them.
 
 ## Default configuration
 
-```hocon
+```ocon
 unisonui {
   providers += "tech.unisonui.providers.GitProvider"
 

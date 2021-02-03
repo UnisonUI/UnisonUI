@@ -1,6 +1,6 @@
 +++
-title = "Docker and Kubernetes providers"
-description = "How to use the docker and Kubernetes providers"
+title = "Container provider"
+description = "How to use container provider"
 date = 2021-01-18T18:25:09Z
 weight = 30
 draft = false
@@ -8,10 +8,45 @@ bref = ""
 toc = true
 +++
 
-# Docker and Kubernetes providers
+# Container providers
 
-The Docker and Kubernetes providers are actually two separated providers, but due
-to there similarities, there are described together.
+The container provider allow *UnisonUI* to discover services through `Docker` and `Kubernetes`
+
+## Default configuration
+
+```hocon
+unisonui {
+  providers += "tech.unisonui.providers.ContainerProvider"
+  provider.container {
+      kubernetes {
+        enabled = yes // Enable discovery through Kubernetes
+        polling-interval = "1 minute" // Interval between each Kubernetes API.
+      }
+
+      docker {
+        enabled = yes // Enable discovery through Docker
+        host =  "unix:///var/run/docker.sock" // Host of the docker daemon
+      }
+
+      // List of labels used by the provider to detect specification files
+      labels {
+        service-name = "unisonui.service-name" // Service name. This label is mandatory.
+
+        openapi {
+          port  = "unisonui.openapi.port" // HTTP port where the openapi specification file can be found.
+          protocol  = "unisonui.openapi.protocol" // Protocol to use (default to http)
+          specification-path = "unisonui.openapi.path" // URI of the openapi specification file. Default to /specification.yaml
+          use-proxy = "unisonui.openapi.use-proxy" // Should enable the proxy for this service (disabled by default)
+        }
+
+        grpc {
+          port = "unisonui.grpc.port" // GRPC port where the reflection server can be contacted.
+          tls = "unisonui.grpc.tls" // Disabled by default. Tell the GRPC to use a TLS connection.
+        }
+      }
+    }
+}
+```
 
 ## GRPC specification support
 
@@ -20,43 +55,23 @@ Both providers support GRPC specifications using.
 In order to retrieve those specifications, your services need to expose the
 [GRPC server reflection protocol](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md).
 
-## Docker provider
+## Docker services discovery
 
-The docker provider list and detect all running containers in real time.
+The docker services discovery list and detect all running containers in real time.
 
 **Warning: the docker provider DOES NOT support TLS connection yet**
-
-### Default configuration
-
-```hocon
-unisonui {
-  providers += "tech.unisonui.providers.DockerProvider"
-  provider.docker {
-    host =  "unix:///var/run/docker.sock" // Host of the docker daemon
-    labels {
-      // List of labels used by the provider to detect specification files
-      service-name = "unisonui.service-name" // Service name. This label is mandatory.
-      port  = "unisonui.specification.port" // HTTP port where the openapi specification file can be found
-      specification-path = "unisonui.specification.path" //URI of the openapi specification file. Default to /specification.yaml
-      use-proxy = "unisonui.specification.use-proxy" //Should enable the proxy for this service (disabled by default)
-      grpc-port = "unisonui.grpc.port" // GRPC port where the reflection server can be contacted.
-      grpc-tls = "unisonui.grpc.tls" // Disabled by default. Tell the GRPC to use a TLS connection.
-    }
-  }
-}
-```
 
 ### Usage
 
 A compatible container **MUST** include the following labels:
 
 - A label specifying the service's name `unisonui.service-name`
-- A label specifying the port where the OpenApi spec lays `unisonui.specification.port` for OpenApi specifications.
+- A label specifying the port where the OpenApi spec lays `unisonui.openapi.port` for OpenApi specifications.
 - A label specifying the port where the GRPC spec lays `unisonui.grpc.port` for GRPC specifications.
 
 Optional labels:
 
-- A label specifying the path where the OpenApi spec lays `unisonui.specification.path`.
+- A label specifying the path where the OpenApi spec lays `unisonui.openapi.path`.
   
   Default path: `/specification.yaml`
 
@@ -66,32 +81,11 @@ Example:
 docker  run --rm -l "unisonui.port=80" -l "unisonui.service-name=nginx" -v $(pwd):/usr/share/nginx/html:ro nginx:alpine
 ```
 
-## Kubernetes provider
+## Kubernetes services discovery
 
-The Kubernetes provider lists and detects all running services in real time.
+The Kubernetes services discovery lists and detects all running services in real time.
 
 In order to discover specifications in Kubernetes, *UnisonUI* **MUST** run inside the same Kubernetes cluster of your services you want to be discovered.
-
-### Default configuration
-
-```hocon
-unisonui {
-  providers += "tech.unisonui.providers.kubernetes.KubernetesProvider"
-  provider.kubernetes {
-    polling-interval = "1 minute" // Interval between each Kubernetes API.
-    labels {
-       // List of labels used by the provider to detect specification files
-      service-name = "unisonui.service-name" // Service name. This label is mandatory.
-      port  = "unisonui.specification.port" // HTTP port where the openapi specification file can be found
-      specification-path = "unisonui.specification.path" //URI of the openapi specification file. Default to /specification.yaml
-      use-proxy = "unisonui.specification.use-proxy" //Should enable the proxy for this service (disabled by default)
-      grpc-port = "unisonui.grpc.port" // GRPC port where the reflection server can be contacted.
-      grpc-tls = "unisonui.grpc.tls" // Disabled by default. Tell the GRPC to use a TLS connection.
-    }
-  }
-}
-
-```
 
 ### Usage
 
@@ -101,12 +95,12 @@ The value for the interval is defined by `polling-interval` which default to `1 
 A compatible service **MUST** have the following labels on it:
 
 - A label specifying the service's name `unisonui.service-name`
-- A label specifying the port where the OpenApi spec lays `unisonui.specification.port` for OpenApi specifications.
+- A label specifying the port where the OpenApi spec lays `unisonui.openapi.port` for OpenApi specifications.
 - A label specifying the port where the GRPC spec lays `unisonui.grpc.port` for GRPC specifications.
 
 Optional labels:
 
-- A label specifying the path where the OpenApi spec lays `unisonui.specification.path`.
+- A label specifying the path where the OpenApi spec lays `unisonui.openapi.path`.
   
   Default path is: `/specification.yaml`
 
@@ -119,8 +113,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    unisonui.specification.port: "80"
-    unisonui.specification.protocol: http
+    unisonui.openapi.port: "80"
+    unisonui.openapi.protocol: http
   name: specification
   namespace: default
 spec:
@@ -186,4 +180,3 @@ spec:
       securityContext: {}
       terminationGracePeriodSeconds: 30
 ```
-
