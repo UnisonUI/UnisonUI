@@ -24,7 +24,7 @@ lazy val unisonUi = Projects.unisonUi
 lazy val unisonUiCore = Projects.unisonUiCore
   .settings(Dependencies.unisonUiCore)
 
-lazy val providers = (project in file("providers"))
+lazy val providers = (project in file("modules/providers"))
   .aggregate(providerContainer, providerGit, providerWebhook)
 
 lazy val providerWebhook = Projects.providerWebhook

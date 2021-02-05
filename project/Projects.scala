@@ -22,10 +22,10 @@ object Projects {
         case x                                    => MergeStrategy.last
       })
 
-  val unisonUiCore = createModule("unison-ui-core", "core")
+  val unisonUiCore = createModule("unison-ui-core", "modules/core")
     .settings(resolvers += "jitpack".at("https://jitpack.io"))
 
-  val unisonUi = createModule("unison-ui", "unison-ui")
+  val unisonUi = createModule("unison-ui", "modules/unison-ui")
     .settings(
       name := "unisonui",
       mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh",
@@ -34,7 +34,8 @@ object Projects {
     )
 
   val providerContainer =
-    createModule("provider-container", "providers/container")
-  val providerGit     = createModule("provider-git", "providers/git")
-  val providerWebhook = createModule("provider-webhook", "providers/webhook")
+    createModule("provider-container", "modules/providers/container")
+  val providerGit = createModule("provider-git", "modules/providers/git")
+  val providerWebhook =
+    createModule("provider-webhook", "modules/providers/webhook")
 }

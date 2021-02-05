@@ -11,7 +11,7 @@ object DockerSettings {
         s"https://github.com/kelseyhightower/confd/releases/download/v$confdVersion/confd-$confdVersion-linux-amd64"
       val appDir: File = stage.value
       val entrypointFile: File =
-        new File(baseDirectory.value, "../docker/entrypoint.sh")
+        new File(baseDirectory.value, "../../docker/entrypoint.sh")
       val targetDir = "/app"
       new Dockerfile {
         from("alpine:3.12.0")
