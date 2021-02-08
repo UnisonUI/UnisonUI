@@ -1,6 +1,7 @@
 import sbt._
 import sbt.Keys._
-import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
+import com.typesafe.sbt.packager.Keys._
+import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport.Universal
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
 import sbtassembly.AssemblyPlugin
 import sbtassembly.AssemblyPlugin.autoImport._
@@ -28,9 +29,9 @@ object Projects {
   val unisonUi = createModule("unison-ui", "modules/unison-ui")
     .settings(
       name := "unisonui",
-      mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh",
-      mappings in Universal ++= directory("docker/confd"),
-      mappings in Universal ++= directory("docker/statics")
+      packageName in Universal := name.value,
+      mappings in Universal ++= directory("docker/statics"),
+      topLevelDirectory in Universal := Some(packageName.value)
     )
 
   val providerContainer =

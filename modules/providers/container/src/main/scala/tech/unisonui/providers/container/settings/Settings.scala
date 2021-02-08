@@ -47,8 +47,8 @@ object Settings {
     val openApiLabels =
       OpenApiLabels(port, protocol, specificationPath, useProxy).some
 
-    val grpcPort   = config.getString(s"$GrpcLabelsPath.grpc-port")
-    val grpcTls    = config.getString(s"$GrpcLabelsPath.grpc-tls")
+    val grpcPort   = config.getString(s"$GrpcLabelsPath.port")
+    val grpcTls    = config.getString(s"$GrpcLabelsPath.tls")
     val grpcLabels = GrpcLabels(grpcPort, grpcTls).some
 
     Settings(dockerSettings,

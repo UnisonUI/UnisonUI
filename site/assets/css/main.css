@@ -178,22 +178,19 @@ main {
 
   .previous-next {
     @apply relative flex justify-between;
+    @apply flex-col md:flex-row;
     bottom: -1rem;
-    #previous {
-      a:before {
-        content: "< ";
-      }
-    }
-    #next {
-      a:after {
-        content: " >";
+    a {
+      @apply font-normal text-black;
+      div {
+        @apply h-full p-6 bg-white hover:shadow-xl rounded border-b-4 border-blue-600 shadow-md;
       }
     }
   }
 }
 
 code {
-  @apply font-code whitespace-pre-wrap;
+  @apply font-code whitespace-pre-wrap break-words;
 
   :not(pre) > & {
     @apply bg-gray-700 text-white;
@@ -208,4 +205,16 @@ pre {
 :not(.highlight) > pre {
   @apply text-white;
   background-color: #202020;
+}
+
+.error404 {
+  .error-text {
+    font-size: 130px;
+    @screen md {
+      font-size: 220px;
+    }
+  }
+  .country-road {
+    @apply absolute bottom-0 mb-6 text-center text-xl;
+  }
 }

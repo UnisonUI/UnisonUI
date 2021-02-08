@@ -8,7 +8,7 @@ bref = ""
 toc = true
 +++
 
-# Container providers
+# Container provider
 
 The container provider allow *UnisonUI* to discover services through `Docker` and `Kubernetes`
 

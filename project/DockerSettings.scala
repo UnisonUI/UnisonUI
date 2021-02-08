@@ -12,6 +12,8 @@ object DockerSettings {
       val appDir: File = stage.value
       val entrypointFile: File =
         new File(baseDirectory.value, "../../docker/entrypoint.sh")
+      val confFiles: File =
+        new File(baseDirectory.value, "../../docker/confd")
       val targetDir = "/app"
       new Dockerfile {
         from("alpine:3.12.0")
@@ -25,6 +27,8 @@ object DockerSettings {
             "curl")
         runShell("curl", "-L", confdUrl, ">", "/usr/local/bin/confd")
         run("chmod", "+x", "/usr/local/bin/confd")
+        copy(entrypointFile, s"$targetDir/entrypoint.sh")
+        copy(confFiles, s"$targetDir/confd/")
         entryPoint(s"$targetDir/entrypoint.sh", executableScriptName.value)
         workDir(targetDir)
         copy(appDir, targetDir)

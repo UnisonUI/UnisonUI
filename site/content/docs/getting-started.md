@@ -42,13 +42,12 @@ You can download the binary here.
 Once downloaded unzip the package, go to the created folder and run:
 
 ```sh
-curl "" # Download the package
-unzip "" # Unzip the package
-cd .. # Go to the extracted folded
+curl https://github.com/UnisonUI/unisonui/releases/download/v1.0.0/unisonui.zip # Download the package
+unzip unisonui.zip # Unzip the package
+cd unisonui # Go to the extracted folded
 bin/unisonui # Start UnisonUI
 ```
 
-More information about configuring UnisonUI can be found here.
-
+More information about how to configure UnisonUI can be found [here](docs/configuration/).
 
 ## Build from source

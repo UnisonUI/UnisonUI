@@ -19,7 +19,7 @@ lazy val unisonUi = Projects.unisonUi
   .settings(DockerSettings.settings)
   .settings(mainClass in Compile := Some("tech.unisonui.server.Main"))
   .settings(Tasks.tasks)
-  .enablePlugins(JavaAppPackaging, sbtdocker.DockerPlugin)
+  .enablePlugins(JavaAppPackaging, UniversalPlugin, sbtdocker.DockerPlugin)
 
 lazy val unisonUiCore = Projects.unisonUiCore
   .settings(Dependencies.unisonUiCore)
