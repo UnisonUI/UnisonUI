@@ -17,8 +17,8 @@ paths:
           application/json:
             schema:
               oneOf:
-                - $ref: '#/components/schemas/OpenApi' 
-                - $ref: '#/components/schemas/Grpc' 
+                - $ref: '#/components/schemas/OpenApi'
+                - $ref: '#/components/schemas/Grpc'
       responses:
         204:
           description: Service successfully inserted or updated
