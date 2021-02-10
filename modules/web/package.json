@@ -67,7 +67,7 @@
     "react-syntax-highlighter": "^15.4.3",
     "rimraf": "^3.0.1",
     "style-loader": "^2.0.0",
-    "tailwindcss": "^1.9.6",
+    "tailwindcss": "^2.0.3",
     "tailwindcss-neumorphism": "^0.1.0",
     "terser-webpack-plugin": "^4.2.3",
     "webpack": "^4.46.0",
@@ -83,8 +83,8 @@
     "eventsource": "^1.0.7",
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
-    "react-konami-code": "^2.0.0-beta.1",
+    "react-konami-code": "^2.0.1-beta.1",
     "react-router-dom": "^5.2.0",
-    "swagger-ui-react": "^3.41.1"
+    "swagger-ui-react": "^3.42.0"
   }
 }
