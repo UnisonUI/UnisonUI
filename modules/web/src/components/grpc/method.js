@@ -8,15 +8,17 @@ const CancelToken = axios.CancelToken
 
 const TryItOut = ({ onTryoutClick, onCancelClick, enabled }) => (
   <div className="try-out">
-    {enabled ? (
+    {enabled
+      ? (
       <button className="btn try-out__btn cancel" onClick={onCancelClick}>
         Cancel
       </button>
-    ) : (
+        )
+      : (
       <button className="btn try-out__btn" onClick={onTryoutClick}>
         Try it out
       </button>
-    )}
+        )}
   </div>
 )
 
@@ -212,16 +214,20 @@ export default class Method extends Component {
             >
               {!tryItOutEnabled ? null : <Execute onExecute={this.onExecute} />}
 
-              {!tryItOutEnabled || !ws || !response ? null : (
+              {!tryItOutEnabled || !ws || !response
+                ? null
+                : (
                 <Clear onClear={this.onClear} />
-              )}
+                  )}
             </div>
 
-            {executeInProgress ? (
+            {executeInProgress
+              ? (
               <div className="loading-container">
                 <div className="loading"></div>
               </div>
-            ) : null}
+                )
+              : null}
             <div className="responses-wrapper">
               <div className="opblock-section-header">
                 <h4>

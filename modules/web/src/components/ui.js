@@ -226,15 +226,19 @@ export default class App extends Component {
             {this.getServices()}
           </Menu>
           <main id="page-wrap">
-            {service ? (
-              type === 'openapi' ? (
+            {service
+              ? (
+                  type === 'openapi'
+                    ? (
                 <SwaggerWithRouter useProxy={useProxy} />
-              ) : (
+                      )
+                    : (
                 <GrpcWithRouter title={service.name} />
-              )
-            ) : (
+                      )
+                )
+              : (
               <NoService />
-            )}
+                )}
           </main>
         </Router>
       </div>

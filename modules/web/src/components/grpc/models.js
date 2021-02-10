@@ -241,7 +241,8 @@ class ObjectModel extends Component {
 
     return (
       <span className="model">
-        {!isOneOf ? (
+        {!isOneOf
+          ? (
           <ModelCollapse
             name={name}
             toggleCollapsed={toggleCollapsed}
@@ -249,9 +250,10 @@ class ObjectModel extends Component {
           >
             {body}
           </ModelCollapse>
-        ) : (
-          body
-        )}
+            )
+          : (
+              body
+            )}
       </span>
     )
   }

@@ -39,11 +39,13 @@ class Grpc extends Component {
     const id = this.props.location.pathname.substring(1)
     return (
       <div>
-        {!loading ? (
+        {!loading
+          ? (
           <Layout title={this.props.title} spec={this.state.spec} id={id} />
-        ) : (
-          loading
-        )}
+            )
+          : (
+              loading
+            )}
       </div>
     )
   }

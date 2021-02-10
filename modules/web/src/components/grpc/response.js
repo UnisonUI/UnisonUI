@@ -21,19 +21,21 @@ export const Response = ({ response }) => {
           <tr className="response">
             <td className="response-col_status">{status}</td>
             <td className="response-col_description">
-              {Array.isArray(response) ? (
-                response.map((resp, i) => (
+              {Array.isArray(response)
+                ? (
+                    response.map((resp, i) => (
                   <div key={'response' + i}>
                     <h5>{resp.data ? 'Response' : 'Request'}</h5>
                     <HighlightCode code={resp.data || resp.value} />
                   </div>
-                ))
-              ) : (
+                    ))
+                  )
+                : (
                 <div>
                   <h5>Response</h5>
                   <HighlightCode code={response.data} />
                 </div>
-              )}
+                  )}
             </td>
           </tr>
         </tbody>

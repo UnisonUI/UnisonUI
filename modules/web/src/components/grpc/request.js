@@ -19,11 +19,13 @@ export default class Request extends Component {
 
   render () {
     const { value } = this.state
-    return this.props.isExecute ? (
+    return this.props.isExecute
+      ? (
       <RequestEditor value={value} onChange={this.onChange} />
-    ) : (
+        )
+      : (
       <HighlightCode code={value} className="example" />
-    )
+        )
   }
 }
 

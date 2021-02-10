@@ -4,9 +4,9 @@ import random from 'lodash-es/random'
 import each from 'lodash-es/each'
 import times from 'lodash-es/times'
 
-var className = 'cornify'
-var imageUrlTemplate = template('https://raw.github.com/akenn/cornify/master/images/<%= type %>/<%= id %>.gif')
-var types = [{
+const className = 'cornify'
+const imageUrlTemplate = template('https://raw.github.com/akenn/cornify/master/images/<%= type %>/<%= id %>.gif')
+const types = [{
   name: 'unicorn',
   count: 7
 }, {
@@ -15,7 +15,7 @@ var types = [{
 }]
 
 function getRandomImageSrc () {
-  var randomType = sample(types)
+  const randomType = sample(types)
 
   return imageUrlTemplate({
     type: randomType.name,
@@ -24,7 +24,7 @@ function getRandomImageSrc () {
 }
 
 function createRandomImage () {
-  var img = document.createElement('img')
+  const img = document.createElement('img')
 
   img.src = getRandomImageSrc()
   img.className = className
@@ -34,16 +34,16 @@ function createRandomImage () {
   img.style.transition = 'all .1s linear'
 
   img.onmouseover = function () {
-    var size = Math.random() + 0.5
-    var angle = Math.random() * 15 + 1 + 'deg'
-    var transform = 'rotate(' + angle + ') scale(' + size + ',' + size + ')'
+    const size = Math.random() + 0.5
+    const angle = Math.random() * 15 + 1 + 'deg'
+    const transform = 'rotate(' + angle + ') scale(' + size + ',' + size + ')'
 
     this.style.transform = transform
     this.style.WebkitTransform = transform
   }
 
   img.onmouseout = function () {
-    var transform = 'rotate(0deg) scale(1, 1)'
+    const transform = 'rotate(0deg) scale(1, 1)'
     this.style.transform = transform
     this.style.WebkitTransform = transform
   }
