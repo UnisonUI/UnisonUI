@@ -190,7 +190,7 @@ main {
 }
 
 code {
-  @apply font-code whitespace-pre-wrap break-words;
+  @apply font-code;
 
   :not(pre) > & {
     @apply bg-gray-700 text-white;
@@ -199,7 +199,7 @@ code {
 }
 
 pre {
-  @apply p-3 my-3 rounded-lg;
+  @apply p-3 my-3 rounded-lg overflow-auto;
 }
 
 :not(.highlight) > pre {
