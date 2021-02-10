@@ -20,8 +20,10 @@ class GitSpec extends TestBase with Inside {
   private val specs        = """specifications:
            |  - test2
            |""".stripMargin
-  private val grpcSpecs    = """specifications:
-           |  - test
+  private val grpcSpecs    = """version: "2"
+           |openapi:
+           |  specifications:
+           |    - test
            |grpc:
            |  servers:
            |    - address: 127.0.0.1
