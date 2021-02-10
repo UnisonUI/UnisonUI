@@ -92,9 +92,9 @@ main {
   .card {
     @apply transition-colors duration-300 ease-in-out;
     @apply p-8 bg-gray-200 hover:bg-gray-100 text-center;
-    @apply rounded-lg;
+    @apply rounded-lg shadow-md;
     .title {
-      @apply font-bold text-2xl hover:underline;
+      @apply font-bold text-2xl;
       @apply text-blue-500 hover:text-blue-600;
     }
   }
@@ -216,5 +216,16 @@ pre {
   }
   .country-road {
     @apply absolute bottom-0 mb-6 text-center text-xl;
+  }
+}
+
+#landing {
+  #getting-started {
+    @apply border-2 border-gray-800 rounded-sm;
+    @apply text-gray-800 font-bold;
+    @apply py-4 px-6 mr-2;
+    @apply flex items-center;
+    @apply hover:bg-gray-800 hover:text-white;
+    @apply transition ease-in-out duration-700;
   }
 }

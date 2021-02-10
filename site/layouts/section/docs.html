@@ -3,10 +3,11 @@
 {{ define "main"}}
 <div class="cards">
   {{ range .Data.Pages.ByWeight }}
-  <div class="card">
-    <h4 class="title"><a href="{{ .Permalink }}">{{ .Title }}</a></h4>
-    <p>{{ .Params.description }}</p>
-  </div>
+  <a href="{{ .Permalink }}">
+    <div class="card">
+      <h4 class="title">{{ .Title }}</h4>
+    </div>
+  </a>
   {{ end }}
 </div>
 {{ end }}
