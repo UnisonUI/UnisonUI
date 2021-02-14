@@ -46,7 +46,7 @@
           @apply font-body font-bold text-sm text-left;
           @apply border-opacity-25;
           padding: 12px 0;
-          border-bottom: 1px solid theme('colors.gray-500');
+          border-bottom: 1px solid theme('colors.gray.500');
         }
       }
     }

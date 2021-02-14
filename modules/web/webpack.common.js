@@ -1,4 +1,5 @@
 const path = require('path')
+const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
@@ -20,6 +21,9 @@ module.exports = {
   },
   module: {
     rules: [{
+        test: /\.html$/,
+        loader: 'html-loader'
+      }, {
         test: /\.((png)|(svg)|(gif))(\?v=\d+\.\d+\.\d+)?$/,
         loader: 'file-loader',
         options: {
@@ -55,6 +59,9 @@ module.exports = {
   },
 
   plugins: [
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+    }),
     new CopyPlugin({
       patterns: [{
         from: './src/images',
@@ -62,7 +69,7 @@ module.exports = {
       }]
     }),
     new HtmlWebPackPlugin({
-      template: './src/index.html',
+      template: path.join(__dirname, 'src', 'index.html'),
       filename: 'index.html'
     }),
     new CompressionPlugin({
@@ -76,7 +83,6 @@ module.exports = {
       filename: '[path][base].br[query]',
       algorithm: 'brotliCompress',
       compressionOptions: {
-        // zlib’s `level` option matches Brotli’s `BROTLI_PARAM_QUALITY` option.
         level: 11
       },
       threshold: 10240,

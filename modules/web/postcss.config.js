@@ -1,15 +1,18 @@
 const plugins = {
-  'postcss-import': { path: ['src/css'] },
-  'postcss-mixins': { mixinsDir: 'src/css/mixins' },
-  'postcss-simple-vars': {},
+  'postcss-import': {
+    path: ['src/css']
+  },
+  'postcss-mixins': {
+    mixinsDir: 'src/css/mixins'
+  },
   'postcss-url': {},
-  tailwindcss: {},
   'postcss-font-magician': {},
+  tailwindcss: {},
   'postcss-nested': {},
   'postcss-preset-env': {
+    stage: 0,
     browsers: 'last 2 versions'
-  },
-  autoprefixer: {}
+  }
 }
 
 if (process.env.NODE_ENV === 'production') {
