@@ -7,7 +7,8 @@
     "@fullhuman/postcss-purgecss": "^4.0.0",
     "autoprefixer": "^10.2.4",
     "postcss-nested": "^5.0.3",
-    "tailwindcss": "^2.0.3"
+    "tailwindcss": "^2.0.3",
+    "tocbot": "^4.12.2"
   },
   "author": "",
   "license": "ISC"

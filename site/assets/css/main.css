@@ -35,7 +35,7 @@ h3 {
   }
 
   .center {
-    @apply md:w-4/5 md:mx-auto px-4 sm:px-6 lg:px-8;
+    @apply px-4 md:w-4/5 md:mx-auto sm:px-6 lg:px-8;
   }
 
   & > header {
@@ -58,84 +58,103 @@ h3 {
 header {
   nav .menu {
     &.desktop {
-      @apply ml-10 flex items-baseline space-x-4;
+      @apply flex items-baseline ml-10 space-x-4;
     }
     &.mobile {
       @apply px-2 pt-2 pb-3 space-y-1 sm:px-3;
     }
 
     a {
-      @apply px-3 py-2 rounded-md text-lg font-medium;
+      @apply px-3 py-2 text-lg font-medium rounded-md;
       @apply text-gray-300 hover:bg-gray-700 hover:text-white;
 
       svg {
-        @apply w-6 h-6 mr-1 inline-block;
+        @apply inline-block w-6 h-6 mr-1;
       }
 
       &.active {
-        @apply bg-gray-900 text-white;
+        @apply text-white bg-gray-900;
       }
     }
   }
 }
 
 main {
-  @apply rounded-none shadow bg-white;
+  @apply bg-white rounded-none shadow;
   @screen sm {
     @apply rounded-lg;
   }
   @apply py-6 sm:px-6 lg:px-8;
 }
 
+.left-menu {
+  @apply hidden;
+  @apply top-0 flex-col;
+
+  &.show {
+    @apply flex !important;
+  }
+
+  @screen md {
+    @apply sticky flex w-1/6 h-screen overflow-x-hidden;
+  }
+
+  &::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    @apply bg-gray-700 rounded-lg;
+  }
+
+  &::-webkit-scrollbar-track {
+    @apply bg-gray-200 rounded-lg;
+  }
+
+  ul {
+    @apply m-0;
+    ul {
+      @apply ml-2;
+    }
+    li {
+      @apply my-2;
+      a {
+        @apply transition-all;
+        @apply p-1;
+        @apply rounded-lg cursor-pointer leading-8;
+        @apply flex justify-between;
+        &:hover {
+          @apply bg-gray-100;
+        }
+        &.active {
+          @apply text-blue-600 bg-gray-100;
+        }
+      }
+    }
+  }
+}
+
 .cards {
   @apply grid grid-cols-1 sm:grid-cols-3 gap-8;
   .card {
     @apply transition-colors duration-300 ease-in-out;
-    @apply p-8 bg-gray-200 hover:bg-gray-100 text-center;
+    @apply p-8 text-center bg-gray-200 hover:bg-gray-100;
     @apply rounded-lg shadow-md;
     .title {
-      @apply font-bold text-2xl;
+      @apply text-2xl font-bold;
       @apply text-blue-500 hover:text-blue-600;
     }
   }
 }
 
 .content {
-  @apply flex md:flex-row flex-col;
-  a {
-    @apply transition-all;
-    &:hover {
-      @apply font-bold text-blue-600;
-    }
-  }
-
-  .toc {
-    @apply p-4 shadow bg-gray-100 sticky overflow-y-auto;
-    top: 50px;
-
-    @screen md {
-      @apply border-r pr-2 p-0;
-      @apply w-1/6;
-      @apply shadow-none bg-white;
-      height: calc(100vh - 50px);
-    }
-
-    h1 {
-      @apply text-lg pb-4;
-    }
-
-    #TableOfContents {
-      @apply hidden md:block;
-      &.show {
-        @apply block !important;
-      }
-
-      ul {
-        @apply px-2;
-      }
-      li {
-        @apply pt-2;
-        @apply text-blue-500;
+  @apply flex flex-col md:flex-row;
+  article {
+    a {
+      @apply transition-all;
+      &:hover {
+        @apply font-bold text-blue-600;
       }
     }
   }
@@ -159,20 +178,20 @@ main {
       @apply py-1;
     }
     h1 {
-      @apply text-4xl my-8;
+      @apply my-8 text-4xl;
       @apply border-b-2 border-blue-500;
     }
 
     h2 {
-      @apply text-2xl my-4;
+      @apply my-4 text-2xl;
     }
 
     h3 {
-      @apply text-xl my-4;
+      @apply my-4 text-xl;
     }
 
     li {
-      @apply list-inside list-disc;
+      @apply list-disc list-inside;
     }
   }
 
@@ -183,7 +202,7 @@ main {
     a {
       @apply font-normal text-black;
       div {
-        @apply h-full p-6 bg-white hover:shadow-xl rounded border-b-4 border-blue-600 shadow-md;
+        @apply h-full p-6 bg-white border-b-4 border-blue-600 rounded shadow-md hover:shadow-xl;
       }
     }
   }
@@ -193,13 +212,13 @@ code {
   @apply font-code;
 
   :not(pre) > & {
-    @apply bg-gray-700 text-white;
+    @apply text-white bg-gray-700;
     @apply px-2 rounded;
   }
 }
 
 pre {
-  @apply p-3 my-3 rounded-lg overflow-auto;
+  @apply p-3 my-3 overflow-auto rounded-lg;
 }
 
 :not(.highlight) > pre {
@@ -215,17 +234,28 @@ pre {
     }
   }
   .country-road {
-    @apply absolute bottom-0 mb-6 text-center text-xl;
+    @apply absolute bottom-0 mb-6 text-xl text-center;
   }
 }
 
 #landing {
   #getting-started {
     @apply border-2 border-gray-800 rounded-sm;
-    @apply text-gray-800 font-bold;
-    @apply py-4 px-6 mr-2;
+    @apply font-bold text-gray-800;
+    @apply px-6 py-4 mr-2;
     @apply flex items-center;
     @apply hover:bg-gray-800 hover:text-white;
     @apply transition ease-in-out duration-700;
+  }
+  #features {
+    @apply container flex flex-col items-center justify-between mx-auto md:flex-row space-y-4 md:space-y-0 md:space-x-4;
+    .feature {
+      .title {
+        @apply mb-4 text-2xl font-medium text-black font-title;
+      }
+      .image {
+        @apply object-cover object-bottom rounded;
+      }
+    }
   }
 }

@@ -1,5 +1,5 @@
 +++
-title = "Getting started"
+title = "Usage"
 description = "Up and running in under a minute"
 weight = -100
 draft = false

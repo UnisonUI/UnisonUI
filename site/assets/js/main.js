@@ -1,4 +1,4 @@
-let toc = document.querySelector("#TableOfContents")
+let toc = document.querySelector(".left-menu")
 
 document.querySelector("#toc-button").addEventListener('click', (e) => {
   e.preventDefault()

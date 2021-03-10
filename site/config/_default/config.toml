@@ -16,7 +16,7 @@ noClasses = false
 [[menu.main]]
 name = 'Docs'
 weight = -100
-url = '/docs/'
+url = '/docs/getting-started/usage/'
 
 [[menu.main]]
 name = 'Releases'
