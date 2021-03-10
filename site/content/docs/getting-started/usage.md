@@ -48,6 +48,6 @@ cd unisonui # Go to the extracted folded
 bin/unisonui # Start UnisonUI
 ```
 
-More information about how to configure UnisonUI can be found [here](docs/configuration/).
+More information about how to configure UnisonUI can be found [here](../configuration/).
 
 ## Build from source
