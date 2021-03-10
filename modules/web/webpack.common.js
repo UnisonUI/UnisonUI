@@ -1,5 +1,5 @@
 const path = require('path')
-const webpack = require('webpack');
+const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
@@ -60,7 +60,7 @@ module.exports = {
 
   plugins: [
     new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer'],
+      Buffer: ['buffer', 'Buffer']
     }),
     new CopyPlugin({
       patterns: [{
