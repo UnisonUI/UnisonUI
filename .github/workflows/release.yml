@@ -47,6 +47,13 @@ jobs:
         path: rest-ui/node_modules
         key: ${{ runner.os }}-node-${{ hashFiles('rest-ui/package.*') }}
         restore-keys: ${{ runner.os }}-node-
+    - name: Install and run Kokai
+      env:
+        RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+      run: |
+        cargo install kokai --git https://github.com/MaethorNaur/kokai
+        kokai release -ref $RELEASE_VERSION  --url https://github.com/UnisonUI/UnisonUI > release.md
+        echo "\`docker pull unisonui/unisonui:${RELEASE_VERSION}\`" >> release.md
     - name: build
       run: sbt "project unison-ui; npmInstall; webpackProdTask; dockerBuildAndPush"
     - name: Create Release
