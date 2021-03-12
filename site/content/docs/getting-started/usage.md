@@ -49,5 +49,3 @@ bin/unisonui # Start UnisonUI
 ```
 
 More information about how to configure UnisonUI can be found [here](../configuration/).
-
-## Build from source
