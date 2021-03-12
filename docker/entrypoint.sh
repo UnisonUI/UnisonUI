@@ -2,7 +2,7 @@
 opts="-Dunisonui.http.statics-path=/app/statics/"
 
 while IFS='=' read -r name value; do
-  if [[ $name == 'UNISIOMUI_'* ]]; then
+  if [[ $name == 'UNISIONUI_'* ]]; then
     value=${!name}
     name=${name//__/-}
     name=${name//_/.}

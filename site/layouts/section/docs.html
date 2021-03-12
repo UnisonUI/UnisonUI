@@ -1,0 +1,11 @@
+{{ define "title"}}Documentations{{end}}
+{{ define "header"}} {{ partial "header" .}} {{end}}
+{{ define "main"}}
+{{ partial "left-menu" . }}
+{{ range first 1 .RegularPages }}
+{{.Title}}
+{{partial "content" . }}
+{{end}}
+{{ end }}
+
+{{ define "footer"}} {{ partial "footer" .}} {{end}}

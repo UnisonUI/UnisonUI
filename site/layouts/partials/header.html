@@ -1,0 +1,33 @@
+{{- $logo := resources.Get "images/favicons/favicon-32.png" -}}
+<nav class="border-gray-700 border-b-2">
+  <div class="flex items-center justify-between h-16">
+    <div class="flex items-center">
+      <div class="flex-shrink-0">
+        <a href="/"><img class="h-8 w-8" src="{{ $logo.Permalink }}" alt="{{.Site.Title}}"></a>
+      </div>
+      <div class="px-3 py-2 text-lg font-medium text-gray-300 hover:text-white">
+        <a href="/">{{.Site.Title}}</a>
+      </div>
+    </div>
+    <div class="hidden md:block">
+      <div class="menu desktop">
+        {{- $currentPage := . -}}
+        {{ range .Site.Menus.main }}
+        <a href="{{ .URL }}" {{if .Params.external}} target="_blank" {{end}} class="{{- if  $currentPage.IsMenuCurrent "main" . -}}active{{- end -}}">
+          {{with .Pre}}{{.}}{{end}} {{ .Name }}
+        </a>
+        {{end}}
+      </div>
+    </div>
+  </div>
+
+  <div class="md:hidden">
+    <div class="menu mobile flex justify-between">
+      {{- $currentPage := . -}}
+      {{ range .Site.Menus.main }}
+      <a href="{{ .URL }}" {{if .Params.external}} target="_blank" {{end}} class="{{- if  $currentPage.IsMenuCurrent "main" . -}}active{{- end -}}">
+        {{with .Pre}}{{.}}{{end}} {{ .Name }}
+      </a>
+      {{end}}
+    </div>
+</nav>

@@ -1,6 +1,7 @@
 import sbt._
 import sbt.Keys._
-import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport._
+import com.typesafe.sbt.packager.Keys._
+import com.typesafe.sbt.packager.universal.UniversalPlugin.autoImport.Universal
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
 import sbtassembly.AssemblyPlugin
 import sbtassembly.AssemblyPlugin.autoImport._
@@ -22,19 +23,20 @@ object Projects {
         case x                                    => MergeStrategy.last
       })
 
-  val unisonUiCore = createModule("unison-ui-core", "core")
+  val unisonUiCore = createModule("unison-ui-core", "modules/core")
     .settings(resolvers += "jitpack".at("https://jitpack.io"))
 
-  val unisonUi = createModule("unison-ui", "unison-ui")
+  val unisonUi = createModule("unison-ui", "modules/unison-ui")
     .settings(
       name := "unisonui",
-      mappings in Universal += file("docker/entrypoint.sh") -> "entrypoint.sh",
-      mappings in Universal ++= directory("docker/confd"),
-      mappings in Universal ++= directory("docker/statics")
+      packageName in Universal := name.value,
+      mappings in Universal ++= directory("docker/statics"),
+      topLevelDirectory in Universal := Some(packageName.value)
     )
 
   val providerContainer =
-    createModule("provider-container", "providers/container")
-  val providerGit     = createModule("provider-git", "providers/git")
-  val providerWebhook = createModule("provider-webhook", "providers/webhook")
+    createModule("provider-container", "modules/providers/container")
+  val providerGit = createModule("provider-git", "modules/providers/git")
+  val providerWebhook =
+    createModule("provider-webhook", "modules/providers/webhook")
 }

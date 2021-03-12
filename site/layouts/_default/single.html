@@ -1,0 +1,10 @@
+{{ define "title"}} {{ .Title}} {{end}}
+{{ define "header"}} {{ partial "header" .}} {{end}}
+{{ define "main" }}
+<ul id="posts">
+  {{ .Content }}
+</ul>
+{{ end }}
+{{ define "footer" }}
+{{ partial "footer" . }}
+{{ end }}
