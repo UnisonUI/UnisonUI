@@ -51,11 +51,11 @@ jobs:
       env:
         RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
       run: |
-        cargo install kokai --git https://github.com/MaethorNaur/kokai
-        kokai release -ref $RELEASE_VERSION  --url https://github.com/UnisonUI/UnisonUI > release.md
+        cargo install kokai --git "https://github.com/MaethorNaur/kokai" --branch main
+        kokai release --ref $RELEASE_VERSION  --url https://github.com/UnisonUI/UnisonUI > release.md
         echo "\`docker pull unisonui/unisonui:${RELEASE_VERSION}\`" >> release.md
     - name: build
-      run: sbt "project unison-ui; npmInstall; webpackProdTask; dockerBuildAndPush"
+      run: sbt "project unison-ui; npmInstall; webpackProdTask; universal:packageBin; dockerBuildAndPush"
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1

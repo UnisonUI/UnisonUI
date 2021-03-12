@@ -1,7 +1,7 @@
 import React, { Component } from 'react'
 import { Clear, Execute } from './buttons'
 import Request from './request'
-import { Response } from './Response'
+import { Response } from './response'
 import { stringify, Link, Collapse } from './utils'
 import axios from 'axios'
 const CancelToken = axios.CancelToken
