@@ -1,0 +1,11 @@
+{{ define "title"}} Release of {{ .Title}} {{end}}
+{{ define "header"}} {{ partial "header" .}} {{end}}
+{{ define "main"}}
+<div class="content">
+  {{ partial "toc" .}}
+  <article class="release">
+    {{ .Content }}
+  </article>
+</div>
+{{ end }}
+{{ define "footer" }}{{ partial "footer" . }}{{ end }}

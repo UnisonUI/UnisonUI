@@ -1,0 +1,261 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-gray-300;
+}
+
+h1 {
+  @apply font-title;
+}
+
+h2 {
+  @apply font-title;
+}
+
+h3 {
+  @apply font-title;
+}
+
+.shell:before {
+  @apply bg-gray-800;
+  content: "";
+  grid-column: 1/-1;
+  grid-row: 1/3;
+}
+
+.shell {
+  @apply grid;
+  grid-template-columns: 0 1fr 0;
+  grid-template-rows: auto 8em 1fr auto;
+
+  @screen sm {
+    grid-template-columns: 20px 1fr 20px;
+  }
+
+  .center {
+    @apply px-4 md:w-4/5 md:mx-auto sm:px-6 lg:px-8;
+  }
+
+  & > header {
+    @apply bg-gray-800;
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+  }
+
+  & > main {
+    grid-row: 2 / 4;
+    grid-column: 2 / 3;
+  }
+
+  & > footer {
+    grid-column: 2/3;
+    grid-row: -1;
+  }
+}
+
+header {
+  nav .menu {
+    &.desktop {
+      @apply flex items-baseline ml-10 space-x-4;
+    }
+    &.mobile {
+      @apply px-2 pt-2 pb-3 space-y-1 sm:px-3;
+    }
+
+    a {
+      @apply px-3 py-2 text-lg font-medium rounded-md;
+      @apply text-gray-300 hover:bg-gray-700 hover:text-white;
+
+      svg {
+        @apply inline-block w-6 h-6 mr-1;
+      }
+
+      &.active {
+        @apply text-white bg-gray-900;
+      }
+    }
+  }
+}
+
+main {
+  @apply bg-white rounded-none shadow;
+  @screen sm {
+    @apply rounded-lg;
+  }
+  @apply py-6 sm:px-6 lg:px-8;
+}
+
+.left-menu {
+  @apply hidden;
+  @apply top-0 flex-col;
+
+  &.show {
+    @apply flex !important;
+  }
+
+  @screen md {
+    @apply sticky flex w-1/6 h-screen overflow-x-hidden;
+  }
+
+  &::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    @apply bg-gray-700 rounded-lg;
+  }
+
+  &::-webkit-scrollbar-track {
+    @apply bg-gray-200 rounded-lg;
+  }
+
+  ul {
+    @apply m-0;
+    ul {
+      @apply ml-2;
+    }
+    li {
+      @apply my-2;
+      a {
+        @apply transition-all;
+        @apply p-1;
+        @apply rounded-lg cursor-pointer leading-8;
+        @apply flex justify-between;
+        &:hover {
+          @apply bg-gray-100;
+        }
+        &.active {
+          @apply text-blue-600 bg-gray-100;
+        }
+      }
+    }
+  }
+}
+
+.cards {
+  @apply grid grid-cols-1 sm:grid-cols-3 gap-8;
+  .card {
+    @apply transition-colors duration-300 ease-in-out;
+    @apply p-8 text-center bg-gray-200 hover:bg-gray-100;
+    @apply rounded-lg shadow-md;
+    .title {
+      @apply text-2xl font-bold;
+      @apply text-blue-500 hover:text-blue-600;
+    }
+  }
+}
+
+.content {
+  @apply flex flex-col md:flex-row;
+  article {
+    a {
+      @apply transition-all;
+      &:hover {
+        @apply font-bold text-blue-600;
+      }
+    }
+  }
+
+  article {
+    @apply w-full pl-4 md:w-5/6;
+
+    &.release {
+      ul {
+        @apply pl-4;
+        li {
+          @apply py-2;
+        }
+      }
+
+      h3 {
+        @apply tracking-widest;
+      }
+    }
+    p {
+      @apply py-1;
+    }
+    h1 {
+      @apply my-8 text-4xl;
+      @apply border-b-2 border-blue-500;
+    }
+
+    h2 {
+      @apply my-4 text-2xl;
+    }
+
+    h3 {
+      @apply my-4 text-xl;
+    }
+
+    li {
+      @apply list-disc list-inside;
+    }
+  }
+
+  .previous-next {
+    @apply relative flex justify-between;
+    @apply flex-col md:flex-row;
+    bottom: -1rem;
+    a {
+      @apply font-normal text-black;
+      div {
+        @apply h-full p-6 bg-white border-b-4 border-blue-600 rounded shadow-md hover:shadow-xl;
+      }
+    }
+  }
+}
+
+code {
+  @apply font-code;
+
+  :not(pre) > & {
+    @apply text-white bg-gray-700;
+    @apply px-2 rounded;
+  }
+}
+
+pre {
+  @apply p-3 my-3 overflow-auto rounded-lg;
+}
+
+:not(.highlight) > pre {
+  @apply text-white;
+  background-color: #202020;
+}
+
+.error404 {
+  .error-text {
+    font-size: 130px;
+    @screen md {
+      font-size: 220px;
+    }
+  }
+  .country-road {
+    @apply absolute bottom-0 mb-6 text-xl text-center;
+  }
+}
+
+#landing {
+  #getting-started {
+    @apply border-2 border-gray-800 rounded-sm;
+    @apply font-bold text-gray-800;
+    @apply px-6 py-4 mr-2;
+    @apply flex items-center;
+    @apply hover:bg-gray-800 hover:text-white;
+    @apply transition ease-in-out duration-700;
+  }
+  #features {
+    @apply container flex flex-col items-center justify-between mx-auto md:flex-row space-y-4 md:space-y-0 md:space-x-4;
+    .feature {
+      .title {
+        @apply mb-4 text-2xl font-medium text-black font-title;
+      }
+      .image {
+        @apply object-cover object-bottom rounded;
+      }
+    }
+  }
+}

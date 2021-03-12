@@ -1,0 +1,9 @@
+{{ define "title"}} {{ .Title}} {{end}}
+{{ define "header"}} {{ partial "header" .}} {{end}}
+{{ define "main"}}
+<div class="content">
+  {{ partial "left-menu" . }}
+  {{ partial "content" . }}
+</div>
+{{ end }}
+{{ define "footer" }}{{ partial "footer" . }}{{ end }}

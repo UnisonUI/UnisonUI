@@ -1,0 +1,54 @@
+.swagger-ui {
+  .info {
+    hgroup.main {
+      @apply p-2 mb-3;
+    }
+
+    pre {
+       @apply text-sm; 
+    }
+
+    p, li, table {
+      @apply font-code; 
+    }
+
+    a {
+      @apply text-indigo-400;
+      @apply transition duration-500;
+
+      &:hover {
+        @apply font-bold text-indigo-700;
+      }
+    }
+
+    > div {
+        margin: 0 0 5px;
+    }
+
+    .title {
+      @apply text-4xl font-bold;
+      margin: 0;
+
+      small {
+        @apply relative text-background;
+        @apply rounded-full;
+        @apply nm-convex-gray-500-sm;
+        @apply inline-block;
+        @apply align-text-top;
+        @apply text-xs !important;
+        @apply px-2 py-1 ml-3;
+
+        &.version-stamp {
+          @apply nm-convex-green-500-sm !important;
+        }
+
+        top: -5px;
+
+        pre {
+          margin: 0;
+          padding: 0;
+        }
+      }
+    }
+  }
+}

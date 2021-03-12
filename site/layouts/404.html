@@ -1,0 +1,19 @@
+  <!DOCTYPE html>
+  <html lang="{{ .Site.LanguageCode }}">
+
+  <head>
+    {{ define "title"}} Page not found {{end}}
+    {{ partial "head" . }}
+  </head>
+
+  <body class="error404">
+    <main class="h-screen w-screen bg-gray-100 flex items-center justify-center flex-col">
+      <p class="error-text">404</p>
+      <div class="country-road">
+        <span class="opacity-50">Take me back to</span>
+        <a class="border-b" href="{{ "/" | relURL }}">UnisonUI</a>
+      </div>
+    </main>
+  </body>
+
+  </html>
