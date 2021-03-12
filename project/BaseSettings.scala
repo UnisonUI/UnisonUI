@@ -11,7 +11,7 @@ object BaseSettings {
 
   lazy val defaultSettings = Seq(
     startYear := Some(2020),
-    version := "0.8.1",
+    version := "1.0.0",
     organization := "unisonui",
     scalaVersion := ScalaVersion,
     parallelExecution in Test := false,
