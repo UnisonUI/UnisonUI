@@ -23,10 +23,9 @@ unisonui {
 
   // List of enabled providers (all by default)
   providers = [
-    "tech.unisonui.providers.git.GitProvider",
-    "tech.unisonui.providers.docker.DockerProvider",
-    "tech.unisonui.providers.kubernetes.KubernetesProvider",
-    "tech.unisonui.providers.webhook.WebhookProvider"
+    "tech.unisonui.providers.GitProvider",
+    "tech.unisonui.providers.ContainerProvider",
+    "tech.unisonui.providers.WebhookProvider"
   ]
 
   http {
