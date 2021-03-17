@@ -42,7 +42,7 @@ You can download the binary here.
 Once downloaded unzip the package, go to the created folder and run:
 
 ```sh
-curl https://github.com/UnisonUI/unisonui/releases/download/v1.0.0/unisonui.zip # Download the package
+curl -L https://github.com/UnisonUI/unisonui/releases/download/v1.0.0/unisonui.zip -o unisonui.zip # Download the package
 unzip unisonui.zip # Unzip the package
 cd unisonui # Go to the extracted folded
 bin/unisonui # Start UnisonUI
