@@ -75,8 +75,8 @@ Example:
 
 ```sh
 ./unisonui \
-  -Dunisonui.providers.0=tech.unisonui.providers.git.GitProvider \
-  -Dunisonui.providers.1=tech.unisonui.providers.git.WebhookProvider
+  -Dunisonui.providers.0=tech.unisonui.providers.GitProvider \
+  -Dunisonui.providers.1=tech.unisonui.providers.WebhookProvider
 ```
 
 -----
