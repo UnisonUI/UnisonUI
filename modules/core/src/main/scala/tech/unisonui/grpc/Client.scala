@@ -37,26 +37,23 @@ class Client(service: Service, settings: GrpcClientSettings)(implicit
   def request(methodName: String, input: Json): Option[SourceJson] =
     input.pipe(Source.single).pipe(request(methodName, _))
 
-  def request(methodName: String, source: SourceJson): Option[SourceJson] = {
-    val fqName = s"${service.fullName}.$methodName"
+  def request(methodName: String, source: SourceJson): Option[SourceJson] =
     service.methods.collectFirst {
       case method @ Method(name, _, _, true, true) if name == methodName =>
         val descriptor =
           methodDescriptor(MethodDescriptor.MethodType.BIDI_STREAMING, method)
         new ScalaBidirectionalStreamingRequestBuilder(
           descriptor,
-          fqName,
           clientState.internalChannel,
           options,
           settings)
           .invoke(source)
-// $COVERAGE-OFF$
+      // $COVERAGE-OFF$
       case method @ Method(name, _, _, true, false) if name == methodName =>
         val descriptor =
           methodDescriptor(MethodDescriptor.MethodType.SERVER_STREAMING, method)
         val builder =
           new ScalaServerStreamingRequestBuilder(descriptor,
-                                                 fqName,
                                                  clientState.internalChannel,
                                                  options,
                                                  settings)
@@ -66,7 +63,6 @@ class Client(service: Service, settings: GrpcClientSettings)(implicit
           methodDescriptor(MethodDescriptor.MethodType.CLIENT_STREAMING, method)
         val builder =
           new ScalaClientStreamingRequestBuilder(descriptor,
-                                                 fqName,
                                                  clientState.internalChannel,
                                                  options,
                                                  settings)
@@ -81,9 +77,8 @@ class Client(service: Service, settings: GrpcClientSettings)(implicit
                                        settings)
         source
           .flatMapConcat(input => Source.future(builder.invoke(input)))
-// $COVERAGE-ON$
+      // $COVERAGE-ON$
     }
-  }
 
   def close(): Future[Done] = clientState.close()
 
