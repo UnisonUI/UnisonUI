@@ -14,7 +14,7 @@ object Dependencies {
     private val logstash =
       "net.logstash.logback" % "logstash-logback-encoder" % "6.6"
     private val scalaLogging =
-      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.2"
+      "com.typesafe.scala-logging" %% "scala-logging" % "3.9.3"
     val all = Seq(logback, logbackCore, logstash, scalaLogging)
   }
 
@@ -29,20 +29,20 @@ object Dependencies {
   }
 
   object Grpc {
-    private val grpcVersion     = "1.35.0"
-    private val protobufVersion = "3.14.0"
+    private val grpcVersion     = "1.36.0"
+    private val protobufVersion = "3.15.6"
     private val protobuf =
       "com.google.protobuf" % "protobuf-java" % protobufVersion
     private val grpcCore        = "io.grpc" % "grpc-core"         % grpcVersion
     private val grpcNettyShaded = "io.grpc" % "grpc-netty-shaded" % grpcVersion
     private val akkaGrpc =
-      "com.lightbend.akka.grpc" %% "akka-grpc-runtime" % "1.0.2"
+      "com.lightbend.akka.grpc" %% "akka-grpc-runtime" % "1.1.1"
     val all = Seq(protobuf, grpcCore, grpcNettyShaded, akkaGrpc)
   }
 
   object Akka {
-    private val akkaVersion          = "2.6.12"
-    private val akkaHttpVersion      = "10.2.3"
+    private val akkaVersion          = "2.6.13"
+    private val akkaHttpVersion      = "10.2.4"
     private val alpakkaVersion       = "2.0.2"
     private val akkaHttpCirceVersion = "1.35.3"
 
@@ -78,13 +78,13 @@ object Dependencies {
   }
 
   object Testing {
-    private val scalaTest = "org.scalatest" %% "scalatest" % "3.2.3" % Test
+    private val scalaTest = "org.scalatest" %% "scalatest" % "3.2.6" % Test
     private val scalamock = "org.scalamock" %% "scalamock" % "5.1.0" % Test
     val all               = Seq(scalaTest, scalamock)
   }
 
   object Cats {
-    private val version = "2.3.1"
+    private val version = "2.4.2"
     private val kernel  = "org.typelevel" %% "cats-kernel" % version
     private val core    = "org.typelevel" %% "cats-core"   % version
     val all             = Seq(kernel, core)
