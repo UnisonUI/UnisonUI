@@ -1,13 +1,13 @@
 version: 2
 updates:
- - package-ecosystem: "github-actions"
-   directory: "/"
-   schedule:
-     interval: "daily"
- - package-ecosystem: "mix"
-   directory: "/"
-   schedule:
-     interval: "daily"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "mix"
+    directory: "/"
+    schedule:
+      interval: "daily"
   - package-ecosystem: "npm"
     directory: "/apps/unison_ui/webapp"
     schedule:
