@@ -1,0 +1,22 @@
+version: "2"
+name: "test"
+openapi:
+  useProxy: true
+  specifications:
+   - "file.yaml"
+   - name: "another service"
+     path: "other.yaml"
+grpc:
+  protobufs:
+    "path/spec.proto":
+      servers:
+        - address: 127.0.0.1
+          port: 8080
+    "path/spec2.proto":
+      name: test
+      servers:
+        - address: 127.0.0.1
+          port: 8080
+          name: other server
+          useTls: true
+

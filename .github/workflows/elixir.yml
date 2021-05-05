@@ -1,0 +1,54 @@
+name: Elixir CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Elixir
+      uses: actions/setup-elixir@v1
+      with:
+        elixir-version: '1.12.0-rc.1-otp-24' # Define the elixir version [required]
+        otp-version: '24.0-rc3' # Define the OTP version [required]
+    - name: Restore dependencies cache
+      uses: actions/cache@v2
+      with:
+        path: deps
+        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+        restore-keys: ${{ runner.os }}-mix-
+    - name: Restore dependencies dialyzer
+      uses: actions/cache@v2
+      with:
+        path: priv/plts
+        key: ${{ runner.os }}-dialyzer-${{ hashFiles('priv/plts/dialyzer.plt') }}
+        restore-keys: ${{ runner.os }}-dialyzer- 
+    - name: Install dependencies
+      run: mix deps.get
+    - name: Run dialyzer
+      run: mix dialyzer
+    - name: Run tests
+      run: mix coveralls.json -u
+    - name: Codecov
+      uses: codecov/codecov-action@v1.0.13
+    - name: action-slack
+      uses: 8398a7/action-slack@v3
+      with:
+        author_name: Github action
+        icon_emoji: ':octocat:'
+        mention: 'here'
+        if_mention: failure
+        status: ${{ job.status }}
+        fields: message,commit,author,took
+      if: always()
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
