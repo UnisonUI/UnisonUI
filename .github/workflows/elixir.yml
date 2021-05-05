@@ -31,9 +31,10 @@ jobs:
         path: priv/plts
         key: ${{ runner.os }}-dialyzer-${{ hashFiles('priv/plts/dialyzer.plt') }}
         restore-keys: ${{ runner.os }}-dialyzer-
-
     - name: Install Protoc
-      run: apt-get install -y protobuf-compiler
+      uses: arduino/setup-protoc@v1
+      with:
+        version: '3.x'
     - name: Install dependencies
       run: mix deps.get
     - name: Run dialyzer
