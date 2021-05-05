@@ -3,11 +3,11 @@ import React, { Component } from 'react'
 
 export const isMap = schema =>
   schema.options &&
-  schema.options['map_entry'] === 'true'
+  schema.options.map_entry === 'true'
 
 export const isDeprecated = field =>
   field.options &&
-  field.options['deprecated'] === 'true'
+  field.options.deprecated === 'true'
 
 const getValue = (field, schema) => {
   switch (field.type) {
