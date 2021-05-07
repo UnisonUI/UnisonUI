@@ -28,7 +28,7 @@ defmodule Helloworld.Greeter.Service do
   @moduledoc false
   use GRPC.Service, name: "helloworld.Greeter"
 
-  rpc :SayHello, stream(Helloworld.HelloRequest), Helloworld.HelloReply
+  rpc :SayHello, Helloworld.HelloRequest, Helloworld.HelloReply
 
   rpc :SayHelloToAll, stream(Helloworld.HelloRequest), stream(Helloworld.HelloReply)
 end
