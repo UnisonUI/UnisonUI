@@ -31,6 +31,7 @@ defmodule Grpc.MixProject do
       {:castore, "~> 0.1.9"},
       {:protox, "~> 1.3"},
       {:mint, "~> 1.3", override: true},
+      {:ex_grpc, "~> 0.5.0-beta.1", hex: :grpc, only: :test},
       {:ok, "~> 2.3"},
       {:gen_state_machine, "~> 3.0"},
       {:logstash_logger_formatter, "~> 1.0"}
