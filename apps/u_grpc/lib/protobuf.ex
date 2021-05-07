@@ -1,6 +1,6 @@
-defmodule Protobuf do
+defmodule UGRPC.Protobuf do
   require OK
-  alias Protobuf.Structs.{Schema, MessageSchema, EnumSchema, Field, Service, Method}
+  alias UGRPC.Protobuf.Structs.{Schema, MessageSchema, EnumSchema, Field, Service, Method}
 
   def compile(path) do
     path = Path.expand(path)
@@ -8,7 +8,7 @@ defmodule Protobuf do
     OK.for do
       _ <- File.stat(path)
       protoset <- run_protoc(path)
-      %Protobuf.FileDescriptorSet{file: files} <- Protobuf.FileDescriptorSet.decode(protoset)
+      %UGRPC.Protobuf.FileDescriptorSet{file: files} <- UGRPC.Protobuf.FileDescriptorSet.decode(protoset)
       schema = to_schema(files)
     after
       schema
@@ -18,7 +18,7 @@ defmodule Protobuf do
   def from_file_descriptors(file_descriptors) do
     files =
       Enum.reduce_while(file_descriptors, {:ok, []}, fn bytes, {_, files} ->
-        case Protobuf.FileDescriptorProto.decode(bytes) do
+        case UGRPC.Protobuf.FileDescriptorProto.decode(bytes) do
           {:ok, file_descriptor} -> {:cont, {:ok, [file_descriptor | files]}}
           error -> {:halt, error}
         end
@@ -53,7 +53,7 @@ defmodule Protobuf do
     ret =
       case System.cmd("protoc", cmd_args, stderr_to_stdout: true) do
         {_, 0} -> {:ok, File.read!(outfile_path)}
-        {msg, _} -> {:error, Protobuf.ProtocError.exception(msg)}
+        {msg, _} -> {:error, UGRPC.Protobuf.ProtocError.exception(msg)}
       end
 
     _ = File.rm(outfile_path)
@@ -62,18 +62,18 @@ defmodule Protobuf do
   end
 
   @spec decode(
-          schema :: Protobuf.Structs.Schema.t(),
+          schema :: UGRPC.Protobuf.Structs.Schema.t(),
           type_name :: String.t(),
           data :: binary()
         ) :: {:ok, map()} | {:error, term()}
-  def decode(schema, type_name, data), do: Protobuf.Serde.decode(schema, type_name, data)
+  def decode(schema, type_name, data), do: UGRPC.Protobuf.Serde.decode(schema, type_name, data)
 
   @spec encode(
-          schema :: Protobuf.Structs.Schema.t(),
+          schema :: UGRPC.Protobuf.Structs.Schema.t(),
           type_name :: String.t(),
           data :: map()
         ) :: {:ok, binary()} | {:error, term()}
-  def encode(schema, type_name, data), do: Protobuf.Serde.encode(schema, type_name, data)
+  def encode(schema, type_name, data), do: UGRPC.Protobuf.Serde.encode(schema, type_name, data)
 
   defp to_schema(file_descriptors, schema \\ %Schema{})
   defp to_schema([], schema), do: schema
@@ -106,7 +106,7 @@ defmodule Protobuf do
   defp decode_descriptors([], _package, result), do: result
 
   defp decode_descriptors(
-         [%Protobuf.ServiceDescriptorProto{method: method, name: name} | tail],
+         [%UGRPC.Protobuf.ServiceDescriptorProto{method: method, name: name} | tail],
          package,
          result
        ) do
@@ -137,7 +137,7 @@ defmodule Protobuf do
   end
 
   defp decode_descriptors(
-         [%Protobuf.EnumDescriptorProto{value: values, name: name} | tail],
+         [%UGRPC.Protobuf.EnumDescriptorProto{value: values, name: name} | tail],
          package,
          result
        ) do
@@ -153,7 +153,7 @@ defmodule Protobuf do
 
   defp decode_descriptors(
          [
-           %Protobuf.DescriptorProto{
+           %UGRPC.Protobuf.DescriptorProto{
              field: fields,
              name: name,
              options: options,

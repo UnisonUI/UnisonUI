@@ -1,7 +1,7 @@
-defmodule GRPC.Reflection.Worker do
+defmodule UGRPC.Reflection.Worker do
   use GenStateMachine, callback_mode: :state_functions
 
-  @reflection_schema Protobuf.compile!("priv/reflection.proto")
+  @reflection_schema UGRPC.Protobuf.compile!("priv/reflection.proto")
   @service "grpc.reflection.v1alpha.ServerReflection"
   @method "ServerReflectionInfo"
 
@@ -16,13 +16,13 @@ defmodule GRPC.Reflection.Worker do
     do: %{"message_request" => %{"type" => "file_containing_symbol", "value" => symbol}}
 
   @spec load_schema(pid :: pid(), server :: String.t()) ::
-          {:ok, Protobuf.Structs.Schema.t()} | {:error, term()}
+          {:ok, UGRPC.Protobuf.Structs.Schema.t()} | {:error, term()}
   def load_schema(pid, server), do: GenStateMachine.call(pid, server)
 
   def load_schema({:call, from}, server, _state) do
-    with {:ok, client} <- GRPC.new_client(server),
-         {:ok, request} <- GRPC.Client.request(client, @reflection_schema, @service, @method) do
-      GRPC.Client.send_data(request, @list_services_request)
+    with {:ok, client} <- UGRPC.new_client(server),
+         {:ok, request} <- UGRPC.Client.request(client, @reflection_schema, @service, @method) do
+      UGRPC.Client.send_data(request, @list_services_request)
       {:next_state, :handle_services_listing, {from, request}}
     else
       error ->
@@ -35,7 +35,7 @@ defmodule GRPC.Reflection.Worker do
     |> Stream.map(& &1["name"])
     |> Stream.reject(&(&1 == "grpc.reflection.v1alpha.ServerReflection"))
     |> Stream.map(&list_files_request/1)
-    |> Enum.each(&GRPC.Client.send_data(request, &1))
+    |> Enum.each(&UGRPC.Client.send_data(request, &1))
 
     {:next_state, :handle_file_descriptors, state}
   end
@@ -46,10 +46,10 @@ defmodule GRPC.Reflection.Worker do
     result =
       response["message_response"]["value"]["file_descriptor_proto"]
       |> Enum.map(&Base.decode64!/1)
-      |> Protobuf.from_file_descriptors()
+      |> UGRPC.Protobuf.from_file_descriptors()
 
     GenStateMachine.reply({:reply, from, result})
-    GRPC.Client.close(request)
+    UGRPC.Client.close(request)
     {:next_state, :close, request}
   end
 

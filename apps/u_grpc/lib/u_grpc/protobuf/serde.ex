@@ -1,12 +1,12 @@
-defmodule Protobuf.Serde do
-  alias Protobuf.Structs.{Schema, Field}
+defmodule UGRPC.Protobuf.Serde do
+  alias UGRPC.Protobuf.Structs.{Schema, Field}
 
-  @spec encode(schema :: Protobuf.Structs.Schema.t(), type :: String.t(), data :: map()) ::
+  @spec encode(schema :: UGRPC.Protobuf.Structs.Schema.t(), type :: String.t(), data :: map()) ::
           {:ok, binary()} | {:error, term()}
   def encode(%Schema{} = schema, type, data) do
     case schema.messages[type] do
       nil ->
-        {:error, Protobuf.UnknownMessageError.exception(type)}
+        {:error, UGRPC.Protobuf.UnknownMessageError.exception(type)}
 
       message_schema ->
         case has_all_required_field(schema, type, data) do
@@ -33,7 +33,7 @@ defmodule Protobuf.Serde do
     |> Enum.reduce_while(:ok, fn
       {_, %Field{label: :required, name: name, type: type, schema: type_name}}, _ ->
         unless Map.has_key?(data, name) do
-          {:halt, {:error, Protobuf.RequiredFieldError.exception(name)}}
+          {:halt, {:error, UGRPC.Protobuf.RequiredFieldError.exception(name)}}
         else
           case type do
             :message ->
@@ -234,7 +234,7 @@ defmodule Protobuf.Serde do
   def decode(schema, type_name, data, result) when result == %{} do
     case schema.messages[type_name] do
       nil ->
-        {:error, Protobuf.UnknownMessageError.exception(type_name)}
+        {:error, UGRPC.Protobuf.UnknownMessageError.exception(type_name)}
 
       message_schema ->
         result = initialise_result_with_default(message_schema)
@@ -250,7 +250,7 @@ defmodule Protobuf.Serde do
 
     case Map.get(message_schema.fields, number) do
       nil ->
-        {:error, Protobuf.UnknownFieldError.exception(number, type_name)}
+        {:error, UGRPC.Protobuf.UnknownFieldError.exception(number, type_name)}
 
       %Field{type: type, name: name, packed: packed, label: label, schema: schema_name} ->
         decode_result =

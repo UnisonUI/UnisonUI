@@ -13,7 +13,7 @@ defmodule Unisonui.MixProject do
         unison_ui: [
           steps: [&npm_deploy/1, :assemble, :tar],
           applications: [
-            grpc: :permanent,
+            u_grpc: :permanent,
             services: :permanent,
             configuration: :permanent,
             git_provider: :permanent,

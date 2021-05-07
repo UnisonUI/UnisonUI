@@ -1,4 +1,4 @@
-defmodule GRPC.Status do
+defmodule UGRPC.Status do
   @type t :: non_neg_integer
   @doc """
   Not an error; returned on success.

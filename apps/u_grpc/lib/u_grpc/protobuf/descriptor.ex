@@ -1,4 +1,4 @@
-defmodule Protobuf.Descriptor do
+defmodule UGRPC.Protobuf.Descriptor do
   @moduledoc false
   # Transcription of descriptor.proto.
   # https://raw.githubusercontent.com/google/protobuf/master/src/google/protobuf/descriptor.proto
@@ -6,7 +6,7 @@ defmodule Protobuf.Descriptor do
   use Protox.Define,
     enums: [
       {
-        Protobuf.FieldDescriptorProto.Type,
+        UGRPC.Protobuf.FieldDescriptorProto.Type,
         [
           {1, :double},
           {2, :float},
@@ -29,7 +29,7 @@ defmodule Protobuf.Descriptor do
         ]
       },
       {
-        Protobuf.FieldDescriptorProto.Label,
+        UGRPC.Protobuf.FieldDescriptorProto.Label,
         [
           {1, :optional},
           {2, :required},
@@ -39,70 +39,70 @@ defmodule Protobuf.Descriptor do
     ],
     messages: [
       {
-        Protobuf.FileDescriptorSet,
+        UGRPC.Protobuf.FileDescriptorSet,
         :proto3,
         [
-          {1, :repeated, :file, :unpacked, {:message, Protobuf.FileDescriptorProto}}
+          {1, :repeated, :file, :unpacked, {:message, UGRPC.Protobuf.FileDescriptorProto}}
         ]
       },
       {
-        Protobuf.FileDescriptorProto,
+        UGRPC.Protobuf.FileDescriptorProto,
         :proto3,
         [
           # Ignored: 3, 8, 9, 10, 11
           {1, :none, :name, {:default, ""}, :string},
           {2, :none, :package, {:default, ""}, :string},
           {3, :repeated, :dependency, :unpacked, :string},
-          {4, :repeated, :message_type, :unpacked, {:message, Protobuf.DescriptorProto}},
-          {5, :repeated, :enum_type, :unpacked, {:message, Protobuf.EnumDescriptorProto}},
-          {6, :repeated, :service, :unpacked, {:message, Protobuf.ServiceDescriptorProto}},
-          {7, :repeated, :extension, :unpacked, {:message, Protobuf.FieldDescriptorProto}},
+          {4, :repeated, :message_type, :unpacked, {:message, UGRPC.Protobuf.DescriptorProto}},
+          {5, :repeated, :enum_type, :unpacked, {:message, UGRPC.Protobuf.EnumDescriptorProto}},
+          {6, :repeated, :service, :unpacked, {:message, UGRPC.Protobuf.ServiceDescriptorProto}},
+          {7, :repeated, :extension, :unpacked, {:message, UGRPC.Protobuf.FieldDescriptorProto}},
           {12, :none, :syntax, {:default, ""}, :string}
         ]
       },
       {
-        Protobuf.DescriptorProto.ExtensionRange,
+        UGRPC.Protobuf.DescriptorProto.ExtensionRange,
         :proto3,
         [
           {1, :none, :start, {:default, 0}, :int32},
           {2, :none, :end, {:default, 0}, :int32}
         ]
       },
-      # Protobuf.DescriptorProto.ReservedRange ignored
+      # UGRPC.Protobuf.DescriptorProto.ReservedRange ignored
       {
-        Protobuf.DescriptorProto,
+        UGRPC.Protobuf.DescriptorProto,
         :proto3,
         [
           # Ignored: 9, 10
           {1, :none, :name, {:default, nil}, :string},
-          {2, :repeated, :field, :unpacked, {:message, Protobuf.FieldDescriptorProto}},
-          {6, :repeated, :extension, :unpacked, {:message, Protobuf.FieldDescriptorProto}},
-          {3, :repeated, :nested_type, :unpacked, {:message, Protobuf.DescriptorProto}},
-          {4, :repeated, :enum_type, :unpacked, {:message, Protobuf.EnumDescriptorProto}},
+          {2, :repeated, :field, :unpacked, {:message, UGRPC.Protobuf.FieldDescriptorProto}},
+          {6, :repeated, :extension, :unpacked, {:message, UGRPC.Protobuf.FieldDescriptorProto}},
+          {3, :repeated, :nested_type, :unpacked, {:message, UGRPC.Protobuf.DescriptorProto}},
+          {4, :repeated, :enum_type, :unpacked, {:message, UGRPC.Protobuf.EnumDescriptorProto}},
           {5, :repeated, :extension_range, :unpacked,
-           {:message, Protobuf.DescriptorProto.ExtensionRange}},
-          {8, :repeated, :oneof_decl, :unpacked, {:message, Protobuf.OneofDescriptorProto}},
-          {7, :none, :options, {:default, nil}, {:message, Protobuf.MessageOptions}}
+           {:message, UGRPC.Protobuf.DescriptorProto.ExtensionRange}},
+          {8, :repeated, :oneof_decl, :unpacked, {:message, UGRPC.Protobuf.OneofDescriptorProto}},
+          {7, :none, :options, {:default, nil}, {:message, UGRPC.Protobuf.MessageOptions}}
         ]
       },
       {
-        Protobuf.FieldDescriptorProto,
+        UGRPC.Protobuf.FieldDescriptorProto,
         :proto3,
         [
           # Ignored: 10
           {1, :none, :name, {:default, nil}, :string},
           {3, :none, :number, {:default, nil}, :int32},
-          {4, :none, :label, {:default, nil}, {:enum, Protobuf.FieldDescriptorProto.Label}},
-          {5, :none, :type, {:default, nil}, {:enum, Protobuf.FieldDescriptorProto.Type}},
+          {4, :none, :label, {:default, nil}, {:enum, UGRPC.Protobuf.FieldDescriptorProto.Label}},
+          {5, :none, :type, {:default, nil}, {:enum, UGRPC.Protobuf.FieldDescriptorProto.Type}},
           {6, :none, :type_name, {:default, nil}, :string},
           {2, :none, :extendee, {:default, nil}, :string},
           {7, :none, :default_value, {:default, nil}, :string},
           {9, :none, :oneof_index, {:default, nil}, :int32},
-          {8, :none, :options, {:default, nil}, {:message, Protobuf.FieldOptions}}
+          {8, :none, :options, {:default, nil}, {:message, UGRPC.Protobuf.FieldOptions}}
         ]
       },
       {
-        Protobuf.OneofDescriptorProto,
+        UGRPC.Protobuf.OneofDescriptorProto,
         :proto3,
         [
           # Ignored: 2
@@ -110,16 +110,16 @@ defmodule Protobuf.Descriptor do
         ]
       },
       {
-        Protobuf.EnumDescriptorProto,
+        UGRPC.Protobuf.EnumDescriptorProto,
         :proto3,
         [
           # Ignored: 3
           {1, :none, :name, {:default, nil}, :string},
-          {2, :repeated, :value, :unpacked, {:message, Protobuf.EnumValueDescriptorProto}}
+          {2, :repeated, :value, :unpacked, {:message, UGRPC.Protobuf.EnumValueDescriptorProto}}
         ]
       },
       {
-        Protobuf.EnumValueDescriptorProto,
+        UGRPC.Protobuf.EnumValueDescriptorProto,
         :proto3,
         [
           # Ignored: 3
@@ -131,7 +131,7 @@ defmodule Protobuf.Descriptor do
       # MethodDescriptorProto ignored
       # FileOptions ignored
       {
-        Protobuf.MessageOptions,
+        UGRPC.Protobuf.MessageOptions,
         :proto3,
         [
           # 1, 2, 999 ignored
@@ -140,7 +140,7 @@ defmodule Protobuf.Descriptor do
         ]
       },
       {
-        Protobuf.FieldOptions,
+        UGRPC.Protobuf.FieldOptions,
         :proto3,
         [
           # 1, 6, 5, 10, 999 ignored
@@ -149,36 +149,36 @@ defmodule Protobuf.Descriptor do
         ]
       },
       {
-        Protobuf.ServiceDescriptorProto,
+        UGRPC.Protobuf.ServiceDescriptorProto,
         :proto3,
         [
           # 1, 6, 5, 10, 999 ignored
           {1, :none, :name, {:default, nil}, :string},
-          {2, :repeated, :method, :unpacked, {:message, Protobuf.MethodDescriptorProto}},
-          {3, :none, :option, :unpacked, {:message, Protobuf.ServiceOptions}}
+          {2, :repeated, :method, :unpacked, {:message, UGRPC.Protobuf.MethodDescriptorProto}},
+          {3, :none, :option, :unpacked, {:message, UGRPC.Protobuf.ServiceOptions}}
         ]
       },
       {
-        Protobuf.MethodDescriptorProto,
+        UGRPC.Protobuf.MethodDescriptorProto,
         :proto3,
         [
           {1, :none, :name, {:default, nil}, :string},
           {2, :none, :input_type, {:default, nil}, :string},
           {3, :none, :output_type, {:default, nil}, :string},
-          {4, :repeated, :options, :unpacked, {:message, Protobuf.MethodOptions}},
+          {4, :repeated, :options, :unpacked, {:message, UGRPC.Protobuf.MethodOptions}},
           {5, :none, :client_streaming, {:default, false}, :bool},
           {6, :none, :server_streaming, {:default, false}, :bool}
         ]
       },
       {
-        Protobuf.ServiceOptions,
+        UGRPC.Protobuf.ServiceOptions,
         :proto3,
         [
           {33, :none, :deprecated, {:default, false}, :bool}
         ]
       },
       {
-        Protobuf.MethodOptions,
+        UGRPC.Protobuf.MethodOptions,
         :proto3,
         [
           {33, :none, :deprecated, {:default, false}, :bool}

@@ -1,4 +1,5 @@
 defmodule ProtobufTest do
+  alias UGRPC.Protobuf
   use ExUnit.Case
 
   describe "compile/1" do

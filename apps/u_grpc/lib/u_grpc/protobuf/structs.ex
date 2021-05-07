@@ -1,15 +1,15 @@
-defmodule Protobuf.Structs do
+defmodule UGRPC.Protobuf.Structs do
   defmodule Schema do
     @type t :: %__MODULE__{
-            messages: %{String.t() => Protobuf.Structs.MessageSchema.t()},
-            enums: %{String.t() => Protobuf.Structs.EnumSchema.t()},
-            services: %{String.t() => Protobuf.Structs.Service.t()}
+            messages: %{String.t() => UGRPC.Protobuf.Structs.MessageSchema.t()},
+            enums: %{String.t() => UGRPC.Protobuf.Structs.EnumSchema.t()},
+            services: %{String.t() => UGRPC.Protobuf.Structs.Service.t()}
           }
     defstruct messages: %{}, enums: %{}, services: %{}
   end
 
   defmodule MessageSchema do
-    @type fields :: %{pos_integer() => Protobuf.Structs.Field.t()}
+    @type fields :: %{pos_integer() => UGRPC.Protobuf.Structs.Field.t()}
     @type t :: %__MODULE__{
             name: String.t(),
             fields: fields(),
@@ -45,7 +45,7 @@ defmodule Protobuf.Structs do
     @type t :: %__MODULE__{
             name: String.t(),
             full_name: String.t(),
-            methods: [Protobuf.Structs.Method.t()]
+            methods: [UGRPC.Protobuf.Structs.Method.t()]
           }
     defstruct [:name, :full_name, :methods]
   end
@@ -62,7 +62,7 @@ defmodule Protobuf.Structs do
   end
 
   defimpl Jason.Encoder, for: [Schema, MessageSchema, EnumSchema, Field, Service, Method] do
-    alias Protobuf.Structs.{MessageSchema, Field, Method, Schema}
+    alias UGRPC.Protobuf.Structs.{MessageSchema, Field, Method, Schema}
 
     def encode(
           %MessageSchema{name: name, fields: fields, options: options, one_ofs: one_ofs},

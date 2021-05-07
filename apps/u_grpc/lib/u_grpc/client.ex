@@ -1,4 +1,4 @@
-defmodule GRPC.Client do
+defmodule UGRPC.Client do
   defmodule Connection do
     defstruct [:pid, :ref]
   end
@@ -12,10 +12,10 @@ defmodule GRPC.Client do
   require Logger
   use GenServer, restart: :temporary
 
-  alias GRPC.Error
-  alias GRPC.Client.{GzipCompressor, Connection}
-  alias Protobuf.Structs.Schema
-  alias Protobuf.Serde
+  alias UGRPC.Error
+  alias UGRPC.Client.{GzipCompressor, Connection}
+  alias UGRPC.Protobuf.Structs.Schema
+  alias UGRPC.Protobuf.Serde
   alias Mint.HTTP2
 
   defstruct [:conn, requests: %{}]
@@ -37,20 +37,20 @@ defmodule GRPC.Client do
   end
 
   @spec request(
-          stream :: GRPC.Client.Connection.t(),
+          stream :: UGRPC.Client.Connection.t(),
           schema :: Protobuf.Structs.Schema.t(),
           service_name :: String.t(),
           method_name :: String.t()
         ) ::
-          {:ok, GRPC.Client.Connection.t()} | {:error, term()}
+          {:ok, UGRPC.Client.Connection.t()} | {:error, term()}
   def request(%Connection{pid: pid} = stream, schema, service_name, method_name),
     do: GenServer.call(pid, {:request, stream, schema, service_name, method_name})
 
-  @spec send_data(stream :: GRPC.Client.Connection.t(), data :: map()) :: :ok
+  @spec send_data(stream :: UGRPC.Client.Connection.t(), data :: map()) :: :ok
   def send_data(%Connection{pid: pid, ref: request_ref}, data),
     do: GenServer.cast(pid, {:send, request_ref, data})
 
-  @spec close(stream :: GRPC.Client.Connection.t()) :: :ok
+  @spec close(stream :: UGRPC.Client.Connection.t()) :: :ok
   def close(%Connection{pid: pid, ref: request_ref}),
     do: GenServer.cast(pid, {:send, request_ref, :eof})
 
@@ -224,7 +224,7 @@ defmodule GRPC.Client do
         state.requests[request_ref].from,
         {:error,
          Error.new(
-           GRPC.Status.internal(),
+           UGRPC.Status.internal(),
            "status got is #{status} instead of 200"
          )}
       )

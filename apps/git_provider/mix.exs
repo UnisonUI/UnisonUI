@@ -29,7 +29,7 @@ defmodule GitProvider.MixProject do
   defp deps do
     [
       {:common, in_umbrella: true},
-      {:grpc, in_umbrella: true},
+      {:u_grpc, in_umbrella: true},
       {:services, in_umbrella: true},
       {:logstash_logger_formatter, "~> 1.0"},
       {:gen_stage, "~> 1.0"},

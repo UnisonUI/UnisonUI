@@ -1,4 +1,4 @@
-defmodule GRPC.Reflection.Supervisor do
+defmodule UGRPC.Reflection.Supervisor do
   use DynamicSupervisor
 
   def start_link(_), do: DynamicSupervisor.start_link(__MODULE__, nil, name: __MODULE__)
@@ -7,8 +7,8 @@ defmodule GRPC.Reflection.Supervisor do
 
   @spec load_schema(server :: String.t()) :: {:ok, Protobuf.Structs.Schema.t()} | {:error, term()}
   def load_schema(server) do
-    with {:ok, pid} <- DynamicSupervisor.start_child(__MODULE__, GRPC.Reflection.Worker) do
-      GRPC.Reflection.Worker.load_schema(pid, server)
+    with {:ok, pid} <- DynamicSupervisor.start_child(__MODULE__, UGRPC.Reflection.Worker) do
+      UGRPC.Reflection.Worker.load_schema(pid, server)
     else
       error -> error
     end
