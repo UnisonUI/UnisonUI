@@ -6,7 +6,7 @@ defmodule UGRPC.ClientSupervisor do
   @impl true
   def init(_args), do: {:ok, %{}}
 
-  @spec new_client(server :: String.t()) :: {:ok, UGRPC.Client.Stream.t()} | {:error, term()}
+  @spec new_client(server :: String.t()) :: {:ok, UGRPC.Client.Connection.t()} | {:error, term()}
 
   def new_client(server), do: GenServer.call(__MODULE__, {:new_client, server})
 

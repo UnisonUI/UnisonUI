@@ -224,7 +224,7 @@ defmodule UGRPC.Protobuf.Serde do
   end
 
   @spec decode(
-          schema :: Protobuf.Structs.Schema.t(),
+          schema :: UGRPC.Protobuf.Structs.Schema.t(),
           type_name :: String.t(),
           data :: binary(),
           result :: map()

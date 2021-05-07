@@ -1,8 +1,4 @@
 defmodule UGRPC.Client do
-  defmodule Connection do
-    defstruct [:pid, :ref]
-  end
-
   @headers [
     {"content-type", "application/grpc"},
     {"user-agent", "grpc-unisonui/1.0.0"},
@@ -37,26 +33,26 @@ defmodule UGRPC.Client do
   end
 
   @spec request(
-          stream :: UGRPC.Client.Connection.t(),
-          schema :: Protobuf.Structs.Schema.t(),
+          connection :: UGRPC.Client.Connection.t(),
+          schema :: UGRPC.Protobuf.Structs.Schema.t(),
           service_name :: String.t(),
           method_name :: String.t()
         ) ::
           {:ok, UGRPC.Client.Connection.t()} | {:error, term()}
-  def request(%Connection{pid: pid} = stream, schema, service_name, method_name),
-    do: GenServer.call(pid, {:request, stream, schema, service_name, method_name})
+  def request(%Connection{pid: pid} = connection, schema, service_name, method_name),
+    do: GenServer.call(pid, {:request, connection, schema, service_name, method_name})
 
-  @spec send_data(stream :: UGRPC.Client.Connection.t(), data :: map()) :: :ok
+  @spec send_data(connection :: UGRPC.Client.Connection.t(), data :: map()) :: :ok
   def send_data(%Connection{pid: pid, ref: request_ref}, data),
     do: GenServer.cast(pid, {:send, request_ref, data})
 
-  @spec close(stream :: UGRPC.Client.Connection.t()) :: :ok
+  @spec close(UGRPC.Client.Connection.t()) :: :ok
   def close(%Connection{pid: pid, ref: request_ref}),
     do: GenServer.cast(pid, {:send, request_ref, :eof})
 
   @impl true
   def handle_call(
-        {:request, stream, %Schema{services: services} = schema, service_name, method_name},
+        {:request, connection, %Schema{services: services} = schema, service_name, method_name},
         from,
         state
       ) do
@@ -80,12 +76,12 @@ defmodule UGRPC.Client do
             _ -> :streaming
           end
 
-        state = do_request(stream, mode, path, input_type, output_type, schema, from, state)
+        state = do_request(connection, mode, path, input_type, output_type, schema, from, state)
         {:noreply, state}
     end
   end
 
-  defp do_request(stream, mode, path, input_type, output_type, schema, from, state) do
+  defp do_request(connection, mode, path, input_type, output_type, schema, from, state) do
     headers =
       if GzipCompressor.enabled?() do
         [
@@ -109,7 +105,7 @@ defmodule UGRPC.Client do
             mode: mode
           })
 
-        GenServer.reply(from, {:ok, put_in(stream.ref, request_ref)})
+        _ = GenServer.reply(from, {:ok, put_in(connection.ref, request_ref)})
         state
 
       {:error, conn, %Mint.HTTPError{module: Mint.HTTP2, reason: :closed}} ->
@@ -118,7 +114,7 @@ defmodule UGRPC.Client do
         state =
           case connect(state.server) do
             {:ok, conn} ->
-              state = do_request(stream, mode, path, input_type, output_type, schema, from, state)
+              state = do_request(connection, mode, path, input_type, output_type, schema, from, state)
               put_in(state.conn, conn)
 
             {:error, reason} ->
@@ -130,7 +126,7 @@ defmodule UGRPC.Client do
 
       {:error, conn, reason} ->
         state = put_in(state.conn, conn)
-        GenServer.reply(from, {:error, reason})
+        _ = GenServer.reply(from, {:error, reason})
         state
     end
   end
@@ -145,7 +141,7 @@ defmodule UGRPC.Client do
         state
 
       {:error, state, reason} ->
-        reply_sender(state.requests[request_ref].from, {:error, reason})
+        _ = reply_sender(state.requests[request_ref].from, {:error, reason})
         state
     end
 
@@ -172,12 +168,12 @@ defmodule UGRPC.Client do
                 end
 
               {:error, state, reason} ->
-                reply_sender(request.from, {:error, reason})
+                _ = reply_sender(request.from, {:error, reason})
                 state
             end
 
           error ->
-            reply_sender(request.from, error)
+            _ = reply_sender(request.from, error)
 
             state
         end
@@ -202,13 +198,12 @@ defmodule UGRPC.Client do
   def handle_info(message, state) do
     case Mint.HTTP2.stream(state.conn, message) do
       :unknown ->
-        _ = Logger.warn(fn -> "Received unknown message: " <> inspect(message) end)
         {:noreply, state}
 
       {:error, conn, reason, _} ->
         state = put_in(state.conn, conn)
         state = put_in(state.requests, %{})
-        Logger.debug(Exception.message(reason))
+        _ = reason |> Exception.message() |> Logger.debug()
         {:noreply, state}
 
       {:ok, conn, responses} ->
@@ -220,14 +215,15 @@ defmodule UGRPC.Client do
 
   defp process_response({:status, request_ref, status}, state) do
     if status != 200 do
-      reply_sender(
-        state.requests[request_ref].from,
-        {:error,
-         Error.new(
-           UGRPC.Status.internal(),
-           "status got is #{status} instead of 200"
-         )}
-      )
+      _ =
+        reply_sender(
+          state.requests[request_ref].from,
+          {:error,
+           Error.new(
+             UGRPC.Status.internal(),
+             "status got is #{status} instead of 200"
+           )}
+        )
     end
 
     state
@@ -237,20 +233,21 @@ defmodule UGRPC.Client do
     request = state.requests[request_ref]
     headers = Enum.into(headers, %{})
 
-    case headers["grpc-status"] do
-      status when is_binary(status) and status != "0" ->
-        reply_sender(
-          request.from,
-          {:error,
-           Error.new(
-             String.to_integer(status),
-             headers["grpc-message"]
-           )}
-        )
+    _ =
+      case headers["grpc-status"] do
+        status when is_binary(status) and status != "0" ->
+          reply_sender(
+            request.from,
+            {:error,
+             Error.new(
+               String.to_integer(status),
+               headers["grpc-message"]
+             )}
+          )
 
-      _ ->
-        nil
-    end
+        _ ->
+          nil
+      end
 
     state
   end
@@ -258,13 +255,13 @@ defmodule UGRPC.Client do
   defp process_response({:data, request_ref, new_data}, state) do
     request = state.requests[request_ref]
     result = Serde.decode(request.schema, request.output_type, from_data(new_data))
-    reply_sender(request.from,  result)
+    _ = reply_sender(request.from, result)
     state
   end
 
   defp process_response({:done, request_ref}, state) do
     {%{from: {from, _}}, state} = pop_in(state.requests[request_ref])
-    reply_sender(from, :done)
+    _ = reply_sender(from, :done)
     state
   end
 

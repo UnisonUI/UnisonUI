@@ -112,7 +112,7 @@ defmodule GitProvider.Git do
           {:delete, String.t()}
           | {:upsert, {:openapi, String.t(), GitProvider.Git.Configuration.OpenApi.spec()}}
           | {:upsert,
-             {:grpc, {String.t(), Protobuf.Structs.Schema.t()},
+             {:grpc, String.t(), UGRPC.Protobuf.Structs.Schema.t(),
               GitProvider.Git.Configuration.Grpc.spec()}},
           GitProvider.Git.Repository.t()
         ) :: Common.Events.t()
@@ -150,7 +150,7 @@ defmodule GitProvider.Git do
     %Up{service: service}
   end
 
-  defp to_event({:upsert, {:grpc, {path, schema}, kw}}, %Repository{
+  defp to_event({:upsert, {:grpc, path, schema, kw}}, %Repository{
          name: name,
          uri: uri,
          directory: directory
@@ -189,13 +189,13 @@ defmodule GitProvider.Git do
   end
 
   defp load_file({:upsert, {:grpc, path, info}}) do
-    case Protobuf.compile(path) do
+    case UGRPC.Protobuf.compile(path) do
       {:error, reason} ->
         Logger.warn(inspect(reason))
         []
 
       {:ok, schema} ->
-        [{:upsert, {:grpc, {path, schema}, info}}]
+        [{:upsert, {:grpc, path, schema, info}}]
     end
   end
 
