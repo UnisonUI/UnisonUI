@@ -87,3 +87,4 @@ node_modules/
 /apps/rest_ui/priv/
 .elixir_ls/
 priv/plts/
+.DS_Store
