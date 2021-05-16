@@ -10,9 +10,27 @@ defmodule GRPCTest do
     :ok
   end
 
+  describe "connect/1" do
+    test "trying to connect to a non running server" do
+      assert {:error, %Mint.TransportError{reason: :econnrefused}} ==
+               UGRPC.new_client("http://localhost:4242")
+    end
+  end
+
+  describe "request/4" do
+    test "an invalid method or service" do
+      {:ok, connection} = UGRPC.new_client("http://localhost:50051")
+
+      assert {:errro, :not_found} ==
+        UGRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayByebye")
+    end
+  end
+
+
   describe "non streaming" do
     test "with non error" do
       {:ok, connection} = UGRPC.new_client("http://localhost:50051")
+
       {:ok, connection} =
         UGRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayHello")
 
@@ -25,6 +43,7 @@ defmodule GRPCTest do
   describe "streaming" do
     test "with non error" do
       {:ok, connection} = UGRPC.new_client("http://localhost:50051")
+
       {:ok, connection} =
         UGRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayHelloToAll")
 
