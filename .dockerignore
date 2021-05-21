@@ -1,0 +1,7 @@
+/_build/
+/target/
+/deps/
+/cover/
+/.git/
+/modules/
+/site/

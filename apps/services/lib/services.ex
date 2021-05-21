@@ -1,4 +1,5 @@
 defmodule Services do
+  require Logger
   @behaviour Services.Behaviour
 
   @spec available_services :: [Common.Service.t()]
@@ -7,17 +8,16 @@ defmodule Services do
   @spec service(id :: String.t()) :: {:ok, Common.Service.t()} | {:error, :not_found}
   defdelegate service(id), to: Services.Aggregator
 
-  @spec add_source(producer :: GenStage.stage()) ::
-          {:ok, GenStage.subscription_tag()}
-          | {:error, :bad_args}
-          | {:error, :not_a_consumer}
-          | {:error, {:bad_opts, String.t()}}
-  def add_source(producer) when is_atom(producer) or is_pid(producer),
-    do:
-      GenStage.sync_subscribe(Services.Aggregator,
-        to: producer,
-        cancel: :temporary
-      )
+  @spec dispatch_event(event :: Common.Events.t()) :: :ok
+  def dispatch_event(event) do
+    case Database.transaction(fn -> Database.Schema.Events.insert(event) end) do
+      {:error, reason} ->
+        Logger.warn("Couldn't dispatch #{inspect(event)} because #{inspect(reason)}")
 
-  def add_source(_producer), do: {:error, :bad_args}
+      _ ->
+        nil
+    end
+
+    :ok
+  end
 end

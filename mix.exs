@@ -1,18 +1,21 @@
 defmodule Unisonui.MixProject do
+  @version "2.0.0"
   use Mix.Project
 
   def project do
     [
       apps_path: "apps",
-      version: "0.1.0",
+      version: "2.0.0",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: ["coveralls.html": :test,"coveralls.json": :test],
+      preferred_cli_env: ["coveralls.html": :test, "coveralls.json": :test],
       releases: [
         unison_ui: [
           steps: [&npm_deploy/1, :assemble, :tar],
           applications: [
+            clustering: :permanent,
+            database: :permanent,
             u_grpc: :permanent,
             services: :permanent,
             configuration: :permanent,
@@ -58,6 +61,7 @@ defmodule Unisonui.MixProject do
       {:logstash_logger_formatter, "~> 1.0"},
       {:toml, "~> 0.6"},
       {:gen_stage, "~> 1.0"},
+      {:version_tasks, "~> 0.12.0", only: [:dev], runtime: false},
       {:credo, "~> 1.4", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.0.0", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.21", only: [:dev], runtime: false},

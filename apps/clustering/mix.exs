@@ -1,17 +1,16 @@
-defmodule Services.MixProject do
+defmodule Clustering.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :services,
+      app: :clustering,
       version: "0.1.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.12-rc",
+      elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
-      test_coverage: [tool: ExCoveralls],
       deps: deps()
     ]
   end
@@ -20,18 +19,17 @@ defmodule Services.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {Services.Application, []}
+      mod: {Clustering.Application, []}
     ]
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:common, in_umbrella: true},
-      {:database, in_umbrella: true},
-      {:gen_stage, "~> 1.0"},
-      {:ok, "~> 2.3"},
-      {:logstash_logger_formatter, "~> 1.0"}
+      {:libcluster, "~> 3.3"},
+      {:libcluster_gce_strategy, "~> 0.1", only: :prod},
+      {:libcluster_ec2, "~> 0.1", only: :prod, github: "UnisonUI/libcluster_ec2", branch: "master"},
+      {:database, in_umbrella: true}
     ]
   end
 end
