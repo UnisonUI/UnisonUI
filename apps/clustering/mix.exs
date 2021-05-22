@@ -28,8 +28,7 @@ defmodule Clustering.MixProject do
     [
       {:libcluster, "~> 3.3"},
       {:libcluster_gce_strategy, "~> 0.1", only: :prod},
-      {:libcluster_ec2, "~> 0.1", only: :prod, github: "UnisonUI/libcluster_ec2", branch: "master"},
-      {:database, in_umbrella: true}
+      {:libcluster_ec2, "~> 0.1", only: :prod, github: "UnisonUI/libcluster_ec2", branch: "master"}
     ]
   end
 end

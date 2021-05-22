@@ -9,10 +9,8 @@ defmodule Services.Application do
   def start(_type, _args) do
     children = [
       {Task.Supervisor, name: Services.TaskSupervisor},
-      %{
-        id: Services.Aggregator,
-        start: {Services.Aggregator, :start_link, []}
-      }
+      {Services.Cluster, []},
+      {Services.Aggregator, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

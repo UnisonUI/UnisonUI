@@ -28,9 +28,11 @@ defmodule Services.MixProject do
   defp deps do
     [
       {:common, in_umbrella: true},
-      {:database, in_umbrella: true},
       {:gen_stage, "~> 1.0"},
       {:ok, "~> 2.3"},
+      {:gen_state_machine, "~> 3.0"},
+      {:ra, "~> 1.1"},
+      {:ex_unit_clustered_case, "~> 0.4.0", only: :test},
       {:logstash_logger_formatter, "~> 1.0"}
     ]
   end

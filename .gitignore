@@ -88,3 +88,6 @@ node_modules/
 .elixir_ls/
 priv/plts/
 .DS_Store
+nonode@hnohost/
+ex_unit_clustered_node*
+

@@ -15,7 +15,6 @@ defmodule Unisonui.MixProject do
           steps: [&npm_deploy/1, :assemble, :tar],
           applications: [
             clustering: :permanent,
-            database: :permanent,
             u_grpc: :permanent,
             services: :permanent,
             configuration: :permanent,
