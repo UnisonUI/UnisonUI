@@ -11,11 +11,13 @@ defmodule Services.Cluster do
   def running?, do: GenStateMachine.call(__MODULE__, :running?)
   defp quorum, do: Application.get_env(:services, :quorum, 1)
 
-  defp nodes, do: Node.list([:visible, :this]) |> Enum.reject(&(&1 == :"manager@127.0.0.1"))
+  defp nodes,
+    do: Node.list([:visible, :this]) |> Enum.reject(&MapSet.member?(ignore_servers(), &1))
 
   defp check_quorum, do: length(nodes()) >= quorum()
 
   defp interval, do: Application.get_env(:services, :interval_node_down_ms, 1_000)
+  defp ignore_servers, do: Application.get_env(:services, :ignore_servers, []) |> MapSet.new()
 
   @impl true
   def init(:ok) do
@@ -34,14 +36,8 @@ defmodule Services.Cluster do
     do: {:keep_state_and_data, [{:reply, from, false}]}
 
   def starting(:internal, :start_cluster, nodes) do
-    case :ra.start_cluster(:unisonui, {:module, Services.State, %{}}, nodes) do
-      {:ok, _, _} ->
-        {:next_state, :running, :ok}
-
-      _ ->
-        actions = [1_000]
-        {:keep_state_and_data, actions}
-    end
+    _ = :ra.start_cluster(:unisonui, {:module, Services.State, %{}}, nodes)
+    {:next_state, :running, :ok}
   end
 
   def starting(:internal, :check_quorum, _) do

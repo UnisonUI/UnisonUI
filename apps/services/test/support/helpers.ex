@@ -26,6 +26,25 @@ defmodule Helpers do
     end
   end
 
+  def get_leaders(nodes, rem \\ 10)
+  def get_leaders(nodes, 0), do: {[], nodes}
+
+  def get_leaders(nodes, rem) do
+    {left, right} =
+      nodes
+      |> Enum.split_with(fn node ->
+        %{servers: %{unisonui: %{state: state}}} = :rpc.call(node, :ra, :overview, [])
+        state == :leader
+      end)
+
+    if left == [] do
+      Process.sleep(500)
+      get_leaders(nodes, rem - 1)
+    else
+      {left, right}
+    end
+  end
+
   def wait_data(rem \\ 10)
   def wait_data(0), do: []
 

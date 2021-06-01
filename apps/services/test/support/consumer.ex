@@ -1,6 +1,6 @@
 defmodule Consumer do
   use GenStage
-  def start_link(_), do: GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
+  def start_link(_), do: GenStage.start(__MODULE__, :ok, name: __MODULE__)
   @impl true
   def init(_), do: {:consumer, [], subscribe_to: [Services.Aggregator]}
 

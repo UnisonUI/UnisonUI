@@ -12,10 +12,11 @@ defmodule Services.State do
 
   @impl true
   def apply(_meta, {:event, event}, services) do
+    Logger.debug("Event: #{inspect(event)}")
+
     {events, services} =
       case event do
         %Events.Up{service: %{id: id} = service} ->
-          Logger.debug("New service: #{service.id}")
           service_up = event
           service_down = %Events.Down{id: id}
 

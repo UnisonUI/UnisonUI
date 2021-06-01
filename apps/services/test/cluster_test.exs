@@ -3,11 +3,15 @@ defmodule ClusterTest do
 
   alias Common.{Events, Service}
 
+  setup_all do
+    Application.put_env(:services, :quorum, 2)
+  end
+
   describe "Given an healthy cluster" do
     setup do
       random = :crypto.strong_rand_bytes(10) |> Base.hex_encode32()
 
-      prefix = "unisonui_node_#{random}_" 
+      prefix = "unisonui_node_#{random}_"
 
       nodes =
         LocalCluster.start_nodes(prefix, 3,
@@ -15,14 +19,9 @@ defmodule ClusterTest do
           applications: [:services]
         )
 
-      assert call(hd(nodes), Helpers, :wait_ready, [30]) == true
-      assert call(hd(nodes), :ra, :remove_member, [:unisonui, [{:unisonui, :"manager@127.0.0.1"}]]) == true
+      assert call(hd(nodes), Helpers, :wait_ready, []) == true
 
-      nodes
-      |> map(Consumer, :start_link, [[]])
-      |> IO.inspect()
-
-      Helpers.connect(nodes)
+      nodes |> map(Consumer, :start_link, [[]]) |> Enum.each(&assert(match?({:ok, _}, &1)))
 
       [nodes: nodes]
     end
@@ -48,22 +47,12 @@ defmodule ClusterTest do
       event = %Events.Up{service: service}
       result = {:ok, service}
 
-      writer = Enum.random(nodes)
-      assert call(writer, Helpers, :wait_ready, []) == true
-
-      {left, right} =
-        nodes
-        |> map(:ra, :overview, [])
-        |> Enum.split_with(fn node ->
-          %{servers: %{unisonui: %{state: state}}} = call(node, :ra, :overview, [])
-          state == :leader
-        end)
-
+      {left, right} = Helpers.get_leaders(nodes)
       writer = Enum.random(right)
-
       Enum.each(left, &Helpers.disconnect(nodes, &1))
-
+      Process.sleep(10_000)
       assert call(writer, Services, :dispatch_event, [event]) == :ok
+      assert call(Enum.random(left), Services, :dispatch_event, [event]) == {:error, :timeout}
 
       right
       |> Enum.map(fn node ->
