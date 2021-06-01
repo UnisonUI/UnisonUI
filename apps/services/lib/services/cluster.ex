@@ -8,9 +8,14 @@ defmodule Services.Cluster do
   def start_link(_),
     do: GenStateMachine.start_link(__MODULE__, :ok, name: __MODULE__)
 
+  def running?, do: GenStateMachine.call(__MODULE__, :running?)
   defp quorum, do: Application.get_env(:services, :quorum, 1)
 
-  defp check_quorum, do: length(Node.list([:visible, :this])) >= quorum()
+  defp nodes, do: Node.list([:visible, :this]) |> Enum.reject(&(&1 == :"manager@127.0.0.1"))
+
+  defp check_quorum, do: length(nodes()) >= quorum()
+
+  defp interval, do: Application.get_env(:services, :interval_node_down_ms, 1_000)
 
   @impl true
   def init(:ok) do
@@ -24,6 +29,9 @@ defmodule Services.Cluster do
       {:ok, :starting, :ok, actions}
     end
   end
+
+  def starting({:call, from}, :running?, _state),
+    do: {:keep_state_and_data, [{:reply, from, false}]}
 
   def starting(:internal, :start_cluster, nodes) do
     case :ra.start_cluster(:unisonui, {:module, Services.State, %{}}, nodes) do
@@ -40,8 +48,7 @@ defmodule Services.Cluster do
     if check_quorum() do
       actions = [{:next_event, :internal, :start_cluster}]
 
-      {:next_state, :starting, Node.list([:visible, :this]) |> Enum.map(&{:unisonui, &1}),
-       actions}
+      {:next_state, :starting, nodes() |> Enum.map(&{:unisonui, &1}), actions}
     else
       {:next_state, :waiting_for_quorum, :ok}
     end
@@ -51,16 +58,37 @@ defmodule Services.Cluster do
     handle_event(event_type, event_content, :starting, data)
   end
 
+  def waiting_for_quorum({:call, from}, :running?, _state),
+    do: {:keep_state_and_data, [{:reply, from, false}]}
+
   def waiting_for_quorum(event_type, event_content, data) do
     handle_event(event_type, event_content, :waiting_for_quorum, data)
+  end
+
+  def running({:call, from}, :running?, _state),
+    do: {:keep_state_and_data, [{:reply, from, true}]}
+
+  def running(:info, {:nodeup, node, _}, _state) do
+    _ = :ra.add_member(:unisonui, {:unison, node})
+    :keep_state_and_data
+  end
+
+  def running(:info, {:nodedown, node, _}, _state) do
+    actions = [{{:timeout, :still_down}, interval(), node}]
+    {:keep_state_and_data, actions}
+  end
+
+  def running({:timeout, :still_down}, node, _state) do
+    unless node in Node.list([:visible]) do
+      _ = :ra.remove_member(:unisonui, {:unisonui, node})
+    end
+
+    :keep_state_and_data
   end
 
   def running(event_type, event_content, data) do
     handle_event(event_type, event_content, :running, data)
   end
-
-  @impl true
-  def handle_event(:cast, {:notify, pid}, _state, _data), do: {:keep_state, pid}
 
   def handle_event(:enter, from, to, data) do
     msg = "FSM #{inspect(data)} transitionned from #{from} to #{to}"

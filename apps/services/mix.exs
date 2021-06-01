@@ -9,7 +9,8 @@ defmodule Services.MixProject do
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.12-rc",
+      elixir: "~> 1.12",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       test_coverage: [tool: ExCoveralls],
       deps: deps()
@@ -24,6 +25,8 @@ defmodule Services.MixProject do
     ]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
@@ -32,7 +35,7 @@ defmodule Services.MixProject do
       {:ok, "~> 2.3"},
       {:gen_state_machine, "~> 3.0"},
       {:ra, "~> 1.1"},
-      {:ex_unit_clustered_case, "~> 0.4.0", only: :test},
+      {:local_cluster, "~> 1.2", only: :test},
       {:logstash_logger_formatter, "~> 1.0"}
     ]
   end

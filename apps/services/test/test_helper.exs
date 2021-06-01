@@ -1,4 +1,5 @@
 Application.stop(:services)
+Application.stop(:ra)
 {_, 0} = System.cmd("epmd", ["-daemon"])
-Node.start(:"ex_unit@127.0.0.1", :longnames)
+:ok = LocalCluster.start()
 ExUnit.start()

@@ -17,15 +17,7 @@ defmodule Services do
 
   @spec service(id :: String.t()) :: {:ok, Common.Service.t()} | {:error, term()}
   def service(id) do
-    case :ra.local_query(
-           :unisonui,
-           fn services ->
-             case Map.get(services, id) do
-               nil -> :not_found
-               service -> service
-             end
-           end
-         ) do
+    case :ra.local_query(:unisonui, &Map.get(&1, id, :not_found)) do
       {:ok, {_, :not_found}, _} -> {:error, :not_found}
       {:ok, {_, service}, _} -> {:ok, service}
       {:error, _} = error -> error
@@ -38,14 +30,14 @@ defmodule Services do
     case :ra.process_command(:unisonui, {:event, event}) do
       {:error, reason} ->
         Logger.warn("Couldn't dispatch #{inspect(event)} because #{inspect(reason)}")
+        :ok
 
       {:timeout, _} ->
         Logger.warn("Couldn't dispatch #{inspect(event)} because it could not be replicated")
+        :timeout
 
       _ ->
-        nil
+        :ok
     end
-
-    :ok
   end
 end
