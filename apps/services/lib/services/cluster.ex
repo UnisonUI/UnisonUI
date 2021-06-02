@@ -27,7 +27,7 @@ defmodule Services.Cluster do
       actions = [{:next_event, :internal, :start_cluster}]
       {:ok, :starting, [{:unisonui, node()}], actions}
     else
-      actions = [{:next_event, :internal, :check_quorum}]
+      actions = [{{:timeout, :waiting_for_quorum}, 1_000, 15}]
       {:ok, :starting, :ok, actions}
     end
   end
@@ -36,17 +36,22 @@ defmodule Services.Cluster do
     do: {:keep_state_and_data, [{:reply, from, false}]}
 
   def starting(:internal, :start_cluster, nodes) do
-    _ = :ra.start_cluster(:unisonui, {:module, Services.State, %{}}, nodes)
+    :global.trans({:unisonui, :bootstrap}, fn ->
+      :ra.start_cluster(:unisonui, {:module, Services.State, %{}}, nodes)
+    end)
+
     {:next_state, :running, :ok}
   end
 
-  def starting(:internal, :check_quorum, _) do
-    if check_quorum() do
-      actions = [{:next_event, :internal, :start_cluster}]
+  def starting({:timeout, :waiting_for_quorum}, 0, _state),
+    do: {:stop, {:error, :cluster_not_formed}}
 
-      {:next_state, :starting, nodes() |> Enum.map(&{:unisonui, &1}), actions}
+  def starting({:timeout, :waiting_for_quorum}, rem, _state) do
+    if check_quorum() do
+      bootstrap_or_start_server()
     else
-      {:next_state, :waiting_for_quorum, :ok}
+      actions = [{{:timeout, :waiting_for_quorum}, 1_000, rem - 1}]
+      {:keep_state_and_data, actions}
     end
   end
 
@@ -54,20 +59,43 @@ defmodule Services.Cluster do
     handle_event(event_type, event_content, :starting, data)
   end
 
-  def waiting_for_quorum({:call, from}, :running?, _state),
-    do: {:keep_state_and_data, [{:reply, from, false}]}
+  defp bootstrap_or_start_server do
+    nodes = Enum.reject(nodes(), &(&1 == node()))
+    {succeed, _failed} = :rpc.multicall(nodes, :ra, :overview, [])
 
-  def waiting_for_quorum(event_type, event_content, data) do
-    handle_event(event_type, event_content, :waiting_for_quorum, data)
+    maybe_leader =
+      Enum.flat_map(succeed, fn
+        %{node: node, servers: %{unisonui: %{state: :leader}}} -> [node]
+        _ -> []
+      end)
+
+    nodes = Enum.map(nodes(), &{:unisonui, &1})
+    self = {:unisonui, node()}
+
+    case maybe_leader do
+      [] ->
+        actions = [{:next_event, :internal, :start_cluster}]
+
+        {:next_state, :starting, nodes, actions}
+
+      [leader] ->
+        with {:error, _} <- :ra.restart_server(self) do
+          _ =
+            :ra.start_server(
+              :unisonui,
+              {:unisonui, nodes()},
+              {:module, Services.State, %{}},
+              Enum.reject(nodes, &(&1 == self))
+            )
+
+          _ = :rpc.call(leader, :ra, :add_member, [:unisonui, self])
+          {:next_state, :running, :ok}
+        end
+    end
   end
 
   def running({:call, from}, :running?, _state),
     do: {:keep_state_and_data, [{:reply, from, true}]}
-
-  def running(:info, {:nodeup, node, _}, _state) do
-    _ = :ra.add_member(:unisonui, {:unison, node})
-    :keep_state_and_data
-  end
 
   def running(:info, {:nodedown, node, _}, _state) do
     actions = [{{:timeout, :still_down}, interval(), node}]
@@ -88,7 +116,7 @@ defmodule Services.Cluster do
 
   def handle_event(:enter, from, to, data) do
     msg = "FSM #{inspect(data)} transitionned from #{from} to #{to}"
-    Logger.info(msg)
+    Logger.debug(msg)
     :keep_state_and_data
   end
 

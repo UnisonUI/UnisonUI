@@ -12,7 +12,7 @@ defmodule Services.State do
 
   @impl true
   def apply(_meta, {:event, event}, services) do
-    Logger.debug("Event: #{inspect(event)}")
+    Logger.debug("Event: #{inspect(event)} #{node()}")
 
     {events, services} =
       case event do
