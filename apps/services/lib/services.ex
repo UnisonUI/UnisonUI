@@ -25,8 +25,18 @@ defmodule Services do
     end
   end
 
+  @spec dispatch_events(event :: [Common.Events.t()]) :: :ok | {:error, :timeout | term()}
+  def dispatch_events(events),
+    do:
+      Enum.reduce_while(events, :ok, fn event, _ ->
+        case dispatch_event(event) do
+          :ok -> {:cont, :ok}
+          error -> {:halt, error}
+        end
+      end)
+
   @spec dispatch_event(event :: Common.Events.t()) :: :ok | {:error, :timeout | term()}
-  def dispatch_event(event) do
+  defp dispatch_event(event) do
     case :ra.process_command(:unisonui, {:event, event}) do
       {:error, reason} ->
         Logger.warn("Couldn't dispatch #{inspect(event)} because #{inspect(reason)}")

@@ -1,32 +1,45 @@
 defmodule GitProvider.Git do
-  use GenStage
+  use Clustering.GlobalServer, supervisor: GitProvider.Git.DynamicSupervisor
   require Logger
+
   alias GitProvider.Git.Repository
   alias Common.Events.{Down, Up}
   alias Common.Service.{Grpc, OpenApi, Metadata}
   alias GitProvider.Git.Configuration
 
-  @git_cmd "git"
-  defp pull_interval, do: Durex.ms!(Application.fetch_env!(:git_provider, :pull_interval))
-
   @typep state :: {Repository.t(), binary()}
 
-  @spec start_link(repository :: Repository.t()) :: GenServer.on_start() | {:error, :bad_arg}
-  def start_link(%Repository{} = repository),
-    do: GenStage.start_link(__MODULE__, repository, name: String.to_atom(repository.name))
+  @git_cmd "git"
 
-  def start_link(_repository), do: {:error, :bad_arg}
+  defp pull_interval, do: Durex.ms!(Application.fetch_env!(:git_provider, :pull_interval))
+  defp services_behaviour, do: Application.fetch_env!(:services, :behaviour)
 
-  @spec init(repository :: Repository.t()) :: {:producer, state()}
+  @spec init(repository :: Repository.t()) :: {:ok, state(), {:continue, :wait_for_ra}}
   @impl true
   def init(repository) do
+    Process.flag(:trap_exit, true)
     repository = Repository.create_temp_dir(repository)
-    send(self(), :pull)
-    {:producer, {repository, ""}}
+    {:ok, {repository, ""}, {:continue, :wait_for_ra}}
   end
 
   @impl true
-  def handle_demand(_demand, state), do: {:noreply, [], state}
+  def handle_continue(:wait_for_ra, state) do
+    if Services.Cluster.running?() do
+      send(self(), :pull)
+      {:noreply, state}
+    else
+      Process.sleep(1_000)
+
+      {:noreply, state, {:continue, :wait_for_ra}}
+    end
+  end
+
+  def child_spec(%Repository{name: name} = repository),
+    do: %{
+      id: "Git_#{name}",
+      start: {__MODULE__, :start_link, [[data: repository, name: String.to_atom(name)]]},
+      restart: :transient
+    }
 
   @impl true
   def terminate(_, {%Repository{directory: directory}, _sha1}), do: File.rm(directory)
@@ -98,15 +111,18 @@ defmodule GitProvider.Git do
         |> Stream.map(&to_event(&1, repository))
         |> Enum.to_list()
 
+      services_behaviour().dispatch_events(events)
       schedule_pull()
-      {:noreply, events, {new_repository, latest_sha1}}
+      {:noreply, {new_repository, latest_sha1}}
     else
       {:error, reason} ->
         Logger.warn(reason, provider: "git_provider")
         schedule_pull()
-        {:noreply, [], state}
+        {:noreply, state}
     end
   end
+
+  def handle_info(_, state), do: {:noreply, state}
 
   @spec to_event(
           {:delete, String.t()}

@@ -59,10 +59,19 @@ defmodule Clustering.Application do
 
   defp topologies(_), do: []
 
-  defp children([]), do: []
+  defp children([]), do: horde_children()
 
   defp children(topologies),
     do: [
-      {Cluster.Supervisor, [[clustering: topologies], [name: UnisonUI.ClusterSupervisor]]}
+      {Cluster.Supervisor, [[clustering: topologies], [name: UnisonUI.ClusterSupervisor]]},
+      {Task.Supervisor, name: Clustering.TaskSupervisor}
+      | horde_children()
+    ]
+
+  defp horde_children,
+    do: [
+      {Horde.Registry, [name: Clustering.Registry, keys: :unique, members: :auto]},
+      {Horde.DynamicSupervisor,
+       [name: Clustering.DynamicSupervisor, strategy: :one_for_one, members: :auto]}
     ]
 end

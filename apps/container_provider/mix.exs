@@ -1,27 +1,25 @@
-defmodule GitProvider.MixProject do
+defmodule ContainerProvider.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :git_provider,
-      version: "0.1.0",
+      app: :container_provider,
+      version: "2.0.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
-      elixir: "~> 1.12-rc",
+      elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
-      deps: deps(),
-      test_coverage: [tool: ExCoveralls],
-      xref: [exclude: [UnisonUI]]
+      deps: deps()
     ]
   end
 
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger, :yamerl, :gen_stage],
-      mod: {GitProvider.Application, []}
+      extra_applications: [:logger],
+      mod: {ContainerProvider.Application, []}
     ]
   end
 
@@ -37,10 +35,10 @@ defmodule GitProvider.MixProject do
       {:norm, "~> 0.12"},
       {:durex, "~> 0.2"},
       {:ok, "~> 2.3"},
-      {:neuron, "~> 5.0"},
-      {:yaml_elixir, "~> 2.5"},
       {:mox, "~> 1.0", only: :test},
       {:mock, "~> 0.3.6", only: :test},
+      {:mint, "~> 1.3"},
+      {:gen_stage, "~> 1.1"},
       {:finch, "~> 0.7"},
       {:jason, "~> 1.2"}
     ]

@@ -1,19 +1,16 @@
 defmodule GitProvider.Github do
   # @dialyzer :no_match
-  use GenServer
+  use Clustering.GlobalServer
   require Logger
   alias GitProvider.Github.{Client, Node, Settings}
   alias GitProvider.Git.{Repository, Supervisor}
 
   @typep state :: {GitProvider.Github.Settings.t(), [{String.t(), pid}]}
 
-  @spec start_link(settings :: GitProvider.Github.Settings.t()) :: GenServer.on_start()
-  def start_link(settings), do: GenServer.start_link(__MODULE__, settings, name: __MODULE__)
-
   @impl true
   @spec init(settings :: GitProvider.Github.Settings.t()) :: {:ok, state()}
   def init(settings) do
-    send(__MODULE__, :retrieve_projects)
+    send(self(), :retrieve_projects)
     {:ok, {settings, []}}
   end
 
@@ -26,7 +23,7 @@ defmodule GitProvider.Github do
            polling_interval: polling_interval,
            repositories: repositories
          } = settings, current_repositories} = state
-  ) do
+      ) do
     repositories =
       repositories
       |> Stream.map(&Regex.compile/1)
@@ -69,26 +66,19 @@ defmodule GitProvider.Github do
     {:noreply, new_state}
   end
 
-  @impl true
-  def handle_info({:DOWN, _reference, :process, pid, _type}, {settings, repositories}) do
-    new_repositories = Enum.reject(repositories, &match?({_, ^pid}, &1))
-    {:noreply, {settings, new_repositories}}
-  end
-
   defp start_git(%Repository{service_name: name} = repository) do
-    with {:ok, pid} <- Supervisor.start_git(repository) do
-      Process.monitor(pid)
-      {:ok, {name, pid}}
-    else
-      error -> error
+    case Supervisor.start_git(repository) do
+      {:ok, pid} ->
+        {:ok, {name, pid}}
+
+      :ignore ->
+        {:error, :ignore}
+
+      error ->
+        error
     end
   end
 
-  @impl true
-  def terminate(_reason, {_settings, repositories}) do
-    Enum.each(repositories, fn {_, pid} -> Supervisor.stop_git(pid) end)
-  end
-
   defp schedule_polling(interval),
-    do: Process.send_after(__MODULE__, :retrieve_projects, interval)
+    do: Process.send_after(self(), :retrieve_projects, interval)
 end

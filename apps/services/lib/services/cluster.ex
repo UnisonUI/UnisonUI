@@ -1,7 +1,5 @@
 defmodule Services.Cluster do
-  @moduledoc """
-  FSM to bootstrap mnesia cluster.
-  """
+  @moduledoc false
   use GenStateMachine, callback_mode: [:state_functions, :state_enter]
   require Logger
 
@@ -37,7 +35,7 @@ defmodule Services.Cluster do
 
   def starting(:internal, :start_cluster, nodes) do
     :global.trans({:unisonui, :bootstrap}, fn ->
-      :ra.start_cluster(:unisonui, {:module, Services.State, %{}}, nodes)
+      _ = :ra.start_cluster(:unisonui, {:module, Services.State, %{}}, nodes)
     end)
 
     {:next_state, :running, :ok}
@@ -55,16 +53,17 @@ defmodule Services.Cluster do
     end
   end
 
-  def starting(event_type, event_content, data) do
-    handle_event(event_type, event_content, :starting, data)
-  end
+  def starting(event_type, event_content, data),
+    do: handle_event(event_type, event_content, :starting, data)
 
   defp bootstrap_or_start_server do
     nodes = Enum.reject(nodes(), &(&1 == node()))
-    {succeed, _failed} = :rpc.multicall(nodes, :ra, :overview, [])
 
     maybe_leader =
-      Enum.flat_map(succeed, fn
+      nodes
+      |> Enum.map(&:rpc.call(&1, :ra, :overview, []))
+      |> Enum.reject(&match?({:badrpc, _}, &1))
+      |> Enum.flat_map(fn
         %{node: node, servers: %{unisonui: %{state: :leader}}} -> [node]
         _ -> []
       end)
@@ -83,14 +82,15 @@ defmodule Services.Cluster do
           _ =
             :ra.start_server(
               :unisonui,
-              {:unisonui, nodes()},
+              self,
               {:module, Services.State, %{}},
               Enum.reject(nodes, &(&1 == self))
             )
 
           _ = :rpc.call(leader, :ra, :add_member, [:unisonui, self])
-          {:next_state, :running, :ok}
         end
+
+        {:next_state, :running, :ok}
     end
   end
 
@@ -110,9 +110,8 @@ defmodule Services.Cluster do
     :keep_state_and_data
   end
 
-  def running(event_type, event_content, data) do
-    handle_event(event_type, event_content, :running, data)
-  end
+  def running(event_type, event_content, data),
+    do: handle_event(event_type, event_content, :running, data)
 
   def handle_event(:enter, from, to, data) do
     msg = "FSM #{inspect(data)} transitionned from #{from} to #{to}"
@@ -128,11 +127,5 @@ defmodule Services.Cluster do
     Logger.warn(msg)
 
     :keep_state_and_data
-  end
-
-  @impl true
-  def terminate(reason, _state, _data) do
-    Logger.info("Terminated: #{inspect(reason)}")
-    :ok
   end
 end

@@ -2,6 +2,38 @@ defmodule Unisonui.MixProject do
   @version "2.0.0"
   use Mix.Project
 
+  defp common_apps,
+    do: [
+      clustering: :permanent,
+      services: :permanent,
+      configuration: :permanent,
+      common: :permanent,
+      u_grpc: :permanent
+    ]
+
+  defp providers, do: [git_provider: :permanent, container_provider: :permanent]
+
+  defp providers_apps(provider \\ :all)
+  defp providers_apps(:all), do: common_apps() ++ providers()
+  defp providers_apps(provider), do: [{provider, :permanent} | common_apps()]
+
+  defp web_apps, do: [unison_ui: :permanent]
+
+  defp all_apps, do: common_apps() ++ providers() ++ web_apps()
+
+  defp provider_release(name),
+    do: [
+      steps: [:assemble],
+      applications: providers_apps(name),
+      config_providers: [
+        {Toml.Provider,
+         [
+           path: {:system, "UNISON_UI_ROOT", "/config.toml"},
+           transforms: [Configuration.LoggingTransformer]
+         ]}
+      ]
+    ]
+
   def project do
     [
       apps_path: "apps",
@@ -11,17 +43,11 @@ defmodule Unisonui.MixProject do
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: ["coveralls.html": :test, "coveralls.json": :test],
       releases: [
-        unison_ui: [
-          steps: [&npm_deploy/1, :assemble, :tar],
-          applications: [
-            clustering: :permanent,
-            u_grpc: :permanent,
-            services: :permanent,
-            configuration: :permanent,
-            git_provider: :permanent,
-            unison_ui: :permanent,
-            common: :permanent
-          ],
+        unisonui_git_provider: provider_release(:git_provider),
+        unisonui_container_provider: provider_release(:container_provider),
+        unisonui: [
+          steps: [:assemble],
+          applications: all_apps(),
           config_providers: [
             {Toml.Provider,
              [
@@ -57,9 +83,7 @@ defmodule Unisonui.MixProject do
   # Run "mix help deps" for examples and options.
   defp deps do
     [
-      {:logstash_logger_formatter, "~> 1.0"},
       {:toml, "~> 0.6"},
-      {:gen_stage, "~> 1.0"},
       {:version_tasks, "~> 0.12.0", only: [:dev], runtime: false},
       {:credo, "~> 1.4", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.0.0", only: [:dev], runtime: false},

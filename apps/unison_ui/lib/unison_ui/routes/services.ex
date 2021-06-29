@@ -4,13 +4,24 @@ defmodule UnisonUI.Routes.Services do
   use Plug.Router
   alias Common.Service
 
-  plug :match 
-  plug :dispatch 
+  plug(:match)
+  plug(:dispatch)
 
   defp services_behaviour, do: Application.fetch_env!(:services, :behaviour)
 
   get "/" do
-    body = services_behaviour().available_services() |> Jason.encode!()
+    body =
+      services_behaviour().available_services()
+      |> then(fn
+        {:ok, services} ->
+          services
+
+        {:error, error} ->
+          Logger.warn(inspect(error))
+          []
+      end)
+      |> Jason.encode!()
+
     resp(conn, 200, body)
   end
 

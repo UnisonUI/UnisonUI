@@ -50,10 +50,9 @@ defmodule ClusterTest do
       {left, right} = Helpers.get_leaders(nodes)
 
       writer = Enum.random(right)
-      # Enum.each(left, &Helpers.disconnect(nodes, &1))
-      # map(left, Node, :disconnect, [:"manager@127.0.0.1"])
-      map(left,Application,:stop,[:services])
-      assert call(writer, Services, :dispatch_event, [event]) == :ok
+
+      map(left, Application, :stop, [:services])
+      assert call(writer, Services, :dispatch_events, [[event]]) == :ok
 
       right
       |> Enum.map(fn node ->
@@ -61,21 +60,52 @@ defmodule ClusterTest do
       end)
       |> Enum.each(&assert(&1 == {:ok, [event]}))
 
-      #
-      # left
-      # |> Enum.map(&call(&1, Services, :service, ["test"]))
-      # |> Enum.each(&assert(&1 == {:error, :not_found}))
-      #
       right
       |> Enum.map(&call(&1, Services, :service, ["test"]))
       |> Enum.each(&assert(&1 == result))
-      map(left,Application,:ensure_all_started,[:services])
 
+      map(left, Application, :ensure_all_started, [:services])
 
       nodes |> map(Helpers, :wait_ready, []) |> Enum.each(&assert/1)
 
       left
       |> Enum.map(&call(&1, Services, :service, ["test"]))
+      |> Enum.each(&assert(&1 == result))
+    end
+  end
+
+  describe "Forming a cluster over time" do
+    setup do
+      random = :crypto.strong_rand_bytes(10) |> Base.hex_encode32()
+
+      prefix = "unisonui_node_#{random}_"
+      opts = [environment: [services: [quorum: 2]], applications: [:services]]
+      [first] = LocalCluster.start_nodes(prefix, 1, opts)
+      Process.sleep(1_000)
+      [second] = LocalCluster.start_nodes(prefix <> "2", 1, opts)
+      Process.sleep(1_000)
+      [third] = LocalCluster.start_nodes(prefix <> "3", 1, opts)
+      nodes = [first, second, third]
+      nodes |> map(Helpers, :wait_ready, []) |> Enum.each(&assert/1)
+
+      nodes |> map(Consumer, :start_link, [[]]) |> Enum.each(&assert(match?({:ok, _}, &1)))
+
+      [nodes: nodes]
+    end
+
+    test "write and read data", %{nodes: nodes} do
+      service = %Service.OpenApi{id: "test", name: "test", content: "test"}
+      event = %Events.Up{service: service}
+      result = {:ok, service}
+      writer = Enum.random(nodes)
+      call(writer, Services, :dispatch_events, [[event]])
+
+      nodes
+      |> map(Helpers, :get_state, [])
+      |> Enum.each(&assert(&1 == {:ok, [event]}))
+
+      nodes
+      |> map(Services, :service, ["test"])
       |> Enum.each(&assert(&1 == result))
     end
   end

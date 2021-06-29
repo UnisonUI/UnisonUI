@@ -17,7 +17,7 @@ defmodule GitProvider.Application do
 
   defp child_spec(_),
     do: [
-      %{id: GitProvider.Git.SupSupervisor, start: {GitProvider.Git.SupSupervisor, :start_link, []}},
+      %{id: GitProvider.Git.Supervisor, start: {GitProvider.Git.Supervisor, :start_link, []}},
       %{
         id: GitProvider.Github.Supervisor,
         start: {GitProvider.Github.Supervisor, :start_link, []}

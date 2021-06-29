@@ -4,7 +4,9 @@ defmodule Helpers do
   def wait_ready(0), do: false
 
   def wait_ready(rem) do
-    if Services.Cluster.running?() do
+    %{servers: servers} = :ra.overview()
+
+    if Map.has_key?(servers, :unisonui) do
       true
     else
       Process.sleep(500)
