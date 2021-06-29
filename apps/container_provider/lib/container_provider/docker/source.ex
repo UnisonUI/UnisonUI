@@ -10,21 +10,32 @@ defmodule ContainerProvider.Docker.Source do
   def start_link(uri), do: GenServer.start_link(__MODULE__, uri, name: __MODULE__)
 
   defp services_behaviour, do: Application.fetch_env!(:services, :behaviour)
-  @impl true
-  def init(uri) do
-    with {:ok, pid} <- Client.start_link(uri),
-         {:ok, client} <- Client.start_link(uri) do
-      _ =
-        Client.events(
-          pid,
-          ~s/since=0&filters={"event":["start","stop"],"type":["container"]}/,
-          self()
-        )
 
-      {:ok, client}
+  @impl true
+  def init(uri), do: {:ok, uri, {:continue, :wait_for_ra}}
+
+  @impl true
+  def handle_continue(:wait_for_ra, uri) do
+    if Services.Cluster.running?() do
+      with {:ok, pid} <- Client.start_link(uri),
+           {:ok, client} <- Client.start_link(uri) do
+        _ =
+          Client.events(
+            pid,
+            ~s/since=0&filters={"event":["start","stop"],"type":["container"]}/,
+            self()
+          )
+
+        Logger.debug("Docker source started")
+        {:noreply, client}
+      else
+        {:error, reason} ->
+          {:stop, reason}
+      end
     else
-      {:error, reason} ->
-        {:stop, reason}
+      Process.sleep(1_000)
+
+      {:noreply, uri, {:continue, :wait_for_ra}}
     end
   end
 
