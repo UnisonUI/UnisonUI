@@ -1,6 +1,11 @@
 import Config
 config :container_provider, enabled: true
 
+config :container_provider, :connection_backoff,
+  start: 0,
+  interval: 1_000,
+  max: 5_000
+
 config :container_provider, :docker,
   enabled: true,
   host: "unix:///var/run/docker.sock"

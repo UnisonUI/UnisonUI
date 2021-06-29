@@ -33,7 +33,7 @@ defmodule Services.State do
           {events, services}
 
         %Events.Down{id: id} = event ->
-          {Map.delete(services, id), [event]}
+          {[event], Map.delete(services, id)}
       end
 
     {services, :ok, [dispatch_events(events)]}

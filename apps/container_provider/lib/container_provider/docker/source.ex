@@ -2,7 +2,7 @@ defmodule ContainerProvider.Docker.Source do
   use GenServer
   require Logger
   alias ContainerProvider.HttpClient
-  alias ContainerProvider.Docker.Client
+  alias ContainerProvider.Docker.{GetClient, EventsClient}
   alias ContainerProvider.Labels
   alias Common.Events.{Down, Up}
   alias Common.Service.{Grpc, OpenApi, Metadata}
@@ -10,24 +10,21 @@ defmodule ContainerProvider.Docker.Source do
   def start_link(uri), do: GenServer.start_link(__MODULE__, uri, name: __MODULE__)
 
   defp services_behaviour, do: Application.fetch_env!(:services, :behaviour)
-
+  defp connection_backoff, do: Application.get_env(:container_provider, :connection_backoff, [])
+  defp connection_backoff_start, do: connection_backoff()[:start] || 0
+  defp connection_backoff_interval, do: connection_backoff()[:interval] || 1_000
+  defp connection_backoff_max, do: connection_backoff()[:max] || 5_000
   @impl true
   def init(uri), do: {:ok, uri, {:continue, :wait_for_ra}}
 
   @impl true
   def handle_continue(:wait_for_ra, uri) do
     if Services.Cluster.running?() do
-      with {:ok, pid} <- Client.start_link(uri),
-           {:ok, client} <- Client.start_link(uri) do
-        _ =
-          Client.events(
-            pid,
-            ~s/since=0&filters={"event":["start","stop"],"type":["container"]}/,
-            self()
-          )
-
+      with {:ok, _} <- EventsClient.start_link(uri),
+           {:ok, _} <- GetClient.start_link(uri) do
+        _ = watch_events()
         Logger.debug("Docker source started")
-        {:noreply, client}
+        {:noreply, connection_backoff_start()}
       else
         {:error, reason} ->
           {:stop, reason}
@@ -40,21 +37,54 @@ defmodule ContainerProvider.Docker.Source do
   end
 
   @impl true
-  def handle_info({:stream, {:data, data}}, client) do
+  def handle_info({:stream, {:status, status}}, _state) when status < 400,
+    do: {:noreply, connection_backoff_start()}
+
+  def handle_info({:stream, {:data, data}}, state) do
+    data |> Jason.encode!() |> Logger.debug()
+
     events =
       case data do
-        %{"status" => "start", "id" => id} -> handle_service_up(id, client)
-        %{"status" => "stop", "id" => id} -> [%Down{id: id}]
-        _ -> []
+        %{"status" => "start", "id" => id} ->
+          handle_service_up(id)
+
+        %{"status" => "stop", "id" => id} ->
+          [%Down{id: id}]
+
+        _ ->
+          []
       end
 
     services_behaviour().dispatch_events(events)
-    {:noreply, client}
+    {:noreply, state}
   end
+
+  def handle_info({:stream, {:error, error}}, timeout) do
+    reason = if Exception.exception?(error), do: Exception.message(error), else: error
+    Logger.warn(reason)
+
+    state = if Exception.exception?(error), do: reconnect(timeout), else: timeout
+    {:noreply, state}
+  end
+
+  def handle_info({:stream, :done}, timeout), do: {:noreply, reconnect(timeout)}
 
   def handle_info(_, state), do: {:noreply, state}
 
-  defp handle_service_up(id, client) do
+  defp reconnect(timeout) do
+    Process.sleep(timeout)
+    _ = EventsClient.reconnect()
+    _ = watch_events()
+    min(timeout + connection_backoff_interval(), connection_backoff_max())
+  end
+
+  defp watch_events, do:
+      EventsClient.request(
+        ~s(/events?since=0&filters={"event":["start","stop"],"type":["container"]}),
+        self()
+      )
+
+  defp handle_service_up(id) do
     with {:ok,
           %{
             status: 200,
@@ -62,7 +92,7 @@ defmodule ContainerProvider.Docker.Source do
               "Config" => %{"Labels" => labels},
               "NetworkSettings" => %{"Networks" => networks}
             }
-          }} <- Client.get(client, "/containers/#{id}/json"),
+          }} <- GetClient.request("/containers/#{id}/json"),
          ip <-
            networks
            |> Enum.map(fn {_, %{"IPAddress" => ip_address}} -> ip_address end)
