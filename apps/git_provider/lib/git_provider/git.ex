@@ -50,7 +50,7 @@ defmodule GitProvider.Git do
     do:
       @git_cmd
       |> System.cmd(
-        ["clone", "--branch", branch, "--single-branch", "--depth", "1", uri, directory],
+        ~w/clone --branch #{branch} --single-branch --depth 1 #{uri} #{directory}/,
         stderr_to_stdout: true
       )
       |> handle_system_cmd
@@ -58,13 +58,13 @@ defmodule GitProvider.Git do
   defp clone_or_pull({%Repository{directory: directory}, _}),
     do:
       @git_cmd
-      |> System.cmd(["pull"], cd: directory, stderr_to_stdout: true)
+      |> System.cmd(~w/pull/, cd: directory, stderr_to_stdout: true)
       |> handle_system_cmd
 
   defp get_latest_sha1(%Repository{directory: directory, branch: branch}),
     do:
       @git_cmd
-      |> System.cmd(["rev-parse", "--verify", branch], cd: directory, stderr_to_stdout: true)
+      |> System.cmd(~w/rev-parse --verify #{branch}/, cd: directory, stderr_to_stdout: true)
       |> handle_system_cmd
 
   defp list_files(directory),
@@ -82,7 +82,7 @@ defmodule GitProvider.Git do
 
   defp retrieve_files({%Repository{directory: directory}, sha1}) do
     with {:ok, changed_files} <-
-           System.cmd(@git_cmd, ["diff", "--name-only", sha1, "HEAD"],
+           System.cmd(@git_cmd, ~w/diff --name-only #{sha1} HEAD/,
              cd: directory,
              stderr_to_stdout: true
            )

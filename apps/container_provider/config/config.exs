@@ -1,10 +1,18 @@
 import Config
+
+config :k8s,
+  clusters: %{
+    default: %{}
+  }
+
 config :container_provider, enabled: true
 
 config :container_provider, :connection_backoff,
   start: 0,
   interval: 1_000,
   max: 5_000
+
+config :container_provider, :kubernetes, enabled: true
 
 config :container_provider, :docker,
   enabled: true,

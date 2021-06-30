@@ -3,14 +3,12 @@ defmodule ContainerProvider.HttpClient do
 
   @spec download_file(uri :: String.t()) :: String.t() | nil
   def download_file(uri) do
-    response = Finch.build(:get, uri) |> Finch.request(FinchHttpClient)
-
-    case response do
-      {:ok, %Finch.Response{status: 200, body: body}} ->
+    case :httpc.request(:get, {uri, []}, [timeout: 5_000], full_result: false) do
+      {:ok, {status, body}} when status < 300 ->
         body
 
-      {:error, error} ->
-        Logger.warn("There was an error while download the file: #{Exception.message(error)}")
+      _ ->
+        Logger.warn("There was an error while download the file: #{uri}")
         nil
     end
   end

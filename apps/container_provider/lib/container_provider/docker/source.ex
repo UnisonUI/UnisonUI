@@ -41,8 +41,6 @@ defmodule ContainerProvider.Docker.Source do
     do: {:noreply, connection_backoff_start()}
 
   def handle_info({:stream, {:data, data}}, state) do
-    data |> Jason.encode!() |> Logger.debug()
-
     events =
       case data do
         %{"status" => "start", "id" => id} ->

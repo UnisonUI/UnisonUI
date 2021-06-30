@@ -38,8 +38,7 @@ defmodule ContainerProvider.MixProject do
       {:mox, "~> 1.0", only: :test},
       {:mock, "~> 0.3.6", only: :test},
       {:mint, "~> 1.3"},
-      {:gen_stage, "~> 1.1"},
-      {:finch, "~> 0.7"},
+      {:k8s, "~> 0.5"},
       {:jason, "~> 1.2"}
     ]
   end

@@ -19,15 +19,24 @@ defmodule ContainerProvider.Application do
 
   defp child_spec(_) do
     docker_config = Application.fetch_env!(:container_provider, :docker)
+    kubernetes_config = Application.fetch_env!(:container_provider, :kubernetes)
 
-    [{Finch, name: FinchHttpClient}] ++
-      docker_children(docker_config[:enabled] && docker_config[:host])
+    docker_children(docker_config[:enabled] && docker_config[:host]) ++
+      kubernetes_children(kubernetes_config[:enabled])
   end
 
   defp docker_children(host) when is_binary(host), do: [{ContainerProvider.Docker.Source, host}]
 
   defp docker_children(_) do
     Logger.info("Docker provider has been disabled")
+    []
+  end
+
+  defp kubernetes_children(true),
+    do: []
+
+  defp kubernetes_children(_) do
+    Logger.info("Kubernetes provider has been disabled")
     []
   end
 end
