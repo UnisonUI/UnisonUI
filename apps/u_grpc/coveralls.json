@@ -1,0 +1,7 @@
+{
+  "skip_files": [
+    "test/support",
+    "lib/u_grpc/status.ex",
+    "lib/u_grpc/application.ex"
+  ]
+}

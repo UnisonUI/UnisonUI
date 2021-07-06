@@ -31,7 +31,7 @@ defmodule ClusterTest do
       event = %Events.Up{service: service}
       result = {:ok, service}
       writer = Enum.random(nodes)
-      call(writer, Services, :dispatch_event, [event])
+      assert call(writer, Services, :dispatch_events, [[event]]) == :ok
 
       nodes
       |> map(Helpers, :get_state, [])
