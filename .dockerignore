@@ -1,6 +1,4 @@
 /.elixir_ls/
-/_build/
-/target/
 /deps/
 /docs/
 /priv/

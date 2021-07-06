@@ -15,22 +15,31 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set up Elixir
+      id: setup-beam
       uses: erlef/setup-beam@v1
       with:
-        elixir-version: '1.12.1' # Define the elixir version [required]
+        elixir-version: '1.12.2' # Define the elixir version [required]
         otp-version: '24.0.1' # Define the OTP version [required]
     - name: Restore dependencies cache
       uses: actions/cache@v2
       with:
-        path: deps
-        key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
-        restore-keys: ${{ runner.os }}-mix-
+        path: |
+          deps
+          _build
+        key: ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-${{ hashFiles('**/mix.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-
+          ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-
+          ${{ runner.os }}-mix-
     - name: Restore dependencies dialyzer
       uses: actions/cache@v2
       with:
         path: priv/plts
-        key: ${{ runner.os }}-dialyzer-${{ hashFiles('priv/plts/dialyzer.plt') }}
-        restore-keys: ${{ runner.os }}-dialyzer-
+        key: ${{ runner.os }}-dialyzer-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-${{ hashFiles('priv/plts/dialyzer.plt') }}
+        restore-keys: |
+          ${{ runner.os }}-dialyzer-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-
+          ${{ runner.os }}-dialyzer-${{ steps.setup-beam.outputs.otp-version }}-
+          ${{ runner.os }}-dialyzer-
     - name: Install Protoc
       uses: arduino/setup-protoc@v1
       with:

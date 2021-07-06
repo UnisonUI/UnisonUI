@@ -12,7 +12,9 @@ config :container_provider, :connection_backoff,
   interval: 1_000,
   max: 5_000
 
-config :container_provider, :kubernetes, enabled: true
+config :container_provider, :kubernetes,
+  enabled: true,
+  polling_interval: 1_000
 
 config :container_provider, :docker,
   enabled: true,
