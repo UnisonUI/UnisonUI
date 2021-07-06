@@ -5,13 +5,14 @@ defmodule Clustering.GlobalServer do
     quote do
       use GenServer
       import Clustering.GlobalServer
+      require Logger
 
       def child_spec(opts),
         do: %{
           id: __MODULE__,
           start: {__MODULE__, :start_link, [opts]},
           restart: :transient
-      } 
+        }
 
       @spec start_child(any()) :: DynamicSupervisor.on_start_child()
       def start_child(opts),
@@ -34,6 +35,13 @@ defmodule Clustering.GlobalServer do
 
           {:error, {:already_started, _}} ->
             :ignore
+
+          {:error, {:stop, e}} ->
+            Logger.warn(Exception.message(e))
+            :ignore
+
+          error ->
+            error
         end
       end
 

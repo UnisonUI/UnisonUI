@@ -21,7 +21,7 @@ defmodule GRPCTest do
     test "an invalid method or service" do
       {:ok, connection} = UGRPC.new_client("http://localhost:50051")
 
-      assert {:errro, :not_found} ==
+      assert {:error, :not_found} ==
         UGRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayByebye")
     end
   end

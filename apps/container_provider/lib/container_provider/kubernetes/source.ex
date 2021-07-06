@@ -2,13 +2,14 @@ defmodule ContainerProvider.Kubernetes.Source do
   use Clustering.GlobalServer
   alias ContainerProvider.Labels
   require Logger
+
   @impl true
   def init(polling_interval) do
     try do
       conn = K8s.Conn.from_service_account()
       {:ok, {conn, %{}, polling_interval}, {:continue, :wait_for_ra}}
     rescue
-      e -> {:stop, e}
+      e -> {:stop, {:stop, e}}
     end
   end
 
@@ -24,6 +25,7 @@ defmodule ContainerProvider.Kubernetes.Source do
     end
   end
 
+  @impl true
   def handle_info(:list_services, {conn, services, polling_interval} = state) do
     operation = K8s.Client.list("v1", "Service", namespace: :all)
 

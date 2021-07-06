@@ -13,7 +13,6 @@ defmodule Unisonui.MixProject do
 
   defp providers, do: [git_provider: :permanent, container_provider: :permanent]
 
-  defp providers_apps(provider \\ :all)
   defp providers_apps(:all), do: common_apps() ++ providers()
   defp providers_apps(provider), do: [{provider, :permanent} | common_apps()]
 
@@ -88,7 +87,7 @@ defmodule Unisonui.MixProject do
       {:credo, "~> 1.4", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.0.0", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.21", only: [:dev], runtime: false},
-      {:excoveralls, "~> 0.13", only: [:dev, :test], runtime: false},
+      {:excoveralls, "~> 0.14", only: [:dev, :test], runtime: false},
       {:inch_ex, "~> 2.1.0-rc.1", only: [:dev, :test], runtime: false}
     ]
   end

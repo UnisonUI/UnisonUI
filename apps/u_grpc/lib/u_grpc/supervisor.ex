@@ -8,7 +8,13 @@ defmodule UGRPC.ClientSupervisor do
 
   @spec new_client(server :: String.t()) :: {:ok, UGRPC.Client.Connection.t()} | {:error, term()}
 
-  def new_client(server), do: GenServer.call(__MODULE__, {:new_client, server})
+  def new_client(server) do
+    try do
+      GenServer.call(__MODULE__, {:new_client, server})
+    catch
+      :exit, {e, _} -> {:error, e}
+    end
+  end
 
   @impl true
   def handle_call({:new_client, server}, _from, state) do
