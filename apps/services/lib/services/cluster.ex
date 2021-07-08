@@ -35,7 +35,7 @@ defmodule Services.Cluster do
 
   def starting(:internal, :start_cluster, nodes) do
     :global.trans({:unisonui, :bootstrap}, fn ->
-      _ = :ra.start_cluster(:unisonui, {:module, Services.State, %{}}, nodes)
+      _ = :ra.start_cluster(:default, :unisonui, {:module, Services.State, %{}}, nodes)
     end)
 
     {:next_state, :running, :ok}
@@ -78,9 +78,10 @@ defmodule Services.Cluster do
         {:next_state, :starting, nodes, actions}
 
       [leader] ->
-        with {:error, _} <- :ra.restart_server(self) do
+        with {:error, _} <- :ra.restart_server(:default, self) do
           _ =
             :ra.start_server(
+              :default,
               :unisonui,
               self,
               {:module, Services.State, %{}},
