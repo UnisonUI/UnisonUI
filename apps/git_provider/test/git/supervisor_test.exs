@@ -1,6 +1,6 @@
 defmodule GitProvider.Git.SupervisorTest do
   alias GitProvider.Git.{Repository, Supervisor}
-  use ExUnit.Case, async: true
+  use ExUnit.Case
 
   import Mox
 

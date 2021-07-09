@@ -6,10 +6,9 @@ defmodule GitProvider.Git do
   alias Common.Events.{Down, Up}
   alias Common.Service.{Grpc, OpenApi, Metadata}
   alias GitProvider.Git.Configuration
+  alias GitProvider.Git.Command
 
   @typep state :: {Repository.t(), binary()}
-
-  @git_cmd "git"
 
   defp pull_interval, do: Durex.ms!(Application.fetch_env!(:git_provider, :pull_interval))
   defp services_behaviour, do: Application.fetch_env!(:services, :behaviour)
@@ -42,30 +41,20 @@ defmodule GitProvider.Git do
     }
 
   @impl true
-  def terminate(_, {%Repository{directory: directory}, _sha1}), do: File.rm(directory)
+  def terminate(_, {%Repository{directory: directory}, _sha1}) do
+    File.rm_rf(directory)
+  end
 
   defp schedule_pull, do: Process.send_after(self(), :pull, pull_interval())
 
   defp clone_or_pull({%Repository{uri: uri, branch: branch, directory: directory}, ""}),
-    do:
-      @git_cmd
-      |> System.cmd(
-        ~w/clone --branch #{branch} --single-branch --depth 1 #{uri} #{directory}/,
-        stderr_to_stdout: true
-      )
-      |> handle_system_cmd
+    do: Command.clone(uri, branch, directory)
 
   defp clone_or_pull({%Repository{directory: directory}, _}),
-    do:
-      @git_cmd
-      |> System.cmd(~w/pull/, cd: directory, stderr_to_stdout: true)
-      |> handle_system_cmd
+    do: Command.pull(directory)
 
-  defp get_latest_sha1(%Repository{directory: directory, branch: branch}),
-    do:
-      @git_cmd
-      |> System.cmd(~w/rev-parse --verify #{branch}/, cd: directory, stderr_to_stdout: true)
-      |> handle_system_cmd
+  defp get_latest_hash(%Repository{directory: directory, branch: branch}),
+    do: Command.hash(branch, directory)
 
   defp list_files(directory),
     do:
@@ -80,40 +69,26 @@ defmodule GitProvider.Git do
   defp retrieve_files({%Repository{directory: directory}, ""}),
     do: {:ok, list_files(directory)}
 
-  defp retrieve_files({%Repository{directory: directory}, sha1}) do
-    with {:ok, changed_files} <-
-           System.cmd(@git_cmd, ~w/diff --name-only #{sha1} HEAD/,
-             cd: directory,
-             stderr_to_stdout: true
-           )
-           |> handle_system_cmd do
-      {:ok,
-       String.split(changed_files, "\n", trim: true)
-       |> Enum.map(fn file -> directory |> Path.join(file) |> Path.expand() end)}
-    end
-  end
-
-  defp handle_system_cmd({result, 0}), do: {:ok, result}
-  defp handle_system_cmd({error, _}), do: {:error, error}
+  defp retrieve_files({%Repository{directory: directory}, hash}),
+    do: Command.changes(hash, directory)
 
   @impl true
   def handle_info(:pull, {%Repository{directory: directory} = repository, _} = state) do
-    with {:ok, _} <- clone_or_pull(state),
-         {:ok, raw_latest_sha1} <- get_latest_sha1(repository),
-         latest_sha1 <- String.trim(raw_latest_sha1),
+    with :ok <- clone_or_pull(state),
+         {:ok, hash} <- get_latest_hash(repository),
          {:ok, files} <- retrieve_files(state),
          configuration_file <- find_config_file(directory),
          {new_repository, events} <-
            find_specifications_files(repository, configuration_file, files) do
-      events =
-        events
-        |> Stream.flat_map(&load_file/1)
-        |> Stream.map(&to_event(&1, repository))
-        |> Enum.to_list()
+      events
+      |> Stream.flat_map(&load_file/1)
+      |> Stream.map(&to_event(&1, repository))
+      |> Enum.to_list()
+      |> IO.inspect()
+      |> then(&services_behaviour().servdispatch_events(&1))
 
-      services_behaviour().dispatch_events(events)
       schedule_pull()
-      {:noreply, {new_repository, latest_sha1}}
+      {:noreply, {new_repository, hash}}
     else
       {:error, reason} ->
         Logger.warn(reason, provider: "git_provider")
@@ -260,7 +235,7 @@ defmodule GitProvider.Git do
       to_add =
         Enum.flat_map(changed_files, fn file ->
           case Enum.find(new_specifications, fn {_, path, _} ->
-                 String.starts_with?(file, path)
+                 String.starts_with?(file, path) && File.exists?(file)
                end) do
             nil -> []
             spec -> [{:upsert, spec}]
@@ -270,7 +245,7 @@ defmodule GitProvider.Git do
       to_delete =
         current_specifications
         |> Enum.reject(fn {_, path, _} ->
-          Enum.any?(new_specifications, &match?({_, ^path, _}, &1))
+          Enum.any?(new_specifications, &match?({_, ^path, _}, &1)) && File.exists?(path)
         end)
         |> Enum.map(&{:delete, elem(&1, 1)})
 

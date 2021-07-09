@@ -11,13 +11,16 @@ defmodule GitProvider.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.12-rc",
       start_permanent: Mix.env() == :prod,
+      elixirc_paths: elixirc_paths(Mix.env()),
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
       xref: [exclude: [UnisonUI]]
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   def application do
     [
       extra_applications: [:logger, :yamerl, :gen_stage],
