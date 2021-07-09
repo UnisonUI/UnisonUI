@@ -6,12 +6,13 @@ defmodule Services.State do
   @behaviour :ra_machine
 
   @task Services.TaskSupervisor
+  @snapshot_every 10
 
   @impl true
   def init(_), do: %{}
 
   @impl true
-  def apply(_meta, {:event, event}, services) do
+  def apply(%{index: index}, {:event, event}, services) do
     debug_event(event)
 
     {events, services} =
@@ -36,7 +37,7 @@ defmodule Services.State do
           {[event], Map.delete(services, id)}
       end
 
-    {services, :ok, [dispatch_events(events)]}
+    {services, :ok, side_effets(index, events, services)}
   end
 
   defp debug_event(%Events.Up{service: %{id: id}}), do: Logger.debug("New up event: #{id}")
@@ -73,4 +74,12 @@ defmodule Services.State do
         id == service.id &&
           Service.compute_hash(current_service) != Service.compute_hash(service)
       end)
+
+  defp side_effets(index, events, state) do
+    side_effets = [dispatch_events(events)]
+
+    if rem(index, @snapshot_every),
+      do: [{:release_cursor, index, state} | side_effets],
+      else: side_effets
+  end
 end
