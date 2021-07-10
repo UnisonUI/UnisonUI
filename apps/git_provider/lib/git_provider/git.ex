@@ -81,11 +81,11 @@ defmodule GitProvider.Git do
          {new_repository, events} <-
            find_specifications_files(repository, configuration_file, files) do
       events
-      |> Stream.flat_map(&load_file/1)
+      |> Stream.flat_map(&read_content/1)
       |> Stream.map(&to_event(&1, repository))
       |> Enum.to_list()
       |> IO.inspect()
-      |> then(&services_behaviour().servdispatch_events(&1))
+      |> then(&services_behaviour().dispatch_events(&1))
 
       schedule_pull()
       {:noreply, {new_repository, hash}}
@@ -168,7 +168,7 @@ defmodule GitProvider.Git do
     %Up{service: service}
   end
 
-  defp load_file({:upsert, {:openapi, path, info}}) do
+  defp read_content({:upsert, {:openapi, path, info}}) do
     case File.read(path) do
       {:error, reason} ->
         Logger.warn(inspect(reason))
@@ -179,7 +179,7 @@ defmodule GitProvider.Git do
     end
   end
 
-  defp load_file({:upsert, {:grpc, path, info}}) do
+  defp read_content({:upsert, {:grpc, path, info}}) do
     case UGRPC.Protobuf.compile(path) do
       {:error, reason} ->
         Logger.warn(inspect(reason))
@@ -190,7 +190,7 @@ defmodule GitProvider.Git do
     end
   end
 
-  defp load_file(data), do: [data]
+  defp read_content(data), do: [data]
 
   defp find_config_file(directory) do
     restui = Path.join(directory, ".restui.yaml")

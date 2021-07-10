@@ -13,8 +13,7 @@ defmodule Services.Application do
       {Services.Aggregator, []}
     ]
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
+    :ok = :ra.start()
     opts = [strategy: :one_for_one, name: Services.Supervisor]
     Supervisor.start_link(children, opts)
   end
