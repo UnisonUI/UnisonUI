@@ -23,7 +23,7 @@ defmodule GitProvider.Git do
 
   @impl true
   def handle_continue(:wait_for_ra, state) do
-    if Services.Cluster.running?() do
+    if services_behaviour().alive?() do
       send(self(), :pull)
       {:noreply, state}
     else
@@ -41,7 +41,8 @@ defmodule GitProvider.Git do
     }
 
   @impl true
-  def terminate(_, {%Repository{directory: directory}, _sha1}) do
+  def terminate(e, {%Repository{directory: directory}, _sha1}) do
+    IO.inspect(e)
     File.rm_rf(directory)
   end
 
@@ -80,11 +81,11 @@ defmodule GitProvider.Git do
          configuration_file <- find_config_file(directory),
          {new_repository, events} <-
            find_specifications_files(repository, configuration_file, files) do
+      IO.inspect {repository,new_repository,configuration_file,files}
       events
       |> Stream.flat_map(&read_content/1)
       |> Stream.map(&to_event(&1, repository))
-      |> Enum.to_list()
-      |> IO.inspect()
+      |> Enum.to_list() |> IO.inspect 
       |> then(&services_behaviour().dispatch_events(&1))
 
       schedule_pull()

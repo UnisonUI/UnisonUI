@@ -4,7 +4,6 @@ defmodule GitProvider.GitTest do
   alias GitProvider.Git.Repository
 
   import Mox
-  import Mock
   @service_mock Services.Mock
   @duration 5
 
@@ -20,7 +19,7 @@ defmodule GitProvider.GitTest do
       - address: 127.0.0.1
         port: 8080
   protobufs:
-    "helloworld.proto": {}
+    "helloworld.proto": {}assert_receive
   /
 
   setup_all do
@@ -28,8 +27,7 @@ defmodule GitProvider.GitTest do
     Application.put_env(:git_provider, :pull_interval, "#{@duration}ms")
 
     start_supervised!(
-      {Horde.DynamicSupervisor,
-       [name: GitProvider.Git.DynamicSupervisor, strategy: :one_for_one]}
+      {Horde.DynamicSupervisor, [name: GitProvider.Git.DynamicSupervisor, strategy: :one_for_one]}
     )
 
     :ok
@@ -56,172 +54,185 @@ defmodule GitProvider.GitTest do
   end
 
   test "there is a failure with a git command", context do
-    with_mock Services.Cluster, running?: fn -> true end do
-      expect(@service_mock, :dispatch_events, 0, fn _ -> :ok end)
-      repo = %Repository{context.repo | branch: "i-do-not-exist"}
-      _ = start_git(repo)
+    expect(@service_mock, :dispatch_events, 0, fn _ -> :ok end)
+    repo = %Repository{context.repo | branch: "i-do-not-exist"}
+    _ = start_git(repo)
 
-      Process.sleep(@duration)
-      stop_git(repo)
-    end
+    Process.sleep(@duration)
+    stop_git(repo)
   end
 
   describe "retrieving files from git" do
     test "there is no matching files", context do
-      with_mock Services.Cluster, running?: fn -> true end do
-        expect(@service_mock, :dispatch_events, 0, fn _ -> :ok end)
-        _ = start_git(context.repo)
+      expect(@service_mock, :dispatch_events, 0, fn _ -> :ok end)
+      _ = start_git(context.repo)
 
-        Process.sleep(@duration)
-        stop_git(context.repo)
-      end
+      Process.sleep(@duration)
+      stop_git(context.repo)
     end
   end
 
   describe "find files" do
     test "no new files", context do
-      with_mock Services.Cluster, running?: fn -> true end do
-        parent = self()
+      parent = self()
 
-        stub(@service_mock, :dispatch_events, fn [e] ->
-          send(parent, e)
-          :ok
-        end)
+      stub(@service_mock, :dispatch_events, fn [e] ->
+        send(parent, e)
+        :ok
+      end)
 
-        {_, 0} = LocalGit.commit(context.local_git, "test", "test")
-        _ = start_git(context.repo)
+      {_, 0} = LocalGit.commit(context.local_git, "test", "test")
+      _ = start_git(context.repo)
 
-        assert_receive %Common.Events.Up{
-          service: %Common.Service.OpenApi{
-            content: "test",
-            id: "test:test",
-            metadata: %Common.Service.Metadata{
-              file: "test",
-              provider: ""
-            },
-            name: "test",
-            use_proxy: false
-          }
+      assert_receive %Common.Events.Up{
+        service: %Common.Service.OpenApi{
+          content: "test",
+          id: "test:test",
+          metadata: %Common.Service.Metadata{
+            file: "test",
+            provider: ""
+          },
+          name: "test",
+          use_proxy: false
         }
+      }
 
-        stop_git(context.repo)
-      end
+      stop_git(context.repo)
     end
 
     test "a new file is present", context do
-      with_mock Services.Cluster, running?: fn -> true end do
-        parent = self()
+      parent = self()
 
-        stub(@service_mock, :dispatch_events, fn [e] ->
-          send(parent, e)
-        end)
+      @service_mock
+      |> stub(:alive?, fn -> true end)
+      |> stub(:dispatch_events, fn events ->
+        IO.inspect events
+        Enum.each(events, &send(parent, &1))
+      end)
 
-        {_, 0} = LocalGit.commit(context.local_git, "test", "test")
-        _ = start_git(context.repo)
+      {_, 0} = LocalGit.commit(context.local_git, "test", "test")
+      _ = start_git(context.repo)
 
-        assert_receive %Common.Events.Up{
-          service: %Common.Service.OpenApi{
-            content: "test",
-            id: "test:test",
-            metadata: %Common.Service.Metadata{
-              file: "test",
-              provider: ""
-            },
-            name: "test",
-            use_proxy: false
-          }
-        }
+      res =
+        receive do
+          m -> m
+        after
+          1_000 -> :timeout
+        end
 
-        {_, 0} = LocalGit.commit(context.local_git, "test2", "test2")
+      assert res == %Common.Events.Up{
+               service: %Common.Service.OpenApi{
+                 content: "test",
+                 id: "test:test",
+                 metadata: %Common.Service.Metadata{
+                   file: "test",
+                   provider: ""
+                 },
+                 name: "test",
+                 use_proxy: false
+               }
+             }
 
-        assert_receive %Common.Events.Up{
-          service: %Common.Service.OpenApi{
-            content: "test2",
-            id: "test:test2",
-            metadata: %Common.Service.Metadata{
-              file: "test2",
-              provider: ""
-            },
-            name: "test",
-            use_proxy: false
-          }
-        }
+      {_, 0} = LocalGit.commit(context.local_git, "test2", "test2")
+      {_, 0} = LocalGit.commit(context.local_git, ".unisonui.yaml", @specs)
 
-        stop_git(context.repo)
-      end
+      res =
+        receive do
+          m -> m
+        after
+          1_000 -> :timeout
+        end
+
+      assert res == %Common.Events.Down{id: "test:test"}
+
+      res =
+        receive do
+          m -> m
+        after
+          1_000 -> :timeout
+        end
+
+      assert res == %Common.Events.Up{
+               service: %Common.Service.OpenApi{
+                 content: "test2",
+                 id: "test:test2",
+                 metadata: %Common.Service.Metadata{
+                   file: "test2",
+                   provider: ""
+                 },
+                 name: "test",
+                 use_proxy: false
+               }
+             }
     end
 
     test "a file content has been changed", context do
-      with_mock Services.Cluster, running?: fn -> true end do
-        parent = self()
+      parent = self()
 
-        stub(@service_mock, :dispatch_events, fn [e] ->
-          send(parent, e)
-        end)
+      stub(@service_mock, :dispatch_events, fn [e] ->
+        send(parent, e)
+      end)
 
-        {_, 0} = LocalGit.commit(context.local_git, "test", "test")
-        _ = start_git(context.repo)
+      {_, 0} = LocalGit.commit(context.local_git, "test", "test")
+      _ = start_git(context.repo)
 
-        assert_receive %Common.Events.Up{
-          service: %Common.Service.OpenApi{
-            content: "test",
-            id: "test:test",
-            metadata: %Common.Service.Metadata{
-              file: "test",
-              provider: ""
-            },
-            name: "test",
-            use_proxy: false
-          }
+      assert_receive %Common.Events.Up{
+        service: %Common.Service.OpenApi{
+          content: "test",
+          id: "test:test",
+          metadata: %Common.Service.Metadata{
+            file: "test",
+            provider: ""
+          },
+          name: "test",
+          use_proxy: false
         }
+      }
 
-        {_, 0} = LocalGit.commit(context.local_git, "test", "test2")
+      {_, 0} = LocalGit.commit(context.local_git, "test", "test2")
 
-        assert_receive %Common.Events.Up{
-          service: %Common.Service.OpenApi{
-            content: "test",
-            id: "test:test",
-            metadata: %Common.Service.Metadata{
-              file: "test2",
-              provider: ""
-            },
-            name: "test",
-            use_proxy: false
-          }
+      assert_receive %Common.Events.Up{
+        service: %Common.Service.OpenApi{
+          content: "test",
+          id: "test:test",
+          metadata: %Common.Service.Metadata{
+            file: "test2",
+            provider: ""
+          },
+          name: "test",
+          use_proxy: false
         }
+      }
 
-        stop_git(context.repo)
-      end
+      stop_git(context.repo)
     end
 
     test "a file has been deleted", context do
-      with_mock Services.Cluster, running?: fn -> true end do
-        parent = self()
+      parent = self()
 
-        stub(@service_mock, :dispatch_events, fn [e] ->
-          send(parent, e)
-        end)
+      stub(@service_mock, :dispatch_events, fn [e] ->
+        send(parent, e)
+      end)
 
-        {_, 0} = LocalGit.commit(context.local_git, "test", "test")
-        _ = start_git(context.repo)
+      {_, 0} = LocalGit.commit(context.local_git, "test", "test")
+      _ = start_git(context.repo)
 
-        assert_receive %Common.Events.Up{
-          service: %Common.Service.OpenApi{
-            content: "test",
-            id: "test:test",
-            metadata: %Common.Service.Metadata{
-              file: "test",
-              provider: ""
-            },
-            name: "test",
-            use_proxy: false
-          }
+      assert_receive %Common.Events.Up{
+        service: %Common.Service.OpenApi{
+          content: "test",
+          id: "test:test",
+          metadata: %Common.Service.Metadata{
+            file: "test",
+            provider: ""
+          },
+          name: "test",
+          use_proxy: false
         }
+      }
 
-        {_, 0} = LocalGit.rm(context.local_git, "test")
-        assert_receive %Common.Events.Down{id: "test:test"}
-        stop_git(context.repo)
-      end
+      {_, 0} = LocalGit.rm(context.local_git, "test")
+      assert_receive %Common.Events.Down{id: "test:test"}
+      stop_git(context.repo)
     end
   end
 

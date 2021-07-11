@@ -3,6 +3,9 @@ defmodule Services do
   alias Common.Events
   @behaviour Services.Behaviour
 
+  @spec alive?():: boolean()
+  def alive?, do: Services.Cluster.running?()
+
   @spec available_services :: {:ok, [Common.Service.t()]} | {:error, term()}
   def available_services do
     case :ra.local_query(
