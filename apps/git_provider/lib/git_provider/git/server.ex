@@ -1,12 +1,8 @@
-defmodule GitProvider.Git do
+defmodule GitProvider.Git.Server do
   use Clustering.GlobalServer, supervisor: GitProvider.Git.DynamicSupervisor
   require Logger
 
-  alias GitProvider.Git.Repository
-  alias Common.Events.{Down, Up}
-  alias Common.Service.{Grpc, OpenApi, Metadata}
-  alias GitProvider.Git.Configuration
-  alias GitProvider.Git.Command
+  alias GitProvider.Git.{Event, Events, Command, Configuration, Repository, Specification}
 
   @typep state :: {Repository.t(), binary()}
 
@@ -81,8 +77,23 @@ defmodule GitProvider.Git do
          {new_repository, events} <-
            find_specifications_files(repository, configuration_file, files) do
       events
-      |> Stream.flat_map(&read_content/1)
-      |> Stream.map(&to_event(&1, repository))
+      |> Stream.flat_map(fn event ->
+        case Event.load_content(event) do
+          {:ok, event} ->
+            [event]
+
+          {:error, error} ->
+            message =
+              if Exception.exception?(error), do: Exception.message(error), else: inspect(error)
+
+            Logger.warn(message)
+            []
+
+          :ignore ->
+            []
+        end
+      end)
+      |> Stream.map(&Event.to_event(&1, repository))
       |> Enum.to_list()
       |> IO.inspect()
       |> then(&services_behaviour().dispatch_events(&1))
@@ -98,99 +109,6 @@ defmodule GitProvider.Git do
   end
 
   def handle_info(_, state), do: {:noreply, state}
-
-  @spec to_event(
-          {:delete, String.t()}
-          | {:upsert, {:openapi, String.t(), GitProvider.Git.Configuration.OpenApi.spec()}}
-          | {:upsert,
-             {:grpc, String.t(), UGRPC.Protobuf.Structs.Schema.t(),
-              GitProvider.Git.Configuration.Grpc.spec()}},
-          GitProvider.Git.Repository.t()
-        ) :: Common.Events.t()
-
-  defp to_event({:delete, path}, %Repository{name: name, directory: directory}) do
-    path = String.replace_prefix(path, directory, "") |> String.trim_leading("/")
-    %Down{id: "#{name}:#{path}"}
-  end
-
-  defp to_event({:upsert, {:openapi, content, kw}}, %Repository{
-         name: name,
-         uri: uri,
-         directory: directory
-       }) do
-    provider = uri |> URI.parse() |> Map.get(:host) |> String.replace_prefix("www.", "")
-    service_name = Keyword.get(kw, :name)
-    use_proxy = Keyword.get(kw, :use_proxy)
-
-    filename =
-      kw
-      |> Keyword.get(:path)
-      |> String.replace_prefix(directory, "")
-      |> String.trim_leading("/")
-
-    id = "#{name}:#{filename}"
-
-    service = %OpenApi{
-      id: id,
-      name: service_name,
-      content: content,
-      use_proxy: use_proxy,
-      metadata: %Metadata{provider: provider, file: filename}
-    }
-
-    %Up{service: service}
-  end
-
-  defp to_event({:upsert, {:grpc, path, schema, kw}}, %Repository{
-         name: name,
-         uri: uri,
-         directory: directory
-       }) do
-    provider = uri |> URI.parse() |> Map.get(:host) |> String.replace_prefix("www.", "")
-    service_name = Keyword.get(kw, :name)
-    servers = Keyword.get(kw, :servers)
-
-    filename =
-      path
-      |> String.replace_prefix(directory, "")
-      |> String.trim_leading("/")
-
-    id = "#{name}:#{filename}"
-
-    service = %Grpc{
-      id: id,
-      name: service_name,
-      schema: schema,
-      servers: servers,
-      metadata: %Metadata{provider: provider, file: filename}
-    }
-
-    %Up{service: service}
-  end
-
-  defp read_content({:upsert, {:openapi, path, info}}) do
-    case File.read(path) do
-      {:error, reason} ->
-        Logger.warn(inspect(reason))
-        []
-
-      {:ok, content} ->
-        [{:upsert, {:openapi, content, info}}]
-    end
-  end
-
-  defp read_content({:upsert, {:grpc, path, info}}) do
-    case UGRPC.Protobuf.compile(path) do
-      {:error, reason} ->
-        Logger.warn(inspect(reason))
-        []
-
-      {:ok, schema} ->
-        [{:upsert, {:grpc, path, schema, info}}]
-    end
-  end
-
-  defp read_content(data), do: [data]
 
   defp find_config_file(directory) do
     restui = Path.join(directory, ".restui.yaml")
@@ -218,8 +136,8 @@ defmodule GitProvider.Git do
        ) do
     with {:ok, %Configuration{name: service_name, openapi: openapi, grpc: grpc}} <-
            read_config(configuration_file) do
-      openapi = extract_specifications(openapi, directory, service_name, repo_service_name)
-      grpc = extract_specifications(grpc, directory, service_name, repo_service_name)
+      openapi = Specification.from_configuration(openapi, directory, service_name, repo_service_name)
+      grpc = Specification.from_configuration(grpc, directory, service_name, repo_service_name)
 
       new_specifications = openapi ++ grpc
 
@@ -238,7 +156,7 @@ defmodule GitProvider.Git do
                  String.starts_with?(file, path) && File.exists?(file)
                end) do
             nil -> []
-            spec -> [{:upsert, spec}]
+            spec -> [Events.from_specification(spec)]
           end
         end)
 
@@ -256,60 +174,6 @@ defmodule GitProvider.Git do
     end
   end
 
-  defp extract_specifications(
-         %{use_proxy: use_proxy, specifications: specifications},
-         directory,
-         service_name,
-         repo_service_name
-       ),
-       do:
-         specifications
-         |> Enum.map(fn kw ->
-           {path, kw} =
-             Keyword.get_and_update!(kw, :path, fn path ->
-               path = directory |> Path.join(path) |> Path.expand()
-               {path, path}
-             end)
-
-           kw =
-             Keyword.update!(kw, :name, fn
-               nil -> service_name || repo_service_name
-               name -> name
-             end)
-             |> Keyword.update!(:use_proxy, fn
-               nil -> use_proxy
-               proxy -> proxy
-             end)
-
-           {:openapi, path, kw}
-         end)
-
-  defp extract_specifications(
-         %{servers: servers, files: files},
-         directory,
-         service_name,
-         repo_service_name
-       ),
-       do:
-         files
-         |> Enum.map(fn {path, kw} ->
-           path = directory |> Path.join(path) |> Path.expand()
-
-           kw =
-             kw
-             |> Keyword.update!(:name, fn
-               nil -> service_name || repo_service_name
-               name -> name
-             end)
-             |> Keyword.update!(:servers, fn
-               [] -> servers
-               servers -> servers
-             end)
-
-           {:grpc, path, kw}
-         end)
-
-  defp extract_specifications(_, _directory, _service_name, _repo_service_name), do: []
   defp read_config(configuration_file), do: Configuration.from_file(configuration_file)
 
   defp detect_changes(

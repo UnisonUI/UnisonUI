@@ -20,4 +20,14 @@ defmodule GitProvider.Git.Repository do
     _ = File.mkdir(directory)
     %__MODULE__{repository | directory: directory}
   end
+
+  def provider(%__MODULE__{uri: uri}) do
+    uri = URI.parse(uri)
+
+    case uri.scheme do
+      scheme when scheme in ["http", "https"] -> String.replace_prefix(uri.host, "www.", "")
+      "file" -> "local"
+      _ -> "unknown"
+    end
+  end
 end

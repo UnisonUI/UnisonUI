@@ -18,6 +18,8 @@ defmodule GitProvider.Git.SupervisorTest do
     end
 
     test "start git repositories" do
+      parent = self()
+
       Application.put_env(:git_provider, :repositories, [
         "http://localhost/repo",
         "some_path/",
@@ -26,12 +28,15 @@ defmodule GitProvider.Git.SupervisorTest do
         42
       ])
 
-      Services.Mock |> expect(:dispatch_events, 0, fn _ -> :ok end)
+      expect(Services.Mock, :dispatch_events, 0, fn _ ->
+        send(parent, :event)
+        :ok
+      end)
+
       _ = start_supervisor()
 
       Supervisor.start_repositories(Application.fetch_env!(:git_provider, :repositories))
-
-      stop_supervisor()
+      refute_receive :event
     end
   end
 
@@ -46,21 +51,24 @@ defmodule GitProvider.Git.SupervisorTest do
       Application.put_env(:git_provider, :enabled, false)
       result = Supervisor.start_git(context.repository)
       assert result == :ignore
-      stop_supervised!(GitProvider.Git.Supervisor)
     end
 
     test "provider enabled", context do
+      parent = self()
       _ = start_supervisor()
-      Services.Mock |> expect(:dispatch_events, 0, fn _ -> :ok end)
+
+      expect(Services.Mock, :dispatch_events, 0, fn _ ->
+        send(parent, :event)
+        :ok
+      end)
+
       Application.put_env(:git_provider, :enabled, true)
       result = Supervisor.start_git(context.repository)
+      refute_receive :event
       assert match?({:ok, _}, result)
-      stop_supervisor()
     end
   end
 
   defp start_supervisor,
     do: start_supervised!(%{id: GitProvider.Git.Supervisor, start: {Supervisor, :start_link, []}})
-
-  defp stop_supervisor, do: stop_supervised!(GitProvider.Git.Supervisor)
 end

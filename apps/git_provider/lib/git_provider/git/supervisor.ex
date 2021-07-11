@@ -65,7 +65,7 @@ defmodule GitProvider.Git.Supervisor do
             |> Map.get(:path)
             |> String.trim_leading("/")
       }
-      GitProvider.Git.start_child(repository)
+      GitProvider.Git.Server.start_child(repository)
     end
   end
 
