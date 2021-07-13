@@ -1,4 +1,4 @@
-defmodule Services.State do
+defmodule Services.Storage.Raft.State do
   require Logger
   alias Common.Service
   alias Common.Events

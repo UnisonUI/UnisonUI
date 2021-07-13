@@ -36,6 +36,8 @@ defmodule GitProvider.MixProject do
       {:clustering, in_umbrella: true},
       {:services, in_umbrella: true},
       {:logstash_logger_formatter, "~> 1.0"},
+      {:finch, "~> 0.7"},
+      {:jason, "~> 1.2"},
       {:horde, "~> 0.8"},
       {:norm, "~> 0.12"},
       {:durex, "~> 0.2"},
@@ -44,8 +46,7 @@ defmodule GitProvider.MixProject do
       {:yaml_elixir, "~> 2.5"},
       {:mox, "~> 1.0", only: :test},
       {:mock, "~> 0.3.6", only: :test},
-      {:finch, "~> 0.7"},
-      {:jason, "~> 1.2"}
+      {:stream_data, "~> 0.5", only: [:test, :dev]}
     ]
   end
 end

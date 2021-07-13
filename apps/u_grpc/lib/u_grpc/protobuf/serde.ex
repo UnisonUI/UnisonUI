@@ -371,6 +371,7 @@ defmodule UGRPC.Protobuf.Serde do
   end
 
   defp list_to_map(value, _schema, nil), do: value
+
   defp list_to_map(value, schema, type_name) do
     map? = Map.get(schema.messages[type_name].options || %{}, "map_entry")
 

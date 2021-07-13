@@ -2,30 +2,30 @@ defmodule GitProvider.Git.Server do
   use Clustering.GlobalServer, supervisor: GitProvider.Git.DynamicSupervisor
   require Logger
 
-  alias GitProvider.Git.{Event, Events, Command, Configuration, Repository, Specification}
+  alias GitProvider.Git.{Event, Events, Command, Configuration, Repository, Specifications}
 
   @typep state :: {Repository.t(), binary()}
 
   defp pull_interval, do: Durex.ms!(Application.fetch_env!(:git_provider, :pull_interval))
-  defp services_behaviour, do: Application.fetch_env!(:services, :behaviour)
+  defp services_behaviour, do: Application.fetch_env!(:services, :storage_backend)
 
-  @spec init(repository :: Repository.t()) :: {:ok, state(), {:continue, :wait_for_ra}}
+  @spec init(repository :: Repository.t()) :: {:ok, state(), {:continue, :wait_for_storage}}
   @impl true
   def init(repository) do
     Process.flag(:trap_exit, true)
     repository = Repository.create_temp_dir(repository)
-    {:ok, {repository, ""}, {:continue, :wait_for_ra}}
+    {:ok, {repository, ""}, {:continue, :wait_for_storage}}
   end
 
   @impl true
-  def handle_continue(:wait_for_ra, state) do
-    if Services.Cluster.running?() do
+  def handle_continue(:wait_for_storage, state) do
+    if services_behaviour().alive?() do
       send(self(), :pull)
       {:noreply, state}
     else
       Process.sleep(1_000)
 
-      {:noreply, state, {:continue, :wait_for_ra}}
+      {:noreply, state, {:continue, :wait_for_storage}}
     end
   end
 
@@ -135,13 +135,15 @@ defmodule GitProvider.Git.Server do
          files
        ) do
     with {:ok, %Configuration{name: service_name, openapi: openapi, grpc: grpc}} <-
-           read_config(configuration_file) do
-      openapi = Specification.from_configuration(openapi, directory, service_name, repo_service_name)
-      grpc = Specification.from_configuration(grpc, directory, service_name, repo_service_name)
+           Configuration.from_file(configuration_file) do
+      openapi =
+        Specifications.from_configuration(openapi, directory, service_name, repo_service_name)
 
-      new_specifications = openapi ++ grpc
+      grpc = Specifications.from_configuration(grpc, directory, service_name, repo_service_name)
 
-      changed_files =
+      new_specifications = Specifications.merge(openapi, grpc)
+
+      files_changed =
         detect_changes(
           files,
           configuration_file,
@@ -151,30 +153,20 @@ defmodule GitProvider.Git.Server do
         )
 
       to_add =
-        Enum.flat_map(changed_files, fn file ->
-          case Enum.find(new_specifications, fn {_, path, _} ->
-                 String.starts_with?(file, path) && File.exists?(file)
-               end) do
-            nil -> []
-            spec -> [Events.from_specification(spec)]
-          end
-        end)
+        Specifications.new_files(new_specifications, files_changed)
+        |> Events.from_specifications()
 
-      to_delete =
-        current_specifications
-        |> Enum.reject(fn {_, path, _} ->
-          Enum.any?(new_specifications, &match?({_, ^path, _}, &1)) && File.exists?(path)
-        end)
-        |> Enum.map(&{:delete, elem(&1, 1)})
+      events =
+        Specifications.deleted_files(current_specifications, new_specifications)
+        |> Stream.map(&%Events.Delete{path: &1})
+        |> Enum.reduce(to_add, &[&1 | &2])
 
       new_repository = %Repository{repository | specifications: new_specifications}
-      {new_repository, to_delete ++ to_add}
+      {new_repository, events}
     else
       _ -> {repository, []}
     end
   end
-
-  defp read_config(configuration_file), do: Configuration.from_file(configuration_file)
 
   defp detect_changes(
          files,
@@ -184,16 +176,12 @@ defmodule GitProvider.Git.Server do
          new_specifications
        ) do
     if Enum.any?(files, &(&1 == configuration_file)) do
-      unchanged =
-        current_specifications
-        |> Enum.filter(fn {_, path, _} ->
-          Enum.any?(new_specifications, fn {_, new_path, _} -> path == new_path end)
-        end)
+      unchanged = Specifications.intersection(current_specifications, new_specifications)
 
       directory
       |> list_files()
       |> Enum.reject(fn file ->
-        Enum.any?(unchanged, fn {_, path, _} ->
+        Enum.any?(unchanged, fn {path, _} ->
           path = directory |> Path.join(path) |> Path.expand()
           String.starts_with?(file, path)
         end)

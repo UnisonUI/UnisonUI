@@ -5,7 +5,7 @@ defmodule GitProvider.Git.Repository do
           name: String.t(),
           branch: String.t(),
           directory: String.t() | nil,
-          specifications: [String.t()]
+          specifications: [GitProvider.Git.Specification.t()]
         }
   defstruct [:service_name, :uri, :branch, :directory, :name, specifications: []]
 

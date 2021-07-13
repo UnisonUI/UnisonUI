@@ -114,7 +114,9 @@ defmodule UGRPC.Client do
         state =
           case connect(state.server) do
             {:ok, conn} ->
-              state = do_request(connection, mode, path, input_type, output_type, schema, from, state)
+              state =
+                do_request(connection, mode, path, input_type, output_type, schema, from, state)
+
               put_in(state.conn, conn)
 
             {:error, reason} ->

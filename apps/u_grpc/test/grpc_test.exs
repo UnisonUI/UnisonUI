@@ -22,10 +22,9 @@ defmodule GRPCTest do
       {:ok, connection} = UGRPC.new_client("http://localhost:50051")
 
       assert {:error, :not_found} ==
-        UGRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayByebye")
+               UGRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayByebye")
     end
   end
-
 
   describe "non streaming" do
     test "with non error" do

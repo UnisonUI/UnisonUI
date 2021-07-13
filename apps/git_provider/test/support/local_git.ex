@@ -29,14 +29,14 @@ defmodule GitProvider.LocalGit do
     cmd(repo, ["commit", "-m", "new file"])
   end
 
-  def commit(%__MODULE__{path: path}=repo, file, content) do
+  def commit(%__MODULE__{path: path} = repo, file, content) do
     file = Path.join(path, file)
     File.write!(file, content)
     commit(repo, file)
   end
 
   def rm(%__MODULE__{path: path}, file) do
-    cmd(path, ~w/rm #{Path.join(path, file)}/) 
+    cmd(path, ~w/rm #{Path.join(path, file)}/)
     cmd(path, ["commit", "-m", "rm file"])
   end
 

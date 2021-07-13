@@ -1,7 +1,7 @@
 defmodule GitProvider.GitTest do
   use ExUnit.Case, async: false
-  alias GitProvider.{Git, LocalGit}
-  alias GitProvider.Git.Repository
+  alias GitProvider.LocalGit
+  alias GitProvider.Git.{Repository, Server}
 
   import Mox
   @service_mock Services.Mock
@@ -23,7 +23,7 @@ defmodule GitProvider.GitTest do
   /
 
   setup_all do
-    Application.put_env(:services, :behaviour, Services.Mock)
+    Application.put_env(:services, :storage_backend, Services.Mock)
     Application.put_env(:git_provider, :pull_interval, "#{@duration}ms")
 
     start_supervised!(
@@ -106,7 +106,7 @@ defmodule GitProvider.GitTest do
       @service_mock
       |> stub(:alive?, fn -> true end)
       |> stub(:dispatch_events, fn events ->
-        IO.inspect events
+        IO.inspect(events)
         Enum.each(events, &send(parent, &1))
       end)
 
@@ -236,6 +236,6 @@ defmodule GitProvider.GitTest do
     end
   end
 
-  defp start_git(repo), do: start_supervised!({Git, repo})
+  defp start_git(repo), do: start_supervised!({Server, repo})
   defp stop_git(repo), do: stop_supervised!("Git_#{repo.name}")
 end

@@ -1,37 +1,42 @@
 defmodule GitProvider.Git.EventsTest do
   use ExUnit.Case, async: true
+  use ExUnitProperties
+
   import OK, only: [success: 1, failure: 1]
+
   alias Common.Service.{OpenApi, Grpc, Metadata}
   alias Common.Events.{Down, Up}
-  alias GitProvider.Git.{Event, Events, Repository, Specification}
+  alias GitProvider.Git.{Event, Events, Repository, Specifications}
 
   describe "from_configuration/1" do
-    test "the specifications is an openapi one" do
-      event =
-        Events.from_specification(%Specification{
-          type: :openapi,
-          path: "test/git/specifications/openapi.yaml",
-          specs: []
-        })
+    test "the specifications are valid" do
+      check all types <- uniq_list_of(one_of([constant(:openapi), constant(:grpc)]), length: 2) do
+        specifications = %Specifications{
+          specifications:
+            Enum.into(types, %{}, fn type ->
+              {to_string(type), {type, []}}
+            end)
+        }
 
-      assert event == %Events.Upsert.Openapi{
-               path: "test/git/specifications/openapi.yaml",
-               specs: []
-             }
-    end
+        expected =
+          Enum.map(types, fn
+            :openapi ->
+              %Events.Upsert.Openapi{
+                path: "openapi",
+                specs: []
+              }
 
-    test "the specifications is a grpc one" do
-      event =
-        Events.from_specification(%Specification{
-          type: :grpc,
-          path: "test/git/specifications/helloworld.proto",
-          specs: []
-        })
+            :grpc ->
+              %Events.Upsert.Grpc{
+                path: "grpc",
+                specs: []
+              }
+          end)
 
-      assert event == %Events.Upsert.Grpc{
-               path: "test/git/specifications/helloworld.proto",
-               specs: []
-             }
+        events = Events.from_specifications(specifications)
+
+        assert Enum.all?(events, fn e -> Enum.find(expected, &(&1 == e)) != nil end)
+      end
     end
   end
 

@@ -33,5 +33,4 @@ defmodule Common.Events do
 
     defp add_event(map, type), do: map |> Map.put_new(:event, type)
   end
-
 end

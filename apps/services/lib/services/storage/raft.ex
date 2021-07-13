@@ -1,9 +1,9 @@
-defmodule Services do
+defmodule Services.Storage.Raft do
   require Logger
   alias Common.Events
   @behaviour Services.Behaviour
 
-  @spec alive?():: boolean()
+  @spec alive?() :: boolean()
   def alive?, do: Services.Cluster.running?()
 
   @spec available_services :: {:ok, [Common.Service.t()]} | {:error, term()}

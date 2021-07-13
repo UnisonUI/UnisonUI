@@ -46,5 +46,4 @@ defmodule Services.Aggregator do
     {events, state} = dispatch_events(queue, pending + incoming_demand, [])
     {:noreply, events, state}
   end
-
 end

@@ -7,7 +7,7 @@ defmodule UnisonUI.Routes.Services do
   plug(:match)
   plug(:dispatch)
 
-  defp services_behaviour, do: Application.fetch_env!(:services, :behaviour)
+  defp services_behaviour, do: Application.fetch_env!(:services, :storage_backend)
 
   get "/" do
     body =

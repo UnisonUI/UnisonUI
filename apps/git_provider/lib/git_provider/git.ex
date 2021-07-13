@@ -81,11 +81,13 @@ defmodule GitProvider.Git do
          configuration_file <- find_config_file(directory),
          {new_repository, events} <-
            find_specifications_files(repository, configuration_file, files) do
-      IO.inspect {repository,new_repository,configuration_file,files}
+      IO.inspect({repository, new_repository, configuration_file, files})
+
       events
       |> Stream.flat_map(&read_content/1)
       |> Stream.map(&to_event(&1, repository))
-      |> Enum.to_list() |> IO.inspect 
+      |> Enum.to_list()
+      |> IO.inspect()
       |> then(&services_behaviour().dispatch_events(&1))
 
       schedule_pull()

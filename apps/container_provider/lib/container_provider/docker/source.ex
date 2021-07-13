@@ -76,7 +76,8 @@ defmodule ContainerProvider.Docker.Source do
     min(timeout + connection_backoff_interval(), connection_backoff_max())
   end
 
-  defp watch_events, do:
+  defp watch_events,
+    do:
       EventsClient.request(
         ~s(/events?since=0&filters={"event":["start","stop"],"type":["container"]}),
         self()

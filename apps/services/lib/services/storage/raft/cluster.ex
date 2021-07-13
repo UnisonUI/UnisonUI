@@ -1,7 +1,9 @@
-defmodule Services.Cluster do
+defmodule Services.Storage.Raft.Cluster do
   @moduledoc false
   use GenStateMachine, callback_mode: [:state_functions, :state_enter]
   require Logger
+
+  @ra_state_machine {:module, Services.Storage.Raft.State, %{}}
 
   def start_link(_),
     do: GenStateMachine.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -35,7 +37,7 @@ defmodule Services.Cluster do
 
   def starting(:internal, :start_cluster, nodes) do
     :global.trans({:unisonui, :bootstrap}, fn ->
-      _ = :ra.start_cluster(:default, :unisonui, {:module, Services.State, %{}}, nodes)
+      _ = :ra.start_cluster(:default, :unisonui, @ra_state_machine, nodes)
     end)
 
     {:next_state, :running, :ok}
@@ -84,7 +86,7 @@ defmodule Services.Cluster do
               :default,
               :unisonui,
               self,
-              {:module, Services.State, %{}},
+              @ra_state_machine,
               Enum.reject(nodes, &(&1 == self))
             )
 

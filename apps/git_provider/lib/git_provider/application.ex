@@ -5,6 +5,7 @@ defmodule GitProvider.Application do
 
   def start(_type, _args) do
     opts = [strategy: :one_for_one, name: GitProvider.Supervisor]
+
     Application.fetch_env!(:git_provider, :enabled)
     |> child_spec()
     |> Supervisor.start_link(opts)

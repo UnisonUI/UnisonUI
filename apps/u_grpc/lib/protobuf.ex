@@ -8,7 +8,10 @@ defmodule UGRPC.Protobuf do
     OK.for do
       _ <- File.stat(path)
       protoset <- run_protoc(path)
-      %UGRPC.Protobuf.FileDescriptorSet{file: files} <- UGRPC.Protobuf.FileDescriptorSet.decode(protoset)
+
+      %UGRPC.Protobuf.FileDescriptorSet{file: files} <-
+        UGRPC.Protobuf.FileDescriptorSet.decode(protoset)
+
       schema = to_schema(files)
     after
       schema

@@ -8,7 +8,7 @@ defmodule Helloworld.HelloRequest do
 
   defstruct [:name]
 
-  field :name, 1, type: :string
+  field(:name, 1, type: :string)
 end
 
 defmodule Helloworld.HelloReply do
@@ -21,16 +21,16 @@ defmodule Helloworld.HelloReply do
 
   defstruct [:message]
 
-  field :message, 1, type: :string
+  field(:message, 1, type: :string)
 end
 
 defmodule Helloworld.Greeter.Service do
   @moduledoc false
   use GRPC.Service, name: "helloworld.Greeter"
 
-  rpc :SayHello, Helloworld.HelloRequest, Helloworld.HelloReply
+  rpc(:SayHello, Helloworld.HelloRequest, Helloworld.HelloReply)
 
-  rpc :SayHelloToAll, stream(Helloworld.HelloRequest), stream(Helloworld.HelloReply)
+  rpc(:SayHelloToAll, stream(Helloworld.HelloRequest), stream(Helloworld.HelloReply))
 end
 
 defmodule Helloworld.Greeter.Stub do

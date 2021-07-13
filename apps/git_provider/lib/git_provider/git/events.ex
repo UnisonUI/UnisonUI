@@ -8,9 +8,13 @@ end
 
 defmodule GitProvider.Git.Events do
   alias GitProvider.Git.Events.Upsert
+  alias GitProvider.Git.Specifications
+
   @type t :: GitProvider.Git.Events.Delete.t() | GitProvider.Git.Events.Upsert.t()
-  @spec from_specification(GitProvider.Git.Specification.t()) :: t()
-  def from_specification(%GitProvider.Git.Specification{type: type, path: path, specs: specs}) do
+
+  @spec from_specifications(GitProvider.Git.Specifications.t()) :: [t()]
+  def from_specifications(%Specifications{specifications: specifications}) do
+    Enum.map(specifications, fn {path, {type, specs}} ->
       case type do
         :openapi ->
           %Upsert.Openapi{path: path, specs: specs}
@@ -18,5 +22,6 @@ defmodule GitProvider.Git.Events do
         :grpc ->
           %Upsert.Grpc{path: path, specs: specs}
       end
+    end)
   end
 end
