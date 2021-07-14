@@ -4,7 +4,7 @@ defmodule Services.Storage.Raft do
   @behaviour Services.Behaviour
 
   @spec alive?() :: boolean()
-  def alive?, do: Services.Cluster.running?()
+  def alive?, do: Services.Storage.Raft.Cluster.running?()
 
   @spec available_services :: {:ok, [Common.Service.t()]} | {:error, term()}
   def available_services do

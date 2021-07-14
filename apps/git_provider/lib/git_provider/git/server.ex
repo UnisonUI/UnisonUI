@@ -88,14 +88,10 @@ defmodule GitProvider.Git.Server do
 
             Logger.warn(message)
             []
-
-          :ignore ->
-            []
         end
       end)
       |> Stream.map(&Event.to_event(&1, repository))
       |> Enum.to_list()
-      |> IO.inspect()
       |> then(&services_behaviour().dispatch_events(&1))
 
       schedule_pull()
@@ -156,10 +152,17 @@ defmodule GitProvider.Git.Server do
         Specifications.new_files(new_specifications, files_changed)
         |> Events.from_specifications()
 
+      added_removed_files =
+        Enum.reduce(files_changed, to_add, fn file, events ->
+          removed? = new_specifications.specifications[file] && !File.exists?(file)
+          if removed?, do: [%Events.Delete{path: file} | events], else: events
+        end)
+
       events =
-        Specifications.deleted_files(current_specifications, new_specifications)
-        |> Stream.map(&%Events.Delete{path: &1})
-        |> Enum.reduce(to_add, &[&1 | &2])
+        Specifications.deleted_files(current_specifications, new_specifications).specifications
+        |> Enum.reduce(added_removed_files, fn {path, _}, events ->
+          [%Events.Delete{path: path} | events]
+        end)
 
       new_repository = %Repository{repository | specifications: new_specifications}
       {new_repository, events}
@@ -176,7 +179,8 @@ defmodule GitProvider.Git.Server do
          new_specifications
        ) do
     if Enum.any?(files, &(&1 == configuration_file)) do
-      unchanged = Specifications.intersection(current_specifications, new_specifications)
+      %Specifications{specifications: unchanged} =
+        Specifications.intersection(current_specifications, new_specifications)
 
       directory
       |> list_files()

@@ -6,7 +6,7 @@ defmodule Services.Storage.Memory.Server do
 
   @impl true
   def init(_), do: {:ok, %{}}
-
+  defp aggregator, do: Application.fetch_env!(:services, :aggregator)
   def available_services, do: GenServer.call(__MODULE__, :available_services)
   def service(id), do: GenServer.call(__MODULE__, {:service, id})
   def dispatch_events(events), do: GenServer.call(__MODULE__, {:dispatch_events, events})
@@ -30,7 +30,7 @@ defmodule Services.Storage.Memory.Server do
 
   @impl true
   def handle_call({:dispatch_events, events}, _from, state) do
-    state = Enum.reduce(events, state, &dispatch_event/2)
+    state = Enum.reduce(events , state, &dispatch_event/2)
     {:reply, :ok, state}
   end
 
@@ -56,8 +56,7 @@ defmodule Services.Storage.Memory.Server do
         %Events.Down{id: id} = event ->
           {[event], Map.delete(services, id)}
       end
-
-    Services.Aggregator.append_events(events)
+    aggregator().append_events(events)
     services
   end
 

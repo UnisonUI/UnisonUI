@@ -1,13 +1,14 @@
 defmodule GitProvider.Git.Repository do
+  alias GitProvider.Git.Specifications
   @type t :: %__MODULE__{
           service_name: String.t(),
           uri: String.t(),
           name: String.t(),
           branch: String.t(),
           directory: String.t() | nil,
-          specifications: [GitProvider.Git.Specification.t()]
+          specifications: [GitProvider.Git.Specifications.t()]
         }
-  defstruct [:service_name, :uri, :branch, :directory, :name, specifications: []]
+  defstruct [:service_name, :uri, :branch, :directory, :name, specifications: %Specifications{}]
 
   def create_temp_dir(%__MODULE__{} = repository) do
     tmp_dir = System.tmp_dir!()

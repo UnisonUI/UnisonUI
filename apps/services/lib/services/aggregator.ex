@@ -6,6 +6,7 @@ defmodule Services.Aggregator do
 
   def start_link(_), do: GenStage.start_link(__MODULE__, :ok, name: __MODULE__)
 
+  @callback append_events(events :: [term()]) :: :ok
   def append_events(events), do: GenStage.cast(__MODULE__, {:append_events, events})
 
   defp schedule, do: Process.send_after(self(), :schedule, @interval)

@@ -72,9 +72,9 @@ defmodule GitProvider.Git.Specifications do
   def new_files(%__MODULE__{specifications: specifications}, files) do
     specifications =
       Enum.reduce(files, %{}, fn file, map ->
-        case Enum.find(specifications, fn {path, _} -> String.starts_with?(file, path) end) do
+        case Enum.find(specifications, fn {path, _} -> file == path end) do
           nil -> map
-          {path, _} = specification -> Map.put(map, path, specification)
+          {path, specification} -> Map.put(map, path, specification)
         end
       end)
 
@@ -88,17 +88,10 @@ defmodule GitProvider.Git.Specifications do
   def deleted_files(%__MODULE__{specifications: old_specifications}, %__MODULE__{
         specifications: new_specifications
       }) do
-    from_specification =
-      old_specifications
-      |> Stream.reject(fn {path, _} -> !is_nil(new_specifications[path]) end)
-      |> Enum.into(%{})
-
     specifications =
-      Enum.reduce(new_specifications, from_specification, fn {path, _} = specification, map ->
-        if File.exists?(path),
-          do: Map.put_new(map, path, specification),
-          else: map
-      end)
+      old_specifications
+      |> Stream.filter(fn {path, _} -> is_nil(new_specifications[path]) end)
+      |> Enum.into(%{})
 
     %__MODULE__{specifications: specifications}
   end

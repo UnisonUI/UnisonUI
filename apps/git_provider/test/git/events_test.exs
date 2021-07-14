@@ -66,10 +66,10 @@ defmodule GitProvider.Git.EventsTest do
       assert event == failure(:enoent)
     end
 
-    test "ignore" do
+    test "delete event" do
       event = Event.load_content(%Events.Delete{path: "test"})
 
-      assert event == :ignore
+      assert event == {:ok, %GitProvider.Git.Events.Delete{path: "test"}}
     end
   end
 

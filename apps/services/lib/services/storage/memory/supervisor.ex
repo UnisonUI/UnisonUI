@@ -1,4 +1,4 @@
-defmodule Services.Storage.Raft.Supervisor do
+defmodule Services.Storage.Memory.Supervisor do
   use Supervisor
 
   @spec start_link(term()) :: Supervisor.on_start()

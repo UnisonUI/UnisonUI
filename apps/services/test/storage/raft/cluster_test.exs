@@ -1,4 +1,4 @@
-defmodule ClusterTest do
+defmodule Services.Storage.Raft.ClusterTest do
   use ExUnit.Case
 
   alias Common.{Events, Service}
@@ -31,14 +31,14 @@ defmodule ClusterTest do
       event = %Events.Up{service: service}
       result = {:ok, service}
       writer = Enum.random(nodes)
-      assert call(writer, Services, :dispatch_events, [[event]]) == :ok
+      assert call(writer, Services.Storage.Raft, :dispatch_events, [[event]]) == :ok
 
       nodes
       |> map(Helpers, :get_state, [])
       |> Enum.each(&assert(&1 == {:ok, [event]}))
 
       nodes
-      |> map(Services, :service, ["test"])
+      |> map(Services.Storage.Raft, :service, ["test"])
       |> Enum.each(&assert(&1 == result))
     end
 
@@ -52,7 +52,7 @@ defmodule ClusterTest do
       writer = Enum.random(right)
 
       map(left, Application, :stop, [:services])
-      assert call(writer, Services, :dispatch_events, [[event]]) == :ok
+      assert call(writer, Services.Storage.Raft, :dispatch_events, [[event]]) == :ok
 
       right
       |> Enum.map(fn node ->
@@ -61,7 +61,7 @@ defmodule ClusterTest do
       |> Enum.each(&assert(&1 == {:ok, [event]}))
 
       right
-      |> Enum.map(&call(&1, Services, :service, ["test"]))
+      |> Enum.map(&call(&1, Services.Storage.Raft, :service, ["test"]))
       |> Enum.each(&assert(&1 == result))
 
       map(left, Application, :ensure_all_started, [:services])
@@ -69,7 +69,7 @@ defmodule ClusterTest do
       nodes |> map(Helpers, :wait_ready, []) |> Enum.each(&assert/1)
 
       left
-      |> Enum.map(&call(&1, Services, :service, ["test"]))
+      |> Enum.map(&call(&1, Services.Storage.Raft, :service, ["test"]))
       |> Enum.each(&assert(&1 == result))
     end
   end
@@ -98,14 +98,14 @@ defmodule ClusterTest do
       event = %Events.Up{service: service}
       result = {:ok, service}
       writer = Enum.random(nodes)
-      call(writer, Services, :dispatch_events, [[event]])
+      call(writer, Services.Storage.Raft, :dispatch_events, [[event]])
 
       nodes
       |> map(Helpers, :get_state, [])
       |> Enum.each(&assert(&1 == {:ok, [event]}))
 
       nodes
-      |> map(Services, :service, ["test"])
+      |> map(Services.Storage.Raft, :service, ["test"])
       |> Enum.each(&assert(&1 == result))
     end
   end
