@@ -21,7 +21,7 @@ defmodule GitProvider.Git.EventsTest do
         expected =
           Enum.map(types, fn
             :openapi ->
-              %Events.Upsert.Openapi{
+              %Events.Upsert.OpenApi{
                 path: "openapi",
                 specs: []
               }
@@ -43,13 +43,13 @@ defmodule GitProvider.Git.EventsTest do
   describe "load_content/1" do
     test "openapi file exists" do
       event =
-        Event.load_content(%Events.Upsert.Openapi{
+        Event.load_content(%Events.Upsert.OpenApi{
           path: "test/git/specifications/openapi.yaml",
           specs: []
         })
 
       assert event ==
-               success(%Events.Upsert.Openapi{
+               success(%Events.Upsert.OpenApi{
                  path: "test/git/specifications/openapi.yaml",
                  specs: [],
                  content: ~s/openapi: "3.1.0"\n/
@@ -58,7 +58,7 @@ defmodule GitProvider.Git.EventsTest do
 
     test "openapi file does not exist" do
       event =
-        Event.load_content(%Events.Upsert.Openapi{
+        Event.load_content(%Events.Upsert.OpenApi{
           path: "unknown",
           specs: []
         })
@@ -84,7 +84,7 @@ defmodule GitProvider.Git.EventsTest do
 
     test "upsert openapi" do
       assert Event.to_event(
-               %Events.Upsert.Openapi{
+               %Events.Upsert.OpenApi{
                  path: "/openapi.yaml",
                  specs: [name: "test", use_proxy: false],
                  content: "test"

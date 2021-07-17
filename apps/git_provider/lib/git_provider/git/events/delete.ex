@@ -12,6 +12,6 @@ defmodule GitProvider.Git.Events.Delete do
       %Down{id: "#{name}:#{path}"}
     end
 
-    def load_content(event), do:  {:ok, event}
+    def load_content(event), do: {:ok, event}
   end
 end

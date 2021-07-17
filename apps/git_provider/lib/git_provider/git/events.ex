@@ -17,7 +17,7 @@ defmodule GitProvider.Git.Events do
     Enum.map(specifications, fn {path, {type, specs}} ->
       case type do
         :openapi ->
-          %Upsert.Openapi{path: path, specs: specs}
+          %Upsert.OpenApi{path: path, specs: specs}
 
         :grpc ->
           %Upsert.Grpc{path: path, specs: specs}

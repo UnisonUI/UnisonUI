@@ -2,7 +2,7 @@ defmodule Services.Storage.Memory do
   alias Services.Storage.Memory.Server
   @behaviour Services.Behaviour
 
-  @spec alive?() :: boolean()
+  @spec alive?() :: true
   def alive?, do: true
 
   @spec available_services :: {:ok, [Common.Service.t()]} | {:error, term()}

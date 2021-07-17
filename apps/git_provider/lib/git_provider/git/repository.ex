@@ -1,5 +1,6 @@
 defmodule GitProvider.Git.Repository do
   alias GitProvider.Git.Specifications
+
   @type t :: %__MODULE__{
           service_name: String.t(),
           uri: String.t(),

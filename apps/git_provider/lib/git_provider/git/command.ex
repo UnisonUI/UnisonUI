@@ -45,7 +45,7 @@ defmodule GitProvider.Git.Command do
   end
 
   defp execute_command(args, dir \\ nil),
-  do: System.cmd(@git_cmd, args, command_options(dir)) |> handle_system_cmd()
+    do: System.cmd(@git_cmd, args, command_options(dir)) |> handle_system_cmd()
 
   defp command_options(nil), do: [stderr_to_stdout: true]
   defp command_options(dir), do: command_options(nil) ++ [cd: dir]

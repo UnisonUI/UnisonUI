@@ -10,7 +10,7 @@ defmodule GitProvider.Git.Specifications do
 
   @spec from_configuration(
           config ::
-            GitProvider.Git.Configuration.OpenApi.t() | GitProvider.Git.ConfigurationGrpc.t(),
+            GitProvider.Git.Configuration.OpenApi.t() | GitProvider.Git.Configuration.Grpc.t(),
           directory :: String.t(),
           service_name :: String.t(),
           repo_service_name :: String.t()

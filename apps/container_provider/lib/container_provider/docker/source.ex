@@ -9,17 +9,18 @@ defmodule ContainerProvider.Docker.Source do
 
   def start_link(uri), do: GenServer.start_link(__MODULE__, uri, name: __MODULE__)
 
-  defp services_behaviour, do: Application.fetch_env!(:services, :behaviour)
+  defp services_storage, do: Application.fetch_env!(:services, :storage_backend)
   defp connection_backoff, do: Application.get_env(:container_provider, :connection_backoff, [])
   defp connection_backoff_start, do: connection_backoff()[:start] || 0
   defp connection_backoff_interval, do: connection_backoff()[:interval] || 1_000
   defp connection_backoff_max, do: connection_backoff()[:max] || 5_000
-  @impl true
-  def init(uri), do: {:ok, uri, {:continue, :wait_for_ra}}
 
   @impl true
-  def handle_continue(:wait_for_ra, uri) do
-    if Services.Cluster.running?() do
+  def init(uri), do: {:ok, uri, {:continue, :wait_for_storage}}
+
+  @impl true
+  def handle_continue(:wait_for_storage, uri) do
+    if services_storage().alive?() do
       with {:ok, _} <- EventsClient.start_link(uri),
            {:ok, _} <- GetClient.start_link(uri) do
         _ = watch_events()
@@ -32,7 +33,7 @@ defmodule ContainerProvider.Docker.Source do
     else
       Process.sleep(1_000)
 
-      {:noreply, uri, {:continue, :wait_for_ra}}
+      {:noreply, uri, {:continue, :wait_for_storage}}
     end
   end
 
@@ -53,7 +54,7 @@ defmodule ContainerProvider.Docker.Source do
           []
       end
 
-    services_behaviour().dispatch_events(events)
+    services_storage().dispatch_events(events)
     {:noreply, state}
   end
 

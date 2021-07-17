@@ -38,7 +38,6 @@ defmodule Services.Storage.Raft do
         end
       end)
 
-  @spec dispatch_event(event :: Common.Events.t()) :: :ok | {:error, :timeout | term()}
   defp dispatch_event(event) do
     case :ra.process_command(:unisonui, {:event, event}) do
       {:error, reason} ->

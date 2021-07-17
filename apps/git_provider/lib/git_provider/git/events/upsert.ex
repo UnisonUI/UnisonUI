@@ -2,7 +2,7 @@ defmodule GitProvider.Git.Events.Upsert do
   @type t ::
           GitProvider.Git.Events.Upsert.OpenApi.t()
           | GitProvider.Git.Events.Upsert.Grpc.t()
-  defmodule Openapi do
+  defmodule OpenApi do
     @type t :: %__MODULE__{
             path: String.t(),
             content: String.t(),
@@ -18,7 +18,7 @@ defmodule GitProvider.Git.Events.Upsert do
       require OK
 
       def to_event(
-            %Upsert.Openapi{path: path, content: content, specs: specs},
+            %Upsert.OpenApi{path: path, content: content, specs: specs},
             %Repository{
               name: name,
               directory: directory
@@ -46,11 +46,11 @@ defmodule GitProvider.Git.Events.Upsert do
         %Up{service: service}
       end
 
-      def load_content(%Upsert.Openapi{path: path} = event) do
+      def load_content(%Upsert.OpenApi{path: path} = event) do
         OK.for do
           content <- File.read(path)
         after
-          %Upsert.Openapi{event | content: content}
+          %Upsert.OpenApi{event | content: content}
         end
       end
     end

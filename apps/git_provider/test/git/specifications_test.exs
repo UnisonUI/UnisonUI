@@ -16,10 +16,8 @@ defmodule GitProvider.Git.SpecificationTest do
 
       assert result == %Specifications{
                specifications: %{
-                 "/file1" =>
-                   {:openapi,  [name: "name", use_proxy: false, path: "file1"]},
-                 "/file2" =>
-                   {:openapi,  [name: "service", use_proxy: true, path: "file2"]}
+                 "/file1" => {:openapi, [name: "name", use_proxy: false, path: "file1"]},
+                 "/file2" => {:openapi, [name: "service", use_proxy: true, path: "file2"]}
                }
              }
     end
@@ -32,8 +30,8 @@ defmodule GitProvider.Git.SpecificationTest do
 
       assert result == %Specifications{
                specifications: %{
-                 "/file1" => {:grpc,  [name: "name", servers: [:b]]},
-                 "/file2" => {:grpc,  [name: "service", servers: [:a]]}
+                 "/file1" => {:grpc, [name: "name", servers: [:b]]},
+                 "/file2" => {:grpc, [name: "service", servers: [:a]]}
                }
              }
     end
@@ -48,15 +46,33 @@ defmodule GitProvider.Git.SpecificationTest do
   describe "intersection/2" do
     property "difference between two specs" do
       check all path1 <- binary(),
-              path2 <- binary(),
-              path1 != path2 do
-        specs_1 = %Specifications{specifications: %{path1 => {path1, nil, nil}}}
+                path2 <- binary(),
+                path1 != path2 do
+        specs_1 = %Specifications{specifications: %{path1 => {nil, nil}}}
 
         specs_2 = %Specifications{
-          specifications: %{path1 => {path1, nil, nil}, path2 => {path2, nil, nil}}
+          specifications: %{path1 => {nil, nil}, path2 => {nil, nil}}
         }
 
         assert Specifications.intersection(specs_1, specs_2) == specs_1
+      end
+    end
+  end
+
+  describe "merge/2" do
+    property "difference between two specs" do
+      check all path1 <- binary(),
+                path2 <- binary(),
+                path1 != path2 do
+        specs_1 = %Specifications{specifications: %{path1 => {nil, nil}}}
+
+        specs_2 = %Specifications{
+          specifications: %{path2 => {nil, nil}}
+        }
+
+        assert Specifications.merge(specs_1, specs_2) == %Specifications{
+                 specifications: %{path1 => {nil, nil}, path2 => {nil, nil}}
+               }
       end
     end
   end
