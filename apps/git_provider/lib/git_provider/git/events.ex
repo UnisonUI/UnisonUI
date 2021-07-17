@@ -1,7 +1,4 @@
 defprotocol GitProvider.Git.Event do
-  @spec to_event(GitProvider.Git.Events.t(), GitProvider.Git.Repository.t()) :: Common.Events.t()
-  def to_event(event, repository)
-
   @spec load_content(GitProvider.Git.Events.t()) :: {:ok, term()} | {:error, term()}
   def load_content(event)
 end

@@ -47,11 +47,15 @@ defmodule ContainerProvider.Kubernetes.Source do
 
             services
             |> Stream.reject(fn service -> Enum.any?(filtered_services, &(&1 == service)) end)
-            |> Stream.flat_map(fn %{"metadata" => %{"labels" => labels}} = service -> case Labels.from_map(labels) do
-              nil -> []
-              labels ->
+            |> Stream.flat_map(fn %{"metadata" => %{"labels" => labels}} = service ->
+              case Labels.from_map(labels) do
+                nil ->
+                  []
 
-            end
+                labels ->
+                  nil
+              end
+            end)
           end)
 
           state

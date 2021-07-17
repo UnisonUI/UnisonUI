@@ -10,12 +10,11 @@ defmodule GitProvider.Git.Events.Upsert do
           }
     defstruct [:path, :content, :specs]
 
-    defimpl GitProvider.Git.Event, for: __MODULE__ do
+    defimpl Common.Events.Converter, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
       alias GitProvider.Git.Repository
       alias Common.Events.Up
       alias Common.Service.{OpenApi, Metadata}
-      require OK
 
       def to_event(
             %Upsert.OpenApi{path: path, content: content, specs: specs},
@@ -45,6 +44,11 @@ defmodule GitProvider.Git.Events.Upsert do
 
         %Up{service: service}
       end
+    end
+
+    defimpl GitProvider.Git.Event, for: __MODULE__ do
+      alias GitProvider.Git.Events.Upsert
+      require OK
 
       def load_content(%Upsert.OpenApi{path: path} = event) do
         OK.for do
@@ -64,12 +68,11 @@ defmodule GitProvider.Git.Events.Upsert do
           }
     defstruct [:path, :schema, :specs]
 
-    defimpl GitProvider.Git.Event, for: __MODULE__ do
+    defimpl Common.Events.Converter, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
       alias GitProvider.Git.Repository
       alias Common.Events.Up
       alias Common.Service.{Grpc, Metadata}
-      require OK
 
       def to_event(
             %Upsert.Grpc{path: path, schema: schema, specs: specs},
@@ -99,6 +102,11 @@ defmodule GitProvider.Git.Events.Upsert do
 
         %Up{service: service}
       end
+    end
+
+    defimpl GitProvider.Git.Event, for: __MODULE__ do
+      alias GitProvider.Git.Events.Upsert
+      require OK
 
       def load_content(%Upsert.Grpc{path: path} = event) do
         OK.for do

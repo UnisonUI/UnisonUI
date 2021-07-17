@@ -2,6 +2,7 @@ defmodule GitProvider.Git.Server do
   use Clustering.GlobalServer, supervisor: GitProvider.Git.DynamicSupervisor
   require Logger
 
+  alias Common.Events.Converter
   alias GitProvider.Git.{Event, Events, Command, Configuration, Repository, Specifications}
 
   @typep state :: {Repository.t(), binary()}
@@ -90,7 +91,7 @@ defmodule GitProvider.Git.Server do
             []
         end
       end)
-      |> Stream.map(&Event.to_event(&1, repository))
+      |> Stream.map(&Converter.to_event(&1, repository))
       |> Enum.to_list()
       |> then(&services_behaviour().dispatch_events(&1))
 

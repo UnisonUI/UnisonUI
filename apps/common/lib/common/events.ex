@@ -1,5 +1,10 @@
 defmodule Common.Events do
   @type t :: Common.Events.Up.t() | Common.Events.Down.t() | Common.Events.Changed.t()
+  defprotocol Converter do
+    @spec to_event(input :: term()) :: Common.Events.t()
+    def to_event(input)
+  end
+
   defmodule Up do
     @type t :: %__MODULE__{service: Common.Service.t()}
     @enforce_keys [:service]
