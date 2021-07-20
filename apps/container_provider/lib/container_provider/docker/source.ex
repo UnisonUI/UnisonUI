@@ -2,7 +2,7 @@ defmodule ContainerProvider.Docker.Source do
   use GenServer
   require Logger
   alias ContainerProvider.Docker.{GetClient, EventsClient}
-  alias ContainerProvider.{Labels,Specifications}
+  alias ContainerProvider.{Labels, Specifications}
   alias Common.Events.{Down, Up}
 
   def start_link(uri), do: GenServer.start_link(__MODULE__, uri, name: __MODULE__)
@@ -95,7 +95,8 @@ defmodule ContainerProvider.Docker.Source do
            networks
            |> Enum.map(fn {_, %{"IPAddress" => ip_address}} -> ip_address end)
            |> Enum.at(0),
-         [service_name: service_name, openapi: openapi, grpc: grpc] <- Labels.extract_endpoint(labels, ip) do
+         [service_name: service_name, openapi: openapi, grpc: grpc] <-
+           Labels.extract_endpoint(labels, ip) do
       [
         Specifications.retrieve_specification(id, service_name, openapi),
         Specifications.retrieve_specification(id, service_name, grpc)
@@ -106,5 +107,4 @@ defmodule ContainerProvider.Docker.Source do
       _ -> []
     end
   end
-
 end

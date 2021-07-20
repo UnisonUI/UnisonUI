@@ -155,7 +155,10 @@ defmodule GitProvider.Git.Server do
       added_removed_files =
         Enum.reduce(files_changed, to_add, fn file, events ->
           removed? = new_specifications.specifications[file] && !File.exists?(file)
-          if removed?, do: [%Events.Delete{path: file, repository: repository} | events], else: events
+
+          if removed?,
+            do: [%Events.Delete{path: file, repository: repository} | events],
+            else: events
         end)
 
       events =

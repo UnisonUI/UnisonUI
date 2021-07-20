@@ -1,5 +1,4 @@
 defmodule GitProvider.Github do
-  # @dialyzer :no_match
   use Clustering.GlobalServer
   require Logger
   alias GitProvider.Github.{Client, Node, Settings}
@@ -69,7 +68,7 @@ defmodule GitProvider.Github do
   defp start_git(%Repository{service_name: name} = repository) do
     case Supervisor.start_git(repository) do
       {:ok, pid} ->
-         {name, pid}
+        {name, pid}
 
       _ ->
         nil

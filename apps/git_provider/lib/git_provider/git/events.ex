@@ -10,7 +10,8 @@ defmodule GitProvider.Git.Events do
 
   @type t :: GitProvider.Git.Events.Delete.t() | GitProvider.Git.Events.Upsert.t()
 
-  @spec from_specifications(GitProvider.Git.Specifications.t(),GitProvider.Git.Repository.t()) :: [t()]
+  @spec from_specifications(GitProvider.Git.Specifications.t(), GitProvider.Git.Repository.t()) ::
+          [t()]
   def from_specifications(%Specifications{specifications: specifications}, repository) do
     Enum.map(specifications, fn {path, {type, specs}} ->
       case type do
@@ -22,5 +23,6 @@ defmodule GitProvider.Git.Events do
       end
     end)
   end
+
   def load_content(event), do: ContentLoader.load_content(event)
 end
