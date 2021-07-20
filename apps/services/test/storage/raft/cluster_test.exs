@@ -1,7 +1,7 @@
 defmodule Services.Storage.Raft.ClusterTest do
   use ExUnit.Case
 
-  alias Common.{Events, Service}
+  alias Services.Event
 
   setup_all do
     Application.put_env(:services, :quorum, 2)
@@ -27,8 +27,8 @@ defmodule Services.Storage.Raft.ClusterTest do
     end
 
     test "write and read data", %{nodes: nodes} do
-      service = %Service.OpenApi{id: "test", name: "test", content: "test"}
-      event = %Events.Up{service: service}
+      service = %Services.OpenApi{id: "test", name: "test", content: "test"}
+      event = %Event.Up{service: service}
       result = {:ok, service}
       writer = Enum.random(nodes)
       assert call(writer, Services.Storage.Raft, :dispatch_events, [[event]]) == :ok
@@ -43,8 +43,8 @@ defmodule Services.Storage.Raft.ClusterTest do
     end
 
     test "having a tolerable partition", %{nodes: nodes} do
-      service = %Service.OpenApi{id: "test", name: "test", content: "test"}
-      event = %Events.Up{service: service}
+      service = %Services.OpenApi{id: "test", name: "test", content: "test"}
+      event = %Event.Up{service: service}
       result = {:ok, service}
 
       {left, right} = Helpers.get_leaders(nodes)
@@ -94,8 +94,8 @@ defmodule Services.Storage.Raft.ClusterTest do
     end
 
     test "write and read data", %{nodes: nodes} do
-      service = %Service.OpenApi{id: "test", name: "test", content: "test"}
-      event = %Events.Up{service: service}
+      service = %Services.OpenApi{id: "test", name: "test", content: "test"}
+      event = %Event.Up{service: service}
       result = {:ok, service}
       writer = Enum.random(nodes)
       call(writer, Services.Storage.Raft, :dispatch_events, [[event]])
