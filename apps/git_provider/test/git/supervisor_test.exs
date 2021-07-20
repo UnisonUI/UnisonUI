@@ -23,8 +23,8 @@ defmodule GitProvider.Git.SupervisorTest do
       Application.put_env(:git_provider, :repositories, [
         "http://localhost/repo",
         "some_path/",
-        %{"location" => "some_path/", "branch" => "test"},
-        %{"location" => "http://localhost/repo", "branch" => "test"},
+        [location: "some_path/", branch: "test"],
+        [location: "http://localhost/repo", branch:  "test"],
         42
       ])
 

@@ -23,30 +23,35 @@ defmodule GitProvider.Git.Supervisor do
 
   def start_repositories(repositories) do
     repositories
-    |> Stream.filter(fn
+    |> Stream.flat_map(fn
       location_or_path when is_binary(location_or_path) ->
-        location_or_path |> URI.parse() |> Map.get(:scheme) != nil
+        uri = URI.parse(location_or_path)
 
-      %{"location" => location} ->
-        location |> URI.parse() |> Map.get(:scheme) != nil
+        unless is_nil(uri[:scheme]),
+          do: [
+            %Repository{
+              service_name: String.trim(uri[:path], "/"),
+              uri: location,
+              branch: "master"
+            }
+          ],
+          else: []
 
-      _ ->
-        false
-    end)
-    |> Stream.map(fn
-      location when is_binary(location) ->
-        service_name = location |> URI.parse() |> Map.get(:path) |> String.trim("/")
-        %Repository{service_name: service_name, uri: location, branch: "master"}
+      repository ->
+        with location when not is_nil(location) <- repository[:location],
+             uri <- repository[:location],
+             scheme when not is_nil(scheme) <- uri[:scheme] do
+          service_name = String.trim(uri[:path], "/")
+          branch = repository[:branch] || "master"
 
-      %{"location" => location} = repository ->
-        service_name = location |> URI.parse() |> Map.get(:path) |> String.trim("/")
-        branch = Map.get(repository, "branch", "master")
-
-        %Repository{
-          service_name: service_name,
-          uri: location,
-          branch: branch
-        }
+          %Repository{
+            service_name: service_name,
+            uri: location,
+            branch: branch
+          }
+        else
+          []
+        end
     end)
     |> Enum.each(&start_git/1)
   end
