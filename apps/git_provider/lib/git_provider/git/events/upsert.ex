@@ -6,9 +6,10 @@ defmodule GitProvider.Git.Events.Upsert do
     @type t :: %__MODULE__{
             path: String.t(),
             content: String.t(),
-            specs: GitProvider.Git.Configuration.OpenApi.spec()
+            specs: GitProvider.Git.Configuration.OpenApi.spec(),
+            repository: GitProvider.Git.Repository.t()
           }
-    defstruct [:path, :content, :specs]
+    defstruct [:path, :content, :specs, :repository]
 
     defimpl Common.Events.Converter, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
@@ -16,13 +17,16 @@ defmodule GitProvider.Git.Events.Upsert do
       alias Common.Events.Up
       alias Common.Service.{OpenApi, Metadata}
 
-      def to_event(
-            %Upsert.OpenApi{path: path, content: content, specs: specs},
-            %Repository{
-              name: name,
-              directory: directory
-            } = repo
-          ) do
+      def to_event(%Upsert.OpenApi{
+            path: path,
+            content: content,
+            specs: specs,
+            repository:
+              %Repository{
+                name: name,
+                directory: directory
+              } = repo
+          }) do
         provider = Repository.provider(repo)
         service_name = specs[:name]
         use_proxy = specs[:use_proxy]
@@ -46,7 +50,7 @@ defmodule GitProvider.Git.Events.Upsert do
       end
     end
 
-    defimpl GitProvider.Git.Event, for: __MODULE__ do
+    defimpl GitProvider.Git.Events.ContentLoader, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
       require OK
 
@@ -64,9 +68,10 @@ defmodule GitProvider.Git.Events.Upsert do
     @type t :: %__MODULE__{
             path: String.t(),
             schema: UGRPC.Protobuf.Structs.Schema.t(),
-            specs: GitProvider.Git.Configuration.Grpc.spec()
+            specs: GitProvider.Git.Configuration.Grpc.spec(),
+            repository: GitProvider.Git.Repository.t()
           }
-    defstruct [:path, :schema, :specs]
+    defstruct [:path, :schema, :specs, :repository]
 
     defimpl Common.Events.Converter, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
@@ -74,13 +79,16 @@ defmodule GitProvider.Git.Events.Upsert do
       alias Common.Events.Up
       alias Common.Service.{Grpc, Metadata}
 
-      def to_event(
-            %Upsert.Grpc{path: path, schema: schema, specs: specs},
-            %Repository{
-              name: name,
-              directory: directory
-            } = repo
-          ) do
+      def to_event(%Upsert.Grpc{
+            path: path,
+            schema: schema,
+            specs: specs,
+            repository:
+              %Repository{
+                name: name,
+                directory: directory
+              } = repo
+          }) do
         provider = Repository.provider(repo)
         service_name = specs[:name]
         servers = specs[:servers]
@@ -104,7 +112,7 @@ defmodule GitProvider.Git.Events.Upsert do
       end
     end
 
-    defimpl GitProvider.Git.Event, for: __MODULE__ do
+    defimpl GitProvider.Git.Events.ContentLoader, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
       require OK
 

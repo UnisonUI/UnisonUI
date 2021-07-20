@@ -38,4 +38,6 @@ defmodule Common.Events do
 
     defp add_event(map, type), do: map |> Map.put_new(:event, type)
   end
+
+  def to_event(input), do: Common.Events.Converter.to_event(input)
 end

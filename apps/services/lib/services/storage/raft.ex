@@ -1,6 +1,7 @@
 defmodule Services.Storage.Raft do
   require Logger
   alias Common.Events
+  @dialyzer :no_return
   @behaviour Services.Behaviour
 
   @spec alive?() :: boolean()
@@ -13,8 +14,8 @@ defmodule Services.Storage.Raft do
            &Enum.into(&1, [], fn {_, service} -> %Events.Up{service: service} end)
          ) do
       {:ok, {_, services}, _} -> {:ok, services}
-      {:error, _} = error -> error
       {:timeout, _} -> {:error, :timeout}
+      error -> error
     end
   end
 
@@ -23,8 +24,8 @@ defmodule Services.Storage.Raft do
     case :ra.local_query(:unisonui, &Map.get(&1, id, :not_found)) do
       {:ok, {_, :not_found}, _} -> {:error, :not_found}
       {:ok, {_, service}, _} -> {:ok, service}
-      {:error, _} = error -> error
       {:timeout, _} -> {:error, :timeout}
+      error -> error
     end
   end
 

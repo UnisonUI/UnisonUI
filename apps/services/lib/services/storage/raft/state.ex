@@ -78,7 +78,7 @@ defmodule Services.Storage.Raft.State do
   defp side_effets(index, events, state) do
     side_effets = [dispatch_events(events)]
 
-    if rem(index, @snapshot_every),
+    if rem(index, @snapshot_every) == 0,
       do: [{:release_cursor, index, state} | side_effets],
       else: side_effets
   end

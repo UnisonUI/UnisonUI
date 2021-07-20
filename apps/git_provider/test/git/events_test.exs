@@ -6,11 +6,13 @@ defmodule GitProvider.Git.EventsTest do
 
   alias Common.Service.{OpenApi, Grpc, Metadata}
   alias Common.Events.{Down, Up}
-  alias GitProvider.Git.{Event, Events, Repository, Specifications}
+  alias GitProvider.Git.{Events, Repository, Specifications}
 
-  describe "from_configuration/1" do
+  @repo %Repository{}
+
+  describe "from_configuration/2" do
     test "the specifications are valid" do
-      check all types <- uniq_list_of(one_of([constant(:openapi), constant(:grpc)]), length: 2) do
+      check all(types <- uniq_list_of(one_of([constant(:openapi), constant(:grpc)]), length: 2)) do
         specifications = %Specifications{
           specifications:
             Enum.into(types, %{}, fn type ->
@@ -23,17 +25,19 @@ defmodule GitProvider.Git.EventsTest do
             :openapi ->
               %Events.Upsert.OpenApi{
                 path: "openapi",
-                specs: []
+                specs: [],
+                repository: @repo
               }
 
             :grpc ->
               %Events.Upsert.Grpc{
                 path: "grpc",
-                specs: []
+                specs: [],
+                repository: @repo
               }
           end)
 
-        events = Events.from_specifications(specifications)
+        events = Events.from_specifications(specifications, @repo)
 
         assert Enum.all?(events, fn e -> Enum.find(expected, &(&1 == e)) != nil end)
       end
@@ -43,58 +47,62 @@ defmodule GitProvider.Git.EventsTest do
   describe "load_content/1" do
     test "openapi file exists" do
       event =
-        Event.load_content(%Events.Upsert.OpenApi{
+        Events.load_content(%Events.Upsert.OpenApi{
           path: "test/git/specifications/openapi.yaml",
-          specs: []
+          specs: [],
+          repository: @repo
         })
 
       assert event ==
                success(%Events.Upsert.OpenApi{
                  path: "test/git/specifications/openapi.yaml",
                  specs: [],
-                 content: ~s/openapi: "3.1.0"\n/
+                 content: ~s/openapi: "3.1.0"\n/,
+                 repository: @repo
                })
     end
 
     test "openapi file does not exist" do
       event =
-        Event.load_content(%Events.Upsert.OpenApi{
+        Events.load_content(%Events.Upsert.OpenApi{
           path: "unknown",
-          specs: []
+          specs: [],
+          repository: @repo
         })
 
       assert event == failure(:enoent)
     end
 
     test "delete event" do
-      event = Event.load_content(%Events.Delete{path: "test"})
+      event = Events.load_content(%Events.Delete{path: "test", repository: @repo})
 
-      assert event == {:ok, %GitProvider.Git.Events.Delete{path: "test"}}
+      assert event == {:ok, %GitProvider.Git.Events.Delete{path: "test", repository: @repo}}
     end
   end
 
-  describe "to_event/2" do
+  describe "to_event/1" do
     test "delete event" do
-      assert Event.to_event(%Events.Delete{path: "test"}, %Repository{
-               name: "test",
-               directory: "/"
+      assert Common.Events.to_event(%Events.Delete{
+               path: "test",
+               repository: %Repository{
+                 name: "test",
+                 directory: "/"
+               }
              }) ==
                %Down{id: "test:test"}
     end
 
     test "upsert openapi" do
-      assert Event.to_event(
-               %Events.Upsert.OpenApi{
-                 path: "/openapi.yaml",
-                 specs: [name: "test", use_proxy: false],
-                 content: "test"
-               },
-               %Repository{
+      assert Common.Events.to_event(%Events.Upsert.OpenApi{
+               path: "/openapi.yaml",
+               specs: [name: "test", use_proxy: false],
+               content: "test",
+               repository: %Repository{
                  name: "test",
                  directory: "/",
                  uri: "file:///test"
                }
-             ) ==
+             }) ==
                %Up{
                  service: %OpenApi{
                    id: "test:openapi.yaml",
@@ -107,18 +115,16 @@ defmodule GitProvider.Git.EventsTest do
     end
 
     test "upsert grpc" do
-      assert Event.to_event(
-               %Events.Upsert.Grpc{
-                 path: "/helloworld.proto",
-                 specs: [name: "test", servers: []],
-                 schema: %{}
-               },
-               %Repository{
+      assert Common.Events.to_event(%Events.Upsert.Grpc{
+               path: "/helloworld.proto",
+               specs: [name: "test", servers: []],
+               schema: %{},
+               repository: %Repository{
                  name: "test",
                  directory: "/",
                  uri: "file:///test"
                }
-             ) ==
+             }) ==
                %Up{
                  service: %Grpc{
                    id: "test:helloworld.proto",

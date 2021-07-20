@@ -49,7 +49,7 @@ defmodule GitProvider.Github do
             %Repository{service_name: name, uri: url_with_authority, branch: branch}
           end)
           |> Stream.map(&start_git/1)
-          |> Stream.filter(&match?({:ok, _}, &1))
+          |> Stream.reject(&is_nil/1)
           |> Stream.map(&elem(&1, 1))
           |> Enum.reduce(current_repositories, fn repository, repositories ->
             [repository | repositories]
@@ -69,13 +69,10 @@ defmodule GitProvider.Github do
   defp start_git(%Repository{service_name: name} = repository) do
     case Supervisor.start_git(repository) do
       {:ok, pid} ->
-        {:ok, {name, pid}}
+         {name, pid}
 
-      :ignore ->
-        {:error, :ignore}
-
-      error ->
-        error
+      _ ->
+        nil
     end
   end
 

@@ -2,8 +2,7 @@ defmodule GitProvider.Git.Server do
   use Clustering.GlobalServer, supervisor: GitProvider.Git.DynamicSupervisor
   require Logger
 
-  alias Common.Events.Converter
-  alias GitProvider.Git.{Event, Events, Command, Configuration, Repository, Specifications}
+  alias GitProvider.Git.{Events, Command, Configuration, Repository, Specifications}
 
   @typep state :: {Repository.t(), binary()}
 
@@ -79,7 +78,7 @@ defmodule GitProvider.Git.Server do
            find_specifications_files(repository, configuration_file, files) do
       events
       |> Stream.flat_map(fn event ->
-        case Event.load_content(event) do
+        case Events.load_content(event) do
           {:ok, event} ->
             [event]
 
@@ -91,7 +90,7 @@ defmodule GitProvider.Git.Server do
             []
         end
       end)
-      |> Stream.map(&Converter.to_event(&1, repository))
+      |> Stream.map(&Common.Events.to_event/1)
       |> Enum.to_list()
       |> then(&services_behaviour().dispatch_events(&1))
 
@@ -151,18 +150,18 @@ defmodule GitProvider.Git.Server do
 
       to_add =
         Specifications.new_files(new_specifications, files_changed)
-        |> Events.from_specifications()
+        |> Events.from_specifications(repository)
 
       added_removed_files =
         Enum.reduce(files_changed, to_add, fn file, events ->
           removed? = new_specifications.specifications[file] && !File.exists?(file)
-          if removed?, do: [%Events.Delete{path: file} | events], else: events
+          if removed?, do: [%Events.Delete{path: file, repository: repository} | events], else: events
         end)
 
       events =
         Specifications.deleted_files(current_specifications, new_specifications).specifications
         |> Enum.reduce(added_removed_files, fn {path, _}, events ->
-          [%Events.Delete{path: path} | events]
+          [%Events.Delete{path: path, repository: repository} | events]
         end)
 
       new_repository = %Repository{repository | specifications: new_specifications}

@@ -1,6 +1,7 @@
 defmodule ContainerProvider.Kubernetes.Source do
   use Clustering.GlobalServer
-  alias ContainerProvider.Labels
+  alias ContainerProvider.{Labels, Specifications}
+  alias Common.Events
   require Logger
   require OK
 
@@ -33,34 +34,49 @@ defmodule ContainerProvider.Kubernetes.Source do
     operation = K8s.Client.list("v1", "Service", namespace: :all)
 
     state =
-      case K8s.Client.run(operation, conn) do
+      case K8s.Client.run(conn, operation) do
         {:ok, %{"items" => new_services}} ->
-          new_services
-          |> Enum.group_by(fn %{"metadata" => %{"namespace" => namespace}} -> namespace end)
-          |> Stream.map(fn {namespace, new_services} ->
-            filtered_services =
-              Enum.reject(new_services, fn %{"metadata" => %{"labels" => labels}} ->
-                is_nil(Labels.from_map(labels))
-              end)
+          {events, services} =
+            new_services
+            |> Enum.group_by(fn %{"metadata" => %{"namespace" => namespace}} -> namespace end)
+            |> Enum.reduce({[], services}, fn {namespace, new_services},
+                                              {events, services_with_namespace} ->
+              {events, services} = handle_services(services[namespace], events, new_services)
 
-            services = services[namespace] || filtered_services
+              events =
+                Enum.reduce(services, events, fn %{
+                                                   "metadata" => %{
+                                                     "labels" => labels,
+                                                     "uid" => id
+                                                   },
+                                                   "specs" => %{"clusterIP" => ip}
+                                                 },
+                                                 events ->
+                  [service_name: service_name, openapi: openapi, grpc: grpc] =
+                    labels |> Labels.from_map() |> Labels.extract_endpoint(ip)
 
-            services
-            |> Stream.reject(fn service -> Enum.any?(filtered_services, &(&1 == service)) end)
-            |> Stream.flat_map(fn %{"metadata" => %{"labels" => labels}} = service ->
-              case Labels.from_map(labels) do
-                nil ->
-                  []
+                  [
+                    Specifications.retrieve_specification(id, service_name, openapi),
+                    Specifications.retrieve_specification(id, service_name, grpc)
+                  ]
+                  |> Enum.reject(&is_nil/1)
+                  |> Enum.map(&%Events.Up{service: &1})
+                  |> Enum.reduce(events, &[&1 | &2])
+                end)
 
-                labels ->
-                  nil
-              end
+              {events, Map.put(services_with_namespace, namespace, services)}
             end)
-          end)
 
-          state
+          services_storage().dispatch_events(events)
+          {conn, services, polling_interval}
 
         {:error, reason} ->
+          reason =
+            case reason do
+              %K8s.Middleware.Error{error: error} -> error
+              reason -> reason
+            end
+
           reason =
             if Exception.exception?(reason), do: Exception.message(reason), else: inspect(reason)
 
@@ -70,5 +86,21 @@ defmodule ContainerProvider.Kubernetes.Source do
 
     Process.send(self(), :list_services, polling_interval)
     {:noreply, state}
+  end
+
+  defp handle_services(nil, events, filtered_services), do: {events, filtered_services}
+
+  defp handle_services(services, events, filtered_services) do
+    events =
+      services
+      |> Stream.reject(fn service -> Enum.any?(filtered_services, &(&1 == service)) end)
+      |> Enum.reduce(events, fn %{"metadata" => %{"uid" => uid}}, events ->
+        [%Events.Down{id: uid} | events]
+      end)
+
+    services =
+      Enum.reject(filtered_services, fn service -> Enum.any?(services, &(&1 == service)) end)
+
+    {events, services}
   end
 end

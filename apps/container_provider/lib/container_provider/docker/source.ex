@@ -1,11 +1,9 @@
 defmodule ContainerProvider.Docker.Source do
   use GenServer
   require Logger
-  alias ContainerProvider.HttpClient
   alias ContainerProvider.Docker.{GetClient, EventsClient}
-  alias ContainerProvider.Labels
+  alias ContainerProvider.{Labels,Specifications}
   alias Common.Events.{Down, Up}
-  alias Common.Service.{Grpc, OpenApi, Metadata}
 
   def start_link(uri), do: GenServer.start_link(__MODULE__, uri, name: __MODULE__)
 
@@ -97,10 +95,10 @@ defmodule ContainerProvider.Docker.Source do
            networks
            |> Enum.map(fn {_, %{"IPAddress" => ip_address}} -> ip_address end)
            |> Enum.at(0),
-         [service_name: service_name, openapi: openapi, grpc: grpc] <- find_endpoint(labels, ip) do
+         [service_name: service_name, openapi: openapi, grpc: grpc] <- Labels.extract_endpoint(labels, ip) do
       [
-        retrieve_specification(id, service_name, openapi),
-        retrieve_specification(id, service_name, grpc)
+        Specifications.retrieve_specification(id, service_name, openapi),
+        Specifications.retrieve_specification(id, service_name, grpc)
       ]
       |> Enum.reject(&is_nil/1)
       |> Enum.map(&%Up{service: &1})
@@ -109,72 +107,4 @@ defmodule ContainerProvider.Docker.Source do
     end
   end
 
-  defp retrieve_specification(_, _, nil), do: nil
-
-  defp retrieve_specification(id, service_name, endpoint: endpoint, use_proxy: use_proxy) do
-    with data when not is_nil(data) <- HttpClient.download_file(endpoint) do
-      %URI{path: path} = URI.parse(endpoint)
-      metadata = %Metadata{provider: "container", file: String.slice(path, 1..-1)}
-
-      %OpenApi{
-        id: id,
-        name: service_name,
-        content: data,
-        use_proxy: use_proxy,
-        metadata: metadata
-      }
-    end
-  end
-
-  defp retrieve_specification(
-         id,
-         service_name,
-         [address: ip, port: port, use_tls: use_tls] = server
-       ) do
-    protocol = if use_tls, do: "https", else: "http"
-    address = "#{ip}:#{port}"
-    endpoint = "#{protocol}://#{address}"
-
-    with {:ok, schema} <- UGRPC.Reflection.load_schema(endpoint) do
-      metadata = %Metadata{provider: "container", file: address}
-
-      %Grpc{
-        id: id,
-        name: service_name,
-        schema: schema,
-        servers: %{address => server},
-        metadata: metadata
-      }
-    else
-      {:error, error} ->
-        Logger.warn("There was an error while retrieving the schema: #{Exception.message(error)}")
-        nil
-    end
-  end
-
-  defp find_endpoint(_, nil), do: nil
-
-  defp find_endpoint(labels, ip) do
-    with %Labels{service_name: service_name, openapi: openapi, grpc: grpc} <-
-           Labels.from_map(labels) do
-      openapi =
-        if is_nil(openapi) do
-          nil
-        else
-          endpoint =
-            "#{openapi[:protocol]}://#{ip}:#{openapi[:port]}#{openapi[:specification_path]}"
-
-          [endpoint: endpoint, use_proxy: openapi[:use_proxy]]
-        end
-
-      grpc =
-        if is_nil(grpc) do
-          nil
-        else
-          [address: ip, port: grpc[:port], use_tls: grpc[:tls]]
-        end
-
-      [service_name: service_name, openapi: openapi, grpc: grpc]
-    end
-  end
 end
