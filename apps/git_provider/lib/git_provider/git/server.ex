@@ -1,13 +1,12 @@
 defmodule GitProvider.Git.Server do
   use Clustering.GlobalServer, supervisor: GitProvider.Git.DynamicSupervisor
   require Logger
-
+require Services
   alias GitProvider.Git.{Events, Command, Configuration, Repository, Specifications}
 
   @typep state :: {Repository.t(), binary()}
 
   defp pull_interval, do: Durex.ms!(Application.fetch_env!(:git_provider, :pull_interval))
-  defp services_behaviour, do: Application.fetch_env!(:services, :storage_backend)
 
   @spec init(repository :: Repository.t()) :: {:ok, state(), {:continue, :wait_for_storage}}
   @impl true
@@ -17,16 +16,9 @@ defmodule GitProvider.Git.Server do
     {:ok, {repository, ""}, {:continue, :wait_for_storage}}
   end
 
-  @impl true
-  def handle_continue(:wait_for_storage, state) do
-    if services_behaviour().alive?() do
+  Services.wait_for_storage do
       send(self(), :pull)
       {:noreply, state}
-    else
-      Process.sleep(1_000)
-
-      {:noreply, state, {:continue, :wait_for_storage}}
-    end
   end
 
   def child_spec(%Repository{name: name} = repository),
@@ -90,9 +82,9 @@ defmodule GitProvider.Git.Server do
             []
         end
       end)
-      |> Stream.map(&Common.Events.to_event/1)
+      |> Stream.map(&Services.Event.from/1)
       |> Enum.to_list()
-      |> then(&services_behaviour().dispatch_events(&1))
+      |> then(&Services.dispatch_events/1)
 
       schedule_pull()
       {:noreply, {new_repository, hash}}

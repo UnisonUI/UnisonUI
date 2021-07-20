@@ -7,7 +7,6 @@ defmodule Unisonui.MixProject do
       clustering: :permanent,
       services: :permanent,
       configuration: :permanent,
-      common: :permanent,
       u_grpc: :permanent
     ]
 

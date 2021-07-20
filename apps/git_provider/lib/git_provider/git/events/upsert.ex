@@ -11,13 +11,13 @@ defmodule GitProvider.Git.Events.Upsert do
           }
     defstruct [:path, :content, :specs, :repository]
 
-    defimpl Common.Events.Converter, for: __MODULE__ do
+    defimpl Services.Event.From, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
       alias GitProvider.Git.Repository
-      alias Common.Events.Up
-      alias Common.Service.{OpenApi, Metadata}
+      alias Services.Event.Up
+      alias Services.{OpenApi, Metadata}
 
-      def to_event(%Upsert.OpenApi{
+      def from(%Upsert.OpenApi{
             path: path,
             content: content,
             specs: specs,
@@ -73,13 +73,13 @@ defmodule GitProvider.Git.Events.Upsert do
           }
     defstruct [:path, :schema, :specs, :repository]
 
-    defimpl Common.Events.Converter, for: __MODULE__ do
+    defimpl Services.Event.From, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
       alias GitProvider.Git.Repository
-      alias Common.Events.Up
-      alias Common.Service.{Grpc, Metadata}
+      alias Services.Event.Up
+      alias Services.{Grpc, Metadata}
 
-      def to_event(%Upsert.Grpc{
+      def from(%Upsert.Grpc{
             path: path,
             schema: schema,
             specs: specs,

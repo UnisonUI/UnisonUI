@@ -1,17 +1,17 @@
 defmodule Services.Storage.Raft do
   require Logger
-  alias Common.Events
+  alias Services.Event
   @dialyzer :no_return
-  @behaviour Services.Behaviour
+  @behaviour Services.Storage
 
   @spec alive?() :: boolean()
   def alive?, do: Services.Storage.Raft.Cluster.running?()
 
-  @spec available_services :: {:ok, [Common.Service.t()]} | {:error, term()}
+  @spec available_services :: {:ok, [Services.t()]} | {:error, term()}
   def available_services do
     case :ra.local_query(
            :unisonui,
-           &Enum.into(&1, [], fn {_, service} -> %Events.Up{service: service} end)
+           &Enum.into(&1, [], fn {_, service} -> %Event.Up{service: service} end)
          ) do
       {:ok, {_, services}, _} -> {:ok, services}
       {:timeout, _} -> {:error, :timeout}
@@ -19,7 +19,7 @@ defmodule Services.Storage.Raft do
     end
   end
 
-  @spec service(id :: String.t()) :: {:ok, Common.Service.t()} | {:error, term()}
+  @spec service(id :: String.t()) :: {:ok, Services.t()} | {:error, term()}
   def service(id) do
     case :ra.local_query(:unisonui, &Map.get(&1, id, :not_found)) do
       {:ok, {_, :not_found}, _} -> {:error, :not_found}
@@ -29,7 +29,7 @@ defmodule Services.Storage.Raft do
     end
   end
 
-  @spec dispatch_events(event :: [Common.Events.t()]) :: :ok | {:error, :timeout | term()}
+  @spec dispatch_events(event :: [Services.Event.t()]) :: :ok | {:error, :timeout | term()}
   def dispatch_events(events),
     do:
       Enum.reduce_while(events, :ok, fn event, _ ->

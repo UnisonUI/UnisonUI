@@ -31,7 +31,6 @@ defmodule GitProvider.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:common, in_umbrella: true},
       {:u_grpc, in_umbrella: true},
       {:clustering, in_umbrella: true},
       {:services, in_umbrella: true},

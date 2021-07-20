@@ -1,6 +1,7 @@
 defmodule ContainerProvider.Docker.Source do
   use GenServer
   require Logger
+  require Services
   alias ContainerProvider.Docker.{GetClient, EventsClient}
   alias ContainerProvider.{Labels, Specifications}
   alias Common.Events.{Down, Up}
@@ -16,22 +17,15 @@ defmodule ContainerProvider.Docker.Source do
   @impl true
   def init(uri), do: {:ok, uri, {:continue, :wait_for_storage}}
 
-  @impl true
-  def handle_continue(:wait_for_storage, uri) do
-    if services_storage().alive?() do
-      with {:ok, _} <- EventsClient.start_link(uri),
-           {:ok, _} <- GetClient.start_link(uri) do
-        _ = watch_events()
-        Logger.debug("Docker source started")
-        {:noreply, connection_backoff_start()}
-      else
-        {:error, reason} ->
-          {:stop, reason}
-      end
+  Services.wait_for_storage do
+    with {:ok, _} <- EventsClient.start_link(state),
+         {:ok, _} <- GetClient.start_link(state) do
+      _ = watch_events()
+      Logger.debug("Docker source started")
+      {:noreply, connection_backoff_start()}
     else
-      Process.sleep(1_000)
-
-      {:noreply, uri, {:continue, :wait_for_storage}}
+      {:error, reason} ->
+        {:stop, reason}
     end
   end
 

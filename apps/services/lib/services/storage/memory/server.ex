@@ -1,7 +1,7 @@
 defmodule Services.Storage.Memory.Server do
   use GenServer
 
-  alias Common.{Events, Service}
+  alias Services.{Event, Hash}
   def start_link(_), do: GenServer.start_link(__MODULE__, nil, name: __MODULE__)
 
   @impl true
@@ -14,7 +14,7 @@ defmodule Services.Storage.Memory.Server do
 
   @impl true
   def handle_call(:available_services, _from, state) do
-    services = Enum.into(state, [], fn {_, service} -> %Events.Up{service: service} end)
+    services = Enum.into(state, [], fn {_, service} -> %Event.Up{service: service} end)
     {:reply, {:ok, services}, state}
   end
 
@@ -38,14 +38,14 @@ defmodule Services.Storage.Memory.Server do
   defp dispatch_event(event, services) do
     {events, services} =
       case event do
-        %Events.Up{service: %{id: id} = service} ->
+        %Event.Up{service: %{id: id} = service} ->
           service_up = event
-          service_down = %Events.Down{id: id}
+          service_down = %Event.Down{id: id}
 
           events =
             case {named_changed?(services, service), new_service?(services, service),
                   content_changed?(services, service)} do
-              {_, _, true} -> [%Events.Changed{id: id}]
+              {_, _, true} -> [%Event.Changed{id: id}]
               {true, _, _} -> [service_down, service_up]
               {_, true, _} -> [service_up]
               _ -> []
@@ -54,7 +54,7 @@ defmodule Services.Storage.Memory.Server do
           services = Map.update(services, id, service, fn _ -> service end)
           {events, services}
 
-        %Events.Down{id: id} = event ->
+        %Event.Down{id: id} = event ->
           {[event], Map.delete(services, id)}
       end
 
@@ -62,7 +62,7 @@ defmodule Services.Storage.Memory.Server do
     services
   end
 
-  @spec named_changed?(services :: %{String.t() => Service.t()}, Service.t()) :: boolean()
+  @spec named_changed?(services :: %{String.t() => Services.t()}, Services.t()) :: boolean()
   defp named_changed?(services, %{id: id, name: name}),
     do:
       Enum.any?(
@@ -72,14 +72,14 @@ defmodule Services.Storage.Memory.Server do
 
   defp named_changed?(_, _), do: false
 
-  @spec new_service?(services :: %{String.t() => Service.t()}, Service.t()) :: boolean()
+  @spec new_service?(services :: %{String.t() => Services.t()}, Services.t()) :: boolean()
   defp new_service?(services, %{id: id}), do: !Map.has_key?(services, id)
 
-  @spec content_changed?(services :: %{String.t() => Service.t()}, Service.t()) :: boolean()
+  @spec content_changed?(services :: %{String.t() => Services.t()}, Services.t()) :: boolean()
   defp content_changed?(services, service),
     do:
       Enum.any?(services, fn {id, current_service} ->
         id == service.id &&
-          Service.compute_hash(current_service) != Service.compute_hash(service)
+          Hash.compute_hash(current_service) != Hash.compute_hash(service)
       end)
 end

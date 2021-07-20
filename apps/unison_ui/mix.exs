@@ -27,7 +27,6 @@ defmodule UnisonUI.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:common, in_umbrella: true},
       {:services, in_umbrella: true},
       {:logstash_logger_formatter, "~> 1.0"},
       {:jason, "~> 1.2"},

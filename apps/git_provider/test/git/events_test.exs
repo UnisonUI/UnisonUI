@@ -4,8 +4,8 @@ defmodule GitProvider.Git.EventsTest do
 
   import OK, only: [success: 1, failure: 1]
 
-  alias Common.Service.{OpenApi, Grpc, Metadata}
-  alias Common.Events.{Down, Up}
+  alias Services.{OpenApi, Grpc, Metadata}
+  alias Services.Event.{Down, Up}
   alias GitProvider.Git.{Events, Repository, Specifications}
 
   @repo %Repository{}
@@ -80,9 +80,9 @@ defmodule GitProvider.Git.EventsTest do
     end
   end
 
-  describe "to_event/1" do
+  describe "from/1" do
     test "delete event" do
-      assert Common.Events.to_event(%Events.Delete{
+      assert Services.Event.from(%Events.Delete{
                path: "test",
                repository: %Repository{
                  name: "test",
@@ -93,7 +93,7 @@ defmodule GitProvider.Git.EventsTest do
     end
 
     test "upsert openapi" do
-      assert Common.Events.to_event(%Events.Upsert.OpenApi{
+      assert Services.Event.from(%Events.Upsert.OpenApi{
                path: "/openapi.yaml",
                specs: [name: "test", use_proxy: false],
                content: "test",
@@ -115,7 +115,7 @@ defmodule GitProvider.Git.EventsTest do
     end
 
     test "upsert grpc" do
-      assert Common.Events.to_event(%Events.Upsert.Grpc{
+      assert Services.Event.from(%Events.Upsert.Grpc{
                path: "/helloworld.proto",
                specs: [name: "test", servers: []],
                schema: %{},

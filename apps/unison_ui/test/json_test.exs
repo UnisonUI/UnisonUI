@@ -1,5 +1,5 @@
 defmodule UnisonUI.JsonTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   alias Services.{Grpc, OpenApi}
   alias Services.Event.{Up, Down, Changed}
 
@@ -11,14 +11,14 @@ defmodule UnisonUI.JsonTest do
                {:ok,
                 "{\"event\":\"serviceUp\",\"id\":\"test\",\"metadata\":{\"file\":null,\"provider\":null},\"name\":\"test\",\"type\":\"grpc\"}"}
     end
-test "Up event with an openapi service" do
+
+    test "Up event with an openapi service" do
       service = %OpenApi{id: "test", name: "test", content: "test"}
 
       assert Jason.encode(%Up{service: service}) ==
                {:ok,
-                "{\"event\":\"serviceUp\",\"id\":\"test\",\"metadata\":{\"file\":null,\"provider\":null},\"name\":\"test\",\"type\":\"openapi\"}"}
+                "{\"event\":\"serviceUp\",\"id\":\"test\",\"metadata\":{\"file\":null,\"provider\":null},\"name\":\"test\",\"type\":\"openapi\",\"useProxy\":false}"}
     end
-
 
     test "Down event" do
       assert Jason.encode(%Down{id: "test"}) ==

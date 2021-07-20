@@ -30,7 +30,6 @@ defmodule Services.MixProject do
 
   defp deps do
     [
-      {:common, in_umbrella: true},
       {:gen_stage, "~> 1.0"},
       {:ok, "~> 2.3"},
       {:gen_state_machine, "~> 3.0"},

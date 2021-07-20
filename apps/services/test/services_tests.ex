@@ -1,21 +1,20 @@
-defmodule Common.ServiceTest do
+defmodule ServicesTest do
   use ExUnit.Case
-  alias Common.Service
-  alias Common.Service.{Grpc, Metadata, OpenApi}
+  alias Services.{Grpc, Hash,Metadata, OpenApi}
 
-  describe "Common.Service.compute_hash/1" do
+  describe "Services.Hash.compute_hash/1" do
     test "GRPC service" do
       service = %Grpc{id: "test", name: "test", schema: "test"}
-      assert Service.compute_hash(service) == "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+      assert Hash.compute_hash(service) == "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
     end
 
     test "OpenApi service" do
       service = %OpenApi{id: "test", name: "test", content: "test"}
-      assert Service.compute_hash(service) == "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
+      assert Hash.compute_hash(service) == "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"
     end
   end
 
-  describe "Common.Service.to_event/1" do
+  describe "Services.to_event/1" do
     test "GRPC service" do
       service = %Grpc{id: "test", name: "test", schema: "test"}
 

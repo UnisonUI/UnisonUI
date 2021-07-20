@@ -23,11 +23,11 @@ defmodule GitProvider.Git.ServerTest do
     "helloworld.proto": {}assert_receive
   /
   defp expected_event_up(id, file \\ nil),
-    do: %Common.Events.Up{
-      service: %Common.Service.OpenApi{
+    do: %Services.Event.Up{
+      service: %Services.OpenApi{
         content: id,
         id: "test:#{id}",
-        metadata: %Common.Service.Metadata{
+        metadata: %Services.Metadata{
           file: file || id,
           provider: "local"
         },
@@ -36,7 +36,7 @@ defmodule GitProvider.Git.ServerTest do
       }
     }
 
-  @event_down %Common.Events.Down{id: "test:test"}
+  @event_down %Services.Event.Down{id: "test:test"}
   setup_all do
     Application.put_env(:services, :storage_backend, Services.Storage.Memory)
     Application.put_env(:services, :aggregator, AggregatorStub)
@@ -118,7 +118,7 @@ defmodule GitProvider.Git.ServerTest do
 
       {_, 0} = LocalGit.commit(context.local_git, "test", "test2")
 
-      assert_receive %Common.Events.Changed{id: "test:test"}, 1_000
+      assert_receive %Services.Event.Changed{id: "test:test"}, 1_000
       stop_git(context.repo)
     end
 
