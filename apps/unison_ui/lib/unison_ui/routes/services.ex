@@ -2,7 +2,6 @@ defmodule UnisonUI.Routes.Services do
   @moduledoc false
   require Logger
   use Plug.Router
-  alias Common.Service
 
   plug(:match)
   plug(:dispatch)
@@ -27,7 +26,7 @@ defmodule UnisonUI.Routes.Services do
 
   get "/*remaining" do
     case services_behaviour().service(Enum.join(remaining, "/")) do
-      {:ok, %Service.Grpc{schema: schema, servers: servers}} ->
+      {:ok, %Services.Grpc{schema: schema, servers: servers}} ->
         response = %{
           schema: schema,
           servers:
@@ -39,7 +38,7 @@ defmodule UnisonUI.Routes.Services do
 
         conn |> put_resp_content_type("text/plain") |> resp(200, Jason.encode!(response))
 
-      {:ok, %Service.OpenApi{content: content}} ->
+      {:ok, %Services.OpenApi{content: content}} ->
         conn |> put_resp_content_type("text/plain") |> resp(200, content)
 
       _ ->

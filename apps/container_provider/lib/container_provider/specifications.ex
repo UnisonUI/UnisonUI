@@ -1,6 +1,6 @@
 defmodule ContainerProvider.Specifications do
   alias ContainerProvider.HttpClient
-  alias Common.Service.{Grpc, OpenApi, Metadata}
+  alias Services.{Grpc, OpenApi, Metadata}
   require Logger
   def retrieve_specification(_, _, nil), do: nil
 

@@ -1,5 +1,5 @@
 defmodule Services.Event do
-  @type t :: Services.Up.t() | Services.Down.t() | Services.Changed.t()
+  @type t :: Services.Event.Up.t() | Services.Event.Down.t() | Services.Event.Changed.t()
   defprotocol From do
     @spec from(input :: term()) :: Services.Event.t()
     def from(input)

@@ -4,11 +4,10 @@ defmodule ContainerProvider.Docker.Source do
   require Services
   alias ContainerProvider.Docker.{GetClient, EventsClient}
   alias ContainerProvider.{Labels, Specifications}
-  alias Common.Events.{Down, Up}
+  alias Services.Event.{Down, Up}
 
   def start_link(uri), do: GenServer.start_link(__MODULE__, uri, name: __MODULE__)
 
-  defp services_storage, do: Application.fetch_env!(:services, :storage_backend)
   defp connection_backoff, do: Application.get_env(:container_provider, :connection_backoff, [])
   defp connection_backoff_start, do: connection_backoff()[:start] || 0
   defp connection_backoff_interval, do: connection_backoff()[:interval] || 1_000
@@ -46,7 +45,7 @@ defmodule ContainerProvider.Docker.Source do
           []
       end
 
-    services_storage().dispatch_events(events)
+    _ = Services.dispatch_events(events)
     {:noreply, state}
   end
 

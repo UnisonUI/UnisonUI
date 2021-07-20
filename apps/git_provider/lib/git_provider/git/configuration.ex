@@ -122,7 +122,7 @@ defmodule GitProvider.Git.Configuration do
   end
 
   defmodule Grpc do
-    @type servers :: %{String.t() => Common.Service.Grpc.server()}
+    @type servers :: %{String.t() => Services.Grpc.server()}
     @type spec :: [name: String.t() | nil, servers: servers()]
     @type t :: %__MODULE__{
             servers: servers(),

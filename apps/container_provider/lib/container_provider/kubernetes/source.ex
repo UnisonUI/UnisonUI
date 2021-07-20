@@ -1,11 +1,10 @@
 defmodule ContainerProvider.Kubernetes.Source do
   use Clustering.GlobalServer
   alias ContainerProvider.{Labels, Specifications}
-  alias Common.Events
+  alias Services.Event
   require Logger
   require OK
-
-  defp services_storage, do: Application.fetch_env!(:services, :storage_backend)
+  require Services
 
   @impl true
   def init(polling_interval) do
@@ -17,16 +16,10 @@ defmodule ContainerProvider.Kubernetes.Source do
     end
   end
 
-  @impl true
-  def handle_continue(:wait_for_storage, state) do
-    if services_storage().running?() do
+  Services.wait_for_storage do
       send(self(), :list_services)
+      Logger.debug("Kubernetes source started")
       {:noreply, state}
-    else
-      Process.sleep(1_000)
-
-      {:noreply, state, {:continue, :wait_for_storage}}
-    end
   end
 
   @impl true
@@ -60,14 +53,14 @@ defmodule ContainerProvider.Kubernetes.Source do
                     Specifications.retrieve_specification(id, service_name, grpc)
                   ]
                   |> Enum.reject(&is_nil/1)
-                  |> Enum.map(&%Events.Up{service: &1})
+                  |> Enum.map(&%Event.Up{service: &1})
                   |> Enum.reduce(events, &[&1 | &2])
                 end)
 
               {events, Map.put(services_with_namespace, namespace, services)}
             end)
 
-          services_storage().dispatch_events(events)
+          _ = Services.dispatch_events(events)
           {conn, services, polling_interval}
 
         {:error, reason} ->
@@ -95,7 +88,7 @@ defmodule ContainerProvider.Kubernetes.Source do
       services
       |> Stream.reject(fn service -> Enum.any?(filtered_services, &(&1 == service)) end)
       |> Enum.reduce(events, fn %{"metadata" => %{"uid" => uid}}, events ->
-        [%Events.Down{id: uid} | events]
+        [%Event.Down{id: uid} | events]
       end)
 
     services =
