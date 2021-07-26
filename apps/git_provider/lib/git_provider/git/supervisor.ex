@@ -27,31 +27,36 @@ defmodule GitProvider.Git.Supervisor do
       location_or_path when is_binary(location_or_path) ->
         uri = URI.parse(location_or_path)
 
-        unless is_nil(uri[:scheme]),
+        unless is_nil(uri.scheme),
           do: [
             %Repository{
-              service_name: String.trim(uri[:path], "/"),
-              uri: location,
+              service_name: String.trim(uri.path, "/"),
+              uri: location_or_path,
               branch: "master"
             }
           ],
           else: []
 
-      repository ->
+      repository when is_list(repository) ->
         with location when not is_nil(location) <- repository[:location],
-             uri <- repository[:location],
-             scheme when not is_nil(scheme) <- uri[:scheme] do
-          service_name = String.trim(uri[:path], "/")
+             uri <- URI.parse(repository[:location]),
+             scheme when not is_nil(scheme) <- uri.scheme do
+          service_name = String.trim(uri.path, "/")
           branch = repository[:branch] || "master"
 
-          %Repository{
-            service_name: service_name,
-            uri: location,
-            branch: branch
-          }
+          [
+            %Repository{
+              service_name: service_name,
+              uri: location,
+              branch: branch
+            }
+          ]
         else
-          []
+          _ -> []
         end
+
+      _ ->
+        []
     end)
     |> Enum.each(&start_git/1)
   end

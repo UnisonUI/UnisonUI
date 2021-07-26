@@ -19,7 +19,7 @@ defmodule GitProvider.Github do
       |> Stream.map(&elem(&1, 1))
       |> Enum.to_list()
 
-    {:ok, {%Settings{settings | repositories: repositories}, []}}
+    {:ok, {%Settings{settings | repositories: repositories}, MapSet.new()}}
   end
 
   @impl true
@@ -40,7 +40,7 @@ defmodule GitProvider.Github do
             Enum.any?(repositories, &Regex.match?(&1, name))
           end)
           |> Stream.reject(fn %Node{name: name} ->
-            Enum.any?(current_repositories, fn {current, _} -> current == name end)
+            MapSet.member?(current_repositories, name)
           end)
           |> Stream.map(fn %Node{name: name, url: url, branch: branch} ->
             url_with_authority =
@@ -51,10 +51,7 @@ defmodule GitProvider.Github do
           end)
           |> Stream.map(&start_git/1)
           |> Stream.reject(&is_nil/1)
-          |> Stream.map(&elem(&1, 1))
-          |> Enum.reduce(current_repositories, fn repository, repositories ->
-            [repository | repositories]
-          end)
+          |> Enum.reduce(current_repositories, &MapSet.put(&2, &1))
 
         schedule_polling(polling_interval)
         {settings, new_repositories}
@@ -69,8 +66,8 @@ defmodule GitProvider.Github do
 
   defp start_git(%Repository{service_name: name} = repository) do
     case Supervisor.start_git(repository) do
-      {:ok, pid} ->
-        {name, pid}
+      {:ok, _} ->
+        name
 
       _ ->
         nil

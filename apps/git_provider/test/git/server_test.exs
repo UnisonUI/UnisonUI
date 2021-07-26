@@ -5,7 +5,7 @@ defmodule GitProvider.Git.ServerTest do
   alias Services.Storage.Memory
 
   import Mox
-  @service_mock Services.Mock
+
   @duration 50
 
   @specs "specifications:
@@ -22,6 +22,7 @@ defmodule GitProvider.Git.ServerTest do
   protobufs:
     "helloworld.proto": {}assert_receive
   /
+
   defp expected_event_up(id, file \\ nil),
     do: %Services.Event.Up{
       service: %Services.OpenApi{
