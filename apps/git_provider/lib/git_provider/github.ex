@@ -4,7 +4,7 @@ defmodule GitProvider.Github do
   alias GitProvider.Github.{Client, Node, Settings}
   alias GitProvider.Git.{Repository, Supervisor}
 
-  @typep state :: {GitProvider.Github.Settings.t(), [{String.t(), pid}]}
+  @typep state :: {GitProvider.Github.Settings.t(), MapSet.t()}
 
   @impl true
   @spec init(settings :: GitProvider.Github.Settings.t()) :: {:ok, state()}
