@@ -3,6 +3,7 @@ defmodule GitProvider.Git.SpecificationTest do
   use ExUnitProperties
 
   alias GitProvider.Git.{Configuration, Specifications}
+  defp path(file), do: Path.expand("/#{file}")
 
   describe "from_configuration/4" do
     test "from an openapi configuration" do
@@ -16,8 +17,8 @@ defmodule GitProvider.Git.SpecificationTest do
 
       assert result == %Specifications{
                specifications: %{
-                 "/file1" => {:openapi, [name: "name", use_proxy: false, path: "file1"]},
-                 "/file2" => {:openapi, [name: "service", use_proxy: true, path: "file2"]}
+                 path("file1") => {:openapi, [name: "name", use_proxy: false, path: "file1"]},
+                 path("file2") => {:openapi, [name: "service", use_proxy: true, path: "file2"]}
                }
              }
     end
@@ -30,8 +31,8 @@ defmodule GitProvider.Git.SpecificationTest do
 
       assert result == %Specifications{
                specifications: %{
-                 "/file1" => {:grpc, [name: "name", servers: [:b]]},
-                 "/file2" => {:grpc, [name: "service", servers: [:a]]}
+                 path("file1") => {:grpc, [name: "name", servers: [:b]]},
+                 path("file2") => {:grpc, [name: "service", servers: [:a]]}
                }
              }
     end

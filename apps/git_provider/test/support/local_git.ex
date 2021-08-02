@@ -17,7 +17,7 @@ defmodule GitProvider.LocalGit do
     _ = File.mkdir(dir)
     repo = %__MODULE__{path: dir}
     {_, 0} = cmd(dir, ~w/init/)
-          cmd(dir, ~w/config user.email "test@test.org"/) 
+          cmd(dir, ~w/config user.email "test@test.org"/)
     cmd(dir, ~w/config user.name test/)
     commit(repo, "init", "init")
     commit(repo, ".unisonui.yaml", @default_spec)
