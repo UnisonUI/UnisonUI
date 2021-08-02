@@ -141,5 +141,5 @@ defmodule GitProvider.Git.ServerTest do
     start_supervised!({Server, repo})
   end
 
-  defp stop_git(repo), do: stop_supervised!("Git_#{repo.name}")
+  defp stop_git(repo), do: stop_supervised!({Git, repo.name})
 end

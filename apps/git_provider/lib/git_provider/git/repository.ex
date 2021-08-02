@@ -18,7 +18,7 @@ defmodule GitProvider.Git.Repository do
       "unisonui_" <>
         (:crypto.strong_rand_bytes(16) |> Base.encode32(case: :lower, padding: false))
 
-    directory = Path.join(tmp_dir, dir)
+    directory = [tmp_dir, dir] |> Path.join() |> Path.expand()
     _ = File.mkdir(directory)
     %__MODULE__{repository | directory: directory}
   end

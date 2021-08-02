@@ -39,7 +39,7 @@ defmodule GitProvider.Git.Command do
       changed_files <- execute_command(~w/diff --name-only #{hash} HEAD/, directory)
     after
       changed_files
-      |> String.split("\n", trim: true)
+      |> String.split(~r/\R/, trim: true)
       |> Enum.map(fn file -> directory |> Path.join(file) |> Path.expand() end)
     end
   end

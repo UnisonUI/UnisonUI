@@ -1,7 +1,7 @@
 defmodule GitProvider.Git.Server do
   use Clustering.GlobalServer, supervisor: GitProvider.Git.DynamicSupervisor
   require Logger
-require Services
+  require Services
   alias GitProvider.Git.{Events, Command, Configuration, Repository, Specifications}
 
   @typep state :: {Repository.t(), binary()}
@@ -17,13 +17,13 @@ require Services
   end
 
   Services.wait_for_storage do
-      send(self(), :pull)
-      {:noreply, state}
+    send(self(), :pull)
+    {:noreply, state}
   end
 
   def child_spec(%Repository{name: name} = repository),
     do: %{
-      id: "Git_#{name}",
+      id: {Git, name},
       start: {__MODULE__, :start_link, [[data: repository, name: String.to_atom(name)]]},
       restart: :transient
     }
