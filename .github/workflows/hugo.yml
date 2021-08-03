@@ -15,7 +15,7 @@ jobs:
       - name: Deploy the site
         uses: MaethorNaur/hugo-deploy-gh-pages@master
         env:
-          HUGO_VERSION: 0.82.0
+          HUGO_VERSION: 0.86.1
           TARGET_REPO: UnisonUI/unisonui.github.io
           TARGET_BRANCH: master
           TOKEN: ${{ secrets.TOKEN }}
