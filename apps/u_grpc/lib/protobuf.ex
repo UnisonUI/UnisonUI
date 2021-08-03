@@ -55,8 +55,12 @@ defmodule UGRPC.Protobuf do
 
     ret =
       case System.cmd("protoc", cmd_args, stderr_to_stdout: true) do
-        {_, 0} -> {:ok, File.read!(outfile_path)}
-        {msg, _} -> {:error, UGRPC.Protobuf.ProtocError.exception(msg)}
+        {_, 0} ->
+          {:ok, File.read!(outfile_path)}
+
+        {msg, _} ->
+          msg = String.trim(msg)
+          {:error, UGRPC.Protobuf.ProtocError.exception(msg)}
       end
 
     _ = File.rm(outfile_path)

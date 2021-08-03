@@ -43,7 +43,7 @@ defmodule GitProvider.Git.ServerTest do
     Application.put_env(:services, :aggregator, AggregatorStub)
     Application.put_env(:git_provider, :pull_interval, "#{@duration}ms")
 
-    start_supervised!(
+    start_supervised(
       {Horde.DynamicSupervisor, [name: GitProvider.Git.DynamicSupervisor, strategy: :one_for_one]}
     )
 

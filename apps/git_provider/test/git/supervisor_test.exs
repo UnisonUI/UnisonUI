@@ -1,6 +1,6 @@
 defmodule GitProvider.Git.SupervisorTest do
   alias GitProvider.Git.{Repository, Supervisor}
-  use ExUnit.Case
+  use ExUnit.Case, async: true
 
   import Mox
 
@@ -70,5 +70,5 @@ defmodule GitProvider.Git.SupervisorTest do
   end
 
   defp start_supervisor,
-    do: start_supervised!(%{id: GitProvider.Git.Supervisor, start: {Supervisor, :start_link, []}})
+    do: start_supervised(%{id: GitProvider.Git.Supervisor, start: {Supervisor, :start_link, []}})
 end

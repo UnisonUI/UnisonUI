@@ -13,7 +13,7 @@ defmodule ProtobufTest do
                {:error,
                 %Protobuf.ProtocError{
                   message:
-                    "invalid.proto:1:10: Unrecognized syntax identifier \"proto4\".  This parser only recognizes \"proto2\" and \"proto3\".\n"
+                    "invalid.proto:1:10: Unrecognized syntax identifier \"proto4\".  This parser only recognizes \"proto2\" and \"proto3\"."
                 }}
     end
 
