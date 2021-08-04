@@ -5,7 +5,7 @@ defmodule GitProvider.Github do
   alias GitProvider.Github.Repositories
   alias GitProvider.Git.{Repository, Supervisor}
 
-  @typep state :: {GitProvider.Github.Settings.t(), GitProvider.Github.Data.Repositories.t()}
+  @typep state :: {GitProvider.Github.Settings.t(), GitProvider.Github.Repositories.t()}
 
   @impl true
   @spec init(settings :: GitProvider.Github.Settings.t()) :: {:ok, state()}
