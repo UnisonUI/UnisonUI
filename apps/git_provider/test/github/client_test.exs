@@ -1,6 +1,7 @@
 defmodule GitProvider.Github.ClientTest do
   use ExUnit.Case, async: true
-  alias GitProvider.Github.{Client, Connection, Node}
+  alias GitProvider.Github.{Client, Connection}
+  alias GitProvider.Github.Data.Project
   import Mock
 
   describe "list_endpoint/2" do
@@ -43,8 +44,8 @@ defmodule GitProvider.Github.ClientTest do
         assert Client.list_projects("http://localhost", "token") ==
                  {:ok,
                   [
-                    %Node{name: "test/repo", url: "http://localhost/test/repo", branch: "main"},
-                    %Node{name: "test/repo", url: "http://localhost/test/repo", branch: "main"}
+                    %Project{name: "test/repo", url: "http://localhost/test/repo", branch: "main"},
+                    %Project{name: "test/repo", url: "http://localhost/test/repo", branch: "main"}
                   ]}
       end
     end

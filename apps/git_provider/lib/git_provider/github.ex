@@ -1,10 +1,11 @@
 defmodule GitProvider.Github do
   use Clustering.GlobalServer
   require Logger
-  alias GitProvider.Github.{Client, Node, Settings}
+  alias GitProvider.Github.{Client, Settings}
+  alias GitProvider.Github.Repositories
   alias GitProvider.Git.{Repository, Supervisor}
 
-  @typep state :: {GitProvider.Github.Settings.t(), MapSet.t()}
+  @typep state :: {GitProvider.Github.Settings.t(), GitProvider.Github.Data.Repositories.t()}
 
   @impl true
   @spec init(settings :: GitProvider.Github.Settings.t()) :: {:ok, state()}
@@ -16,10 +17,9 @@ defmodule GitProvider.Github do
       |> Stream.filter(&is_binary/1)
       |> Stream.map(&Regex.compile/1)
       |> Stream.filter(&match?({:ok, _}, &1))
-      |> Stream.map(&elem(&1, 1))
-      |> Enum.to_list()
+      |> Enum.into([], &elem(&1, 1))
 
-    {:ok, {%Settings{settings | repositories: repositories}, MapSet.new()}}
+    {:ok, {%Settings{settings | repositories: repositories}, %Repositories{}}}
   end
 
   @impl true
@@ -33,25 +33,21 @@ defmodule GitProvider.Github do
          } = settings, current_repositories} = state
       ) do
     new_state =
-      with {:ok, github_repositories} <- Client.list_projects(api_uri, token) do
-        new_repositories =
-          github_repositories
-          |> Stream.filter(fn %Node{name: name} ->
-            Enum.any?(repositories, &Regex.match?(&1, name))
-          end)
-          |> Stream.reject(fn %Node{name: name} ->
-            MapSet.member?(current_repositories, name)
-          end)
-          |> Stream.map(fn %Node{name: name, url: url, branch: branch} ->
-            url_with_authority =
-              url |> URI.parse() |> Map.update!(:userinfo, fn _ -> token end) |> URI.to_string()
-
+      with {:ok, projects} <- Client.list_projects(api_uri, token) do
+        matched_new_repositories =
+          Repositories.matches_new_repositories(
+            current_repositories,
+            projects,
+            repositories,
+            token
+          )
+          |> Stream.map(fn %Repository{service_name: name} = repository ->
             Logger.debug("Matching repo #{name}", provider: "git_provider")
-            %Repository{service_name: name, uri: url_with_authority, branch: branch}
+            start_git(repository)
           end)
-          |> Stream.map(&start_git/1)
-          |> Stream.reject(&is_nil/1)
-          |> Enum.reduce(current_repositories, &MapSet.put(&2, &1))
+          |> Enum.reject(&is_nil/1)
+
+        new_repositories = Repositories.update(current_repositories, matched_new_repositories)
 
         schedule_polling(polling_interval)
         {settings, new_repositories}

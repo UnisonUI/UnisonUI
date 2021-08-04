@@ -1,8 +1,8 @@
 defmodule GitProvider.Github.Client do
-  alias GitProvider.Github.Node
+  alias GitProvider.Github.Data.Project
 
   @spec list_projects(endpoint :: String.t(), token :: String.t()) ::
-          {:ok, [GitProvider.Github.Node.t()]} | {:error, term()}
+          {:ok, [GitProvider.Github.Data.Project.t()]} | {:error, term()}
   def list_projects(endpoint, token) do
     Stream.unfold(nil, fn
       :end ->
@@ -44,7 +44,7 @@ defmodule GitProvider.Github.Client do
                        "url" => url,
                        "defaultBranchRef" => %{"name" => branch}
                      } ->
-        %Node{name: name, url: url, branch: branch}
+        %Project{name: name, url: url, branch: branch}
       end)
 
     {{:ok, nodes}, cursor}
