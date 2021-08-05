@@ -36,8 +36,6 @@ end
 defimpl Services.Hash, for: [Services.Grpc, Services.OpenApi] do
   alias Services.{Grpc, OpenApi}
 
-
-
   def compute_hash(%OpenApi{content: content}) do
     :crypto.hash(:sha, content) |> Base.encode16(case: :lower)
   end
