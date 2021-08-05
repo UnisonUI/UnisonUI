@@ -1,5 +1,5 @@
 defprotocol Services.Hash do
-  @spec compute_hash(service :: t()) :: String.t()
+  @spec compute_hash(service :: Services.t()) :: String.t()
   def compute_hash(service)
 end
 
