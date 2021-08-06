@@ -1,5 +1,5 @@
 defmodule GitProvider.Git.ServerTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
   alias GitProvider.LocalGit
   alias GitProvider.Git.{Repository, Server}
   alias Services.Storage.Memory
