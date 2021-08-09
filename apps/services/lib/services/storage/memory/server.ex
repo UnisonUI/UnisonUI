@@ -1,27 +1,28 @@
 defmodule Services.Storage.Memory.Server do
   use GenServer
 
-  alias Services.{Event, Hash}
+  alias Services.State
   def start_link(_), do: GenServer.start_link(__MODULE__, nil, name: __MODULE__)
 
   @impl true
-  def init(_), do: {:ok, %{}}
+  def init(_), do: {:ok, State.new()}
 
   defp aggregator, do: Application.fetch_env!(:services, :aggregator)
+
   def available_services, do: GenServer.call(__MODULE__, :available_services)
+
   def service(id), do: GenServer.call(__MODULE__, {:service, id})
+
   def dispatch_events(events), do: GenServer.call(__MODULE__, {:dispatch_events, events})
 
   @impl true
-  def handle_call(:available_services, _from, state) do
-    services = Enum.into(state, [], fn {_, service} -> %Event.Up{service: service} end)
-    {:reply, {:ok, services}, state}
-  end
+  def handle_call(:available_services, _from, state),
+    do: {:reply, {:ok, State.available_services(state)}, state}
 
   @impl true
   def handle_call({:service, id}, _from, state) do
     response =
-      case state[id] do
+      case State.service(state, id) do
         nil -> {:error, :not_found}
         service -> {:ok, service}
       end
@@ -35,51 +36,9 @@ defmodule Services.Storage.Memory.Server do
     {:reply, :ok, state}
   end
 
-  defp dispatch_event(event, services) do
-    {events, services} =
-      case event do
-        %Event.Up{service: %{id: id} = service} ->
-          service_up = event
-          service_down = %Event.Down{id: id}
-
-          events =
-            case {named_changed?(services, service), new_service?(services, service),
-                  content_changed?(services, service)} do
-              {_, _, true} -> [%Event.Changed{id: id}]
-              {true, _, _} -> [service_down, service_up]
-              {_, true, _} -> [service_up]
-              _ -> []
-            end
-
-          services = Map.update(services, id, service, fn _ -> service end)
-          {events, services}
-
-        %Event.Down{id: id} = event ->
-          {[event], Map.delete(services, id)}
-      end
-
+  defp dispatch_event(event, state) do
+    {state, events} = State.reduce(state, event)
     aggregator().append_events(events)
-    services
+    state
   end
-
-  @spec named_changed?(services :: %{String.t() => Services.t()}, Services.t()) :: boolean()
-  defp named_changed?(services, %{id: id, name: name}),
-    do:
-      Enum.any?(
-        services,
-        &match?({^id, %{name: service_name}} when service_name != name, &1)
-      )
-
-  defp named_changed?(_, _), do: false
-
-  @spec new_service?(services :: %{String.t() => Services.t()}, Services.t()) :: boolean()
-  defp new_service?(services, %{id: id}), do: !Map.has_key?(services, id)
-
-  @spec content_changed?(services :: %{String.t() => Services.t()}, Services.t()) :: boolean()
-  defp content_changed?(services, service),
-    do:
-      Enum.any?(services, fn {id, current_service} ->
-        id == service.id &&
-          Hash.compute_hash(current_service) != Hash.compute_hash(service)
-      end)
 end

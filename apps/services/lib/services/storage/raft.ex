@@ -1,6 +1,6 @@
 defmodule Services.Storage.Raft do
   require Logger
-  alias Services.Event
+  alias Services.State
   @dialyzer :no_return
   @behaviour Services.Storage
 
@@ -9,10 +9,7 @@ defmodule Services.Storage.Raft do
 
   @spec available_services :: {:ok, [Services.t()]} | {:error, term()}
   def available_services do
-    case :ra.local_query(
-           :unisonui,
-           &Enum.into(&1, [], fn {_, service} -> %Event.Up{service: service} end)
-         ) do
+    case :ra.local_query(:unisonui, &State.available_services/1) do
       {:ok, {_, services}, _} -> {:ok, services}
       {:timeout, _} -> {:error, :timeout}
       error -> error
@@ -21,8 +18,8 @@ defmodule Services.Storage.Raft do
 
   @spec service(id :: String.t()) :: {:ok, Services.t()} | {:error, term()}
   def service(id) do
-    case :ra.local_query(:unisonui, &Map.get(&1, id, :not_found)) do
-      {:ok, {_, :not_found}, _} -> {:error, :not_found}
+    case :ra.local_query(:unisonui, &State.service(&1, id)) do
+      {:ok, {_, nil}, _} -> {:error, :not_found}
       {:ok, {_, service}, _} -> {:ok, service}
       {:timeout, _} -> {:error, :timeout}
       error -> error
@@ -30,23 +27,12 @@ defmodule Services.Storage.Raft do
   end
 
   @spec dispatch_events(event :: [Services.Event.t()]) :: :ok | {:error, :timeout | term()}
-  def dispatch_events(events),
-    do:
-      Enum.reduce_while(events, :ok, fn event, _ ->
-        case dispatch_event(event) do
-          :ok -> {:cont, :ok}
-          error -> {:halt, error}
-        end
-      end)
-
-  defp dispatch_event(event) do
-    case :ra.process_command(:unisonui, {:event, event}) do
+  def dispatch_events(events) do
+      case :ra.process_command(:unisonui, {:events, events}) do
       {:error, reason} ->
-        Logger.warn("Couldn't dispatch #{inspect(event)} because #{inspect(reason)}")
         {:error, reason}
 
       {:timeout, _} ->
-        Logger.warn("Couldn't dispatch #{inspect(event)} because it could not be replicated")
         {:error, :timeout}
 
       _ ->

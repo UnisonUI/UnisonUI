@@ -3,7 +3,7 @@ defmodule Services.Storage.Raft.Cluster do
   use GenStateMachine, callback_mode: [:state_functions, :state_enter]
   require Logger
 
-  @ra_state_machine {:module, Services.Storage.Raft.State, %{}}
+  @ra_state_machine {:module, Services.Storage.Raft.InternalState, %{}}
 
   def start_link(_),
     do: GenStateMachine.start_link(__MODULE__, :ok, name: __MODULE__)
