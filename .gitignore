@@ -89,5 +89,4 @@ node_modules/
 priv/plts/
 .DS_Store
 nonode@nohost/
-unisonui_node*
-
+*127.0.0.1/

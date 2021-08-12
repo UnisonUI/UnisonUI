@@ -32,9 +32,7 @@ defmodule Services.MixProject do
     [
       {:gen_stage, "~> 1.0"},
       {:ok, "~> 2.3"},
-      {:gen_state_machine, "~> 3.0"},
       {:ra, "~> 2.0"},
-      {:local_cluster, "~> 1.2", only: :test},
       {:logstash_logger_formatter, "~> 1.0"}
     ]
   end
