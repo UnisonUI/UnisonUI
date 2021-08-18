@@ -1,5 +1,5 @@
 defmodule ContainerProvider.Docker.Source do
-  use GenServer
+  use GenServer, restart: :transient
   require Logger
   require Services
   alias ContainerProvider.Docker.{GetClient, EventsClient}
@@ -24,7 +24,10 @@ defmodule ContainerProvider.Docker.Source do
       {:noreply, connection_backoff_start()}
     else
       {:error, reason} ->
-        {:stop, reason}
+        reason = if is_exception(reason), do: Exception.message(reason), else: inspect(reason)
+
+        Logger.warn("Docker source failed to start: #{reason}")
+        {:stop, :normal, state}
     end
   end
 

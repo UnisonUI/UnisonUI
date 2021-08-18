@@ -37,6 +37,8 @@ defmodule ContainerProvider.Application do
     []
   end
 
-  defp kubernetes_children(polling_interval),
-    do: [{ContainerProvider.Kubernetes.Source, polling_interval}]
+  defp kubernetes_children(polling_interval) do
+    ContainerProvider.Kubernetes.Source.start_child(polling_interval)
+    []
+  end
 end

@@ -8,18 +8,21 @@ defmodule ContainerProvider.Kubernetes.Source do
 
   @impl true
   def init(polling_interval) do
-    try do
-      conn = K8s.Conn.from_service_account()
-      {:ok, {conn, %{}, polling_interval}, {:continue, :wait_for_storage}}
-    rescue
-      e -> {:stop, {:stop, e}}
+    case K8s.Conn.from_service_account() do
+      {:ok, conn} ->
+        {:ok, {conn, %{}, polling_interval}, {:continue, :wait_for_storage}}
+
+      {:error, reason} ->
+        reason = if is_exception(reason), do: Exception.message(reason), else: inspect(reason)
+        Logger.warn("Kubernetes source failed to start: #{reason}")
+        {:stop, :normal}
     end
   end
 
   Services.wait_for_storage do
-      send(self(), :list_services)
-      Logger.debug("Kubernetes source started")
-      {:noreply, state}
+    send(self(), :list_services)
+    Logger.debug("Kubernetes source started")
+    {:noreply, state}
   end
 
   @impl true
