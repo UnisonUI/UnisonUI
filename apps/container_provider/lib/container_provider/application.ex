@@ -21,8 +21,8 @@ defmodule ContainerProvider.Application do
     docker_config = Application.fetch_env!(:container_provider, :docker)
     kubernetes_config = Application.fetch_env!(:container_provider, :kubernetes)
 
-    docker_children(docker_config[:enabled] && docker_config[:host]) ++
-      kubernetes_children(kubernetes_config[:enabled] && kubernetes_config[:polling_interval])
+    _ = kubernetes_children(kubernetes_config[:enabled] && kubernetes_config[:polling_interval])
+    docker_children(docker_config[:enabled] && docker_config[:host])
   end
 
   defp docker_children(host) when is_binary(host), do: [{ContainerProvider.Docker.Source, host}]
@@ -32,13 +32,8 @@ defmodule ContainerProvider.Application do
     []
   end
 
-  defp kubernetes_children(nil) do
-    Logger.info("Kubernetes provider has been disabled")
-    []
-  end
+  defp kubernetes_children(nil), do: Logger.info("Kubernetes provider has been disabled")
 
-  defp kubernetes_children(polling_interval) do
-    ContainerProvider.Kubernetes.Source.start_child(polling_interval)
-    []
-  end
+  defp kubernetes_children(polling_interval),
+    do: ContainerProvider.Kubernetes.Source.start_child(polling_interval)
 end
