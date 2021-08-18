@@ -11,5 +11,6 @@ end
 
 case Mix.env() do
   :prod -> import_config "#{Mix.env()}.exs"
+  :test -> import_config "#{Mix.env()}.exs"
   _ -> :ok
 end
