@@ -4,8 +4,6 @@ defmodule GitProvider.Git.ServerTest do
   alias GitProvider.Git.{Repository, Server}
   alias Services.Storage.Memory
 
-  import Mox
-
   @duration 50
 
   @specs "specifications:
@@ -49,9 +47,6 @@ defmodule GitProvider.Git.ServerTest do
 
     :ok
   end
-
-  setup :set_mox_from_context
-  setup :verify_on_exit!
 
   setup do
     local_git = LocalGit.new()

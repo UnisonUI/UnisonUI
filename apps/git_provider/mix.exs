@@ -43,7 +43,6 @@ defmodule GitProvider.MixProject do
       {:ok, "~> 2.3"},
       {:neuron, "~> 5.0"},
       {:yaml_elixir, "~> 2.5"},
-      {:mox, "~> 1.0", only: :test},
       {:mock, "~> 0.3.6", only: :test},
       {:stream_data, "~> 0.5", only: [:test, :dev]}
     ]
