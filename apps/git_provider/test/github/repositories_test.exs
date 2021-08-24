@@ -17,7 +17,7 @@ defmodule GitProvider.Github.RepositoriesTest do
       matching_repositories = [~r/test.*/]
 
       result =
-        Repositories.matches_new_repositories(current, projects, matching_repositories, "token")
+        Repositories.match_new_repositories(current, projects, matching_repositories, "token")
 
       assert result == [
                %Repository{service_name: "test2", uri: "http://token@test2", branch: "master"}

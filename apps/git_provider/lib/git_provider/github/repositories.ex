@@ -5,21 +5,24 @@ defmodule GitProvider.Github.Repositories do
   @type t :: %__MODULE__{repositories: MapSet.t(String.t())}
   defstruct repositories: MapSet.new()
 
-  @spec matches_new_repositories(
+  @spec new() :: t()
+  def new, do: %__MODULE__{}
+
+  @spec match_new_repositories(
           current :: t(),
           projects :: [Project.t()],
-          matching_repositories :: [Regex.t()],
+          patterns :: [Regex.t()],
           token :: String.t()
         ) :: [Repository.t()]
-  def matches_new_repositories(
+  def match_new_repositories(
         %__MODULE__{repositories: current},
         projects,
-        matching_repositories,
+        patterns,
         token
       ) do
     projects
     |> Stream.filter(fn %Project{name: name} ->
-      Enum.any?(matching_repositories, &Regex.match?(&1, name))
+      Enum.any?(patterns, &Regex.match?(&1, name))
     end)
     |> Stream.reject(fn %Project{name: name} ->
       MapSet.member?(current, name)

@@ -8,7 +8,7 @@ config :git_provider, :github,
   api_uri: "https://api.github.com/graphql",
   api_token: "",
   polling_interval: "1h",
-  repositories: []
+  patterns: []
 
 case Mix.env() do
   :dev -> import_config "#{Mix.env()}.exs"

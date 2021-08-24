@@ -12,14 +12,14 @@ defmodule GitProvider.Github do
   def init(settings) do
     send(self(), :retrieve_projects)
 
-    repositories =
-      settings.repositories
+    patterns =
+      settings.patterns
       |> Stream.filter(&is_binary/1)
       |> Stream.map(&Regex.compile/1)
       |> Stream.filter(&match?({:ok, _}, &1))
       |> Enum.into([], &elem(&1, 1))
 
-    {:ok, {%Settings{settings | repositories: repositories}, %Repositories{}}}
+    {:ok, {%Settings{settings | patterns: patterns}, Repositories.new()}}
   end
 
   @impl true
@@ -29,16 +29,16 @@ defmodule GitProvider.Github do
            api_uri: api_uri,
            api_token: token,
            polling_interval: polling_interval,
-           repositories: repositories
+           patterns: patterns
          } = settings, current_repositories} = state
       ) do
     new_state =
       with {:ok, projects} <- Client.list_projects(api_uri, token) do
         matched_new_repositories =
-          Repositories.matches_new_repositories(
+          Repositories.match_new_repositories(
             current_repositories,
             projects,
-            repositories,
+            patterns,
             token
           )
           |> Stream.map(fn %Repository{service_name: name} = repository ->
