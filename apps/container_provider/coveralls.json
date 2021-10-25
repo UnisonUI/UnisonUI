@@ -1,3 +1,9 @@
 {
-  "skip_files": ["test/support", "lib/container_provider/application.ex"]
+  "skip_files": [
+    "test/support",
+    "lib/container_provider/application.ex",
+    "lib/container_provider/docker/base_client.ex",
+    "lib/container_provider/docker/events_client.ex",
+    "lib/container_provider/docker/get_client.ex"
+  ]
 }
