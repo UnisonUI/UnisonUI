@@ -147,8 +147,9 @@ defmodule ContainerProvider.Docker.BaseClient do
 
         unless streaming do
           response =
-            update_in(response[:data], fn data ->
-              Jason.decode!(data || "")
+            update_in(response[:data], fn
+              nil -> ""
+              data -> Jason.decode!(data)
             end)
 
           GenServer.reply(from, {:ok, response})

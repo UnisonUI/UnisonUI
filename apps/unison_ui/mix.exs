@@ -30,8 +30,10 @@ defmodule UnisonUI.MixProject do
       {:services, in_umbrella: true},
       {:logstash_logger_formatter, "~> 1.0"},
       {:jason, "~> 1.2"},
-      {:plug, "~> 1.11"},
-      {:plug_cowboy, "~> 2.5"}
+      {:plug, "~> 1.12"},
+      {:plug_cowboy, "~> 2.5"},
+      {:cowboy, "~> 2.9", override: true},
+      {:cowlib, "~> 2.11", override: true}
     ]
   end
 end

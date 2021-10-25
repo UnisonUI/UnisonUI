@@ -27,14 +27,17 @@ defmodule UGRPC.MixProject do
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
+
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
       {:jason, "~> 1.2"},
       {:castore, "~> 0.1.9"},
-      {:protox, "~> 1.3"},
+      {:protox, "~> 1.6"},
       {:mint, "~> 1.3", override: true},
       {:grpc, "~> 0.5.0-beta.1", only: :test},
+      {:cowboy, "~> 2.9", only: :test, override: true},
+      {:cowlib, "~> 2.11", only: :test, override: true},
       {:protobuf, "~> 0.7.1", only: :test},
       {:ok, "~> 2.3"},
       {:gen_state_machine, "~> 3.0"},

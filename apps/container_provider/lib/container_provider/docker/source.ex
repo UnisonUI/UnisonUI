@@ -38,11 +38,23 @@ defmodule ContainerProvider.Docker.Source do
   def handle_info({:stream, {:data, data}}, state) do
     events =
       case data do
-        %{"status" => "start", "id" => id} ->
-          handle_service_up(id)
+        %{"status" => "start", "id" => id, "Actor" => %{"Attributes" => labels}} ->
+          case extract_labels(labels) do
+            nil ->
+              []
 
-        %{"status" => "stop", "id" => id} ->
-          [%Down{id: id}]
+            labels ->
+              handle_service_up(id, labels)
+          end
+
+        %{"status" => "stop", "id" => id, "Actor" => %{"Attributes" => labels}} ->
+          case extract_labels(labels) do
+            nil ->
+              []
+
+            _ ->
+              [%Down{id: id}]
+          end
 
         _ ->
           []
@@ -64,6 +76,16 @@ defmodule ContainerProvider.Docker.Source do
 
   def handle_info(_, state), do: {:noreply, state}
 
+  defp extract_labels(labels) do
+    labels = Labels.from_map(labels)
+
+    if is_nil(labels.openapi) and is_nil(labels.grpc) do
+      nil
+    else
+      labels
+    end
+  end
+
   defp reconnect(timeout) do
     Process.sleep(timeout)
     _ = EventsClient.reconnect()
@@ -78,14 +100,11 @@ defmodule ContainerProvider.Docker.Source do
         self()
       )
 
-  defp handle_service_up(id) do
+  defp handle_service_up(id, labels) do
     with {:ok,
           %{
             status: 200,
-            data: %{
-              "Config" => %{"Labels" => labels},
-              "NetworkSettings" => %{"Networks" => networks}
-            }
+            data: %{"NetworkSettings" => %{"Networks" => networks}}
           }} <- GetClient.request("/containers/#{id}/json"),
          ip <-
            networks

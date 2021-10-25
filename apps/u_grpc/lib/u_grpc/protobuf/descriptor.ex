@@ -42,30 +42,89 @@ defmodule UGRPC.Protobuf.Descriptor do
         UGRPC.Protobuf.FileDescriptorSet,
         :proto3,
         [
-          {1, :repeated, :file, :unpacked, {:message, UGRPC.Protobuf.FileDescriptorProto}}
+          Protox.Field.new!(
+            tag: 1,
+            label: :repeated,
+            name: :file,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.FileDescriptorProto}
+          )
         ]
       },
       {
         UGRPC.Protobuf.FileDescriptorProto,
         :proto3,
         [
-          # Ignored: 3, 8, 9, 10, 11
-          {1, :none, :name, {:default, ""}, :string},
-          {2, :none, :package, {:default, ""}, :string},
-          {3, :repeated, :dependency, :unpacked, :string},
-          {4, :repeated, :message_type, :unpacked, {:message, UGRPC.Protobuf.DescriptorProto}},
-          {5, :repeated, :enum_type, :unpacked, {:message, UGRPC.Protobuf.EnumDescriptorProto}},
-          {6, :repeated, :service, :unpacked, {:message, UGRPC.Protobuf.ServiceDescriptorProto}},
-          {7, :repeated, :extension, :unpacked, {:message, UGRPC.Protobuf.FieldDescriptorProto}},
-          {12, :none, :syntax, {:default, ""}, :string}
+          Protox.Field.new!(
+            tag: 1,
+            label: :none,
+            name: :name,
+            kind: {:scalar, ""},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 2,
+            label: :none,
+            name: :package,
+            kind: {:scalar, ""},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 3,
+            label: :repeated,
+            name: :dependency,
+            kind: :unpacked,
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 4,
+            label: :repeated,
+            name: :message_type,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.DescriptorProto}
+          ),
+          Protox.Field.new!(
+            tag: 5,
+            label: :repeated,
+            name: :enum_type,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.EnumDescriptorProto}
+          ),
+          Protox.Field.new!(
+            tag: 6,
+            label: :repeated,
+            name: :service,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.ServiceDescriptorProto}
+          ),
+          Protox.Field.new!(
+            tag: 7,
+            label: :repeated,
+            name: :extension,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.FieldDescriptorProto}
+          ),
+          Protox.Field.new!(
+            tag: 12,
+            label: :none,
+            name: :syntax,
+            kind: {:scalar, ""},
+            type: :string
+          )
         ]
       },
       {
         UGRPC.Protobuf.DescriptorProto.ExtensionRange,
         :proto3,
         [
-          {1, :none, :start, {:default, 0}, :int32},
-          {2, :none, :end, {:default, 0}, :int32}
+          Protox.Field.new!(
+            tag: 1,
+            label: :none,
+            name: :start,
+            kind: {:scalar, 0},
+            type: :int32
+          ),
+          Protox.Field.new!(tag: 2, label: :none, name: :end, kind: {:scalar, 0}, type: :int32)
         ]
       },
       # UGRPC.Protobuf.DescriptorProto.ReservedRange ignored
@@ -74,15 +133,62 @@ defmodule UGRPC.Protobuf.Descriptor do
         :proto3,
         [
           # Ignored: 9, 10
-          {1, :none, :name, {:default, nil}, :string},
-          {2, :repeated, :field, :unpacked, {:message, UGRPC.Protobuf.FieldDescriptorProto}},
-          {6, :repeated, :extension, :unpacked, {:message, UGRPC.Protobuf.FieldDescriptorProto}},
-          {3, :repeated, :nested_type, :unpacked, {:message, UGRPC.Protobuf.DescriptorProto}},
-          {4, :repeated, :enum_type, :unpacked, {:message, UGRPC.Protobuf.EnumDescriptorProto}},
-          {5, :repeated, :extension_range, :unpacked,
-           {:message, UGRPC.Protobuf.DescriptorProto.ExtensionRange}},
-          {8, :repeated, :oneof_decl, :unpacked, {:message, UGRPC.Protobuf.OneofDescriptorProto}},
-          {7, :none, :options, {:default, nil}, {:message, UGRPC.Protobuf.MessageOptions}}
+          Protox.Field.new!(
+            tag: 1,
+            label: :none,
+            name: :name,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 2,
+            label: :repeated,
+            name: :field,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.FieldDescriptorProto}
+          ),
+          Protox.Field.new!(
+            tag: 6,
+            label: :repeated,
+            name: :extension,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.FieldDescriptorProto}
+          ),
+          Protox.Field.new!(
+            tag: 3,
+            label: :repeated,
+            name: :nested_type,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.DescriptorProto}
+          ),
+          Protox.Field.new!(
+            tag: 4,
+            label: :repeated,
+            name: :enum_type,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.EnumDescriptorProto}
+          ),
+          Protox.Field.new!(
+            tag: 5,
+            label: :repeated,
+            name: :extension_range,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.DescriptorProto.ExtensionRange}
+          ),
+          Protox.Field.new!(
+            tag: 8,
+            label: :repeated,
+            name: :oneof_decl,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.OneofDescriptorProto}
+          ),
+          Protox.Field.new!(
+            tag: 7,
+            label: :none,
+            name: :options,
+            kind: {:scalar, nil},
+            type: {:message, UGRPC.Protobuf.MessageOptions}
+          )
         ]
       },
       {
@@ -90,15 +196,69 @@ defmodule UGRPC.Protobuf.Descriptor do
         :proto3,
         [
           # Ignored: 10
-          {1, :none, :name, {:default, nil}, :string},
-          {3, :none, :number, {:default, nil}, :int32},
-          {4, :none, :label, {:default, nil}, {:enum, UGRPC.Protobuf.FieldDescriptorProto.Label}},
-          {5, :none, :type, {:default, nil}, {:enum, UGRPC.Protobuf.FieldDescriptorProto.Type}},
-          {6, :none, :type_name, {:default, nil}, :string},
-          {2, :none, :extendee, {:default, nil}, :string},
-          {7, :none, :default_value, {:default, nil}, :string},
-          {9, :none, :oneof_index, {:default, nil}, :int32},
-          {8, :none, :options, {:default, nil}, {:message, UGRPC.Protobuf.FieldOptions}}
+          Protox.Field.new!(
+            tag: 1,
+            label: :none,
+            name: :name,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 3,
+            label: :none,
+            name: :number,
+            kind: {:scalar, nil},
+            type: :int32
+          ),
+          Protox.Field.new!(
+            tag: 4,
+            label: :none,
+            name: :label,
+            kind: {:scalar, nil},
+            type: {:enum, UGRPC.Protobuf.FieldDescriptorProto.Label}
+          ),
+          Protox.Field.new!(
+            tag: 5,
+            label: :none,
+            name: :type,
+            kind: {:scalar, nil},
+            type: {:enum, UGRPC.Protobuf.FieldDescriptorProto.Type}
+          ),
+          Protox.Field.new!(
+            tag: 6,
+            label: :none,
+            name: :type_name,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 2,
+            label: :none,
+            name: :extendee,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 7,
+            label: :none,
+            name: :default_value,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 9,
+            label: :none,
+            name: :oneof_index,
+            kind: {:scalar, nil},
+            type: :int32
+          ),
+          Protox.Field.new!(
+            tag: 8,
+            label: :none,
+            name: :options,
+            kind: {:scalar, nil},
+            type: {:message, UGRPC.Protobuf.FieldOptions}
+          )
         ]
       },
       {
@@ -106,7 +266,13 @@ defmodule UGRPC.Protobuf.Descriptor do
         :proto3,
         [
           # Ignored: 2
-          {1, :none, :name, {:default, nil}, :string}
+          Protox.Field.new!(
+            tag: 1,
+            label: :none,
+            name: :name,
+            kind: {:scalar, nil},
+            type: :string
+          )
         ]
       },
       {
@@ -114,8 +280,20 @@ defmodule UGRPC.Protobuf.Descriptor do
         :proto3,
         [
           # Ignored: 3
-          {1, :none, :name, {:default, nil}, :string},
-          {2, :repeated, :value, :unpacked, {:message, UGRPC.Protobuf.EnumValueDescriptorProto}}
+          Protox.Field.new!(
+            tag: 1,
+            label: :none,
+            name: :name,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 2,
+            label: :repeated,
+            name: :value,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.EnumValueDescriptorProto}
+          )
         ]
       },
       {
@@ -123,8 +301,20 @@ defmodule UGRPC.Protobuf.Descriptor do
         :proto3,
         [
           # Ignored: 3
-          {1, :none, :name, {:default, nil}, :string},
-          {2, :none, :number, {:default, nil}, :int32}
+          Protox.Field.new!(
+            tag: 1,
+            label: :none,
+            name: :name,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 2,
+            label: :none,
+            name: :number,
+            kind: {:scalar, nil},
+            type: :int32
+          )
         ]
       },
       # ServiceDescriptorProto ignored
@@ -135,8 +325,20 @@ defmodule UGRPC.Protobuf.Descriptor do
         :proto3,
         [
           # 1, 2, 999 ignored
-          {3, :none, :deprecated, {:default, false}, :bool},
-          {7, :none, :map_entry, {:default, false}, :bool}
+          Protox.Field.new!(
+            tag: 3,
+            label: :none,
+            name: :deprecated,
+            kind: {:scalar, false},
+            type: :bool
+          ),
+          Protox.Field.new!(
+            tag: 7,
+            label: :none,
+            name: :map_entry,
+            kind: {:scalar, false},
+            type: :bool
+          )
         ]
       },
       {
@@ -144,8 +346,20 @@ defmodule UGRPC.Protobuf.Descriptor do
         :proto3,
         [
           # 1, 6, 5, 10, 999 ignored
-          {2, :none, :packed, {:default, nil}, :bool},
-          {3, :none, :deprecated, {:default, false}, :bool}
+          Protox.Field.new!(
+            tag: 2,
+            label: :none,
+            name: :packed,
+            kind: {:scalar, nil},
+            type: :bool
+          ),
+          Protox.Field.new!(
+            tag: 3,
+            label: :none,
+            name: :deprecated,
+            kind: {:scalar, false},
+            type: :bool
+          )
         ]
       },
       {
@@ -153,35 +367,101 @@ defmodule UGRPC.Protobuf.Descriptor do
         :proto3,
         [
           # 1, 6, 5, 10, 999 ignored
-          {1, :none, :name, {:default, nil}, :string},
-          {2, :repeated, :method, :unpacked, {:message, UGRPC.Protobuf.MethodDescriptorProto}},
-          {3, :none, :option, :unpacked, {:message, UGRPC.Protobuf.ServiceOptions}}
+          Protox.Field.new!(
+            tag: 1,
+            label: :none,
+            name: :name,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 2,
+            label: :repeated,
+            name: :method,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.MethodDescriptorProto}
+          ),
+          Protox.Field.new!(
+            tag: 3,
+            label: :none,
+            name: :option,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.ServiceOptions}
+          )
         ]
       },
       {
         UGRPC.Protobuf.MethodDescriptorProto,
         :proto3,
         [
-          {1, :none, :name, {:default, nil}, :string},
-          {2, :none, :input_type, {:default, nil}, :string},
-          {3, :none, :output_type, {:default, nil}, :string},
-          {4, :repeated, :options, :unpacked, {:message, UGRPC.Protobuf.MethodOptions}},
-          {5, :none, :client_streaming, {:default, false}, :bool},
-          {6, :none, :server_streaming, {:default, false}, :bool}
+          Protox.Field.new!(
+            tag: 1,
+            label: :none,
+            name: :name,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 2,
+            label: :none,
+            name: :input_type,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 3,
+            label: :none,
+            name: :output_type,
+            kind: {:scalar, nil},
+            type: :string
+          ),
+          Protox.Field.new!(
+            tag: 4,
+            label: :repeated,
+            name: :options,
+            kind: :unpacked,
+            type: {:message, UGRPC.Protobuf.MethodOptions}
+          ),
+          Protox.Field.new!(
+            tag: 5,
+            label: :none,
+            name: :client_streaming,
+            kind: {:scalar, false},
+            type: :bool
+          ),
+          Protox.Field.new!(
+            tag: 6,
+            label: :none,
+            name: :server_streaming,
+            kind: {:scalar, false},
+            type: :bool
+          )
         ]
       },
       {
         UGRPC.Protobuf.ServiceOptions,
         :proto3,
         [
-          {33, :none, :deprecated, {:default, false}, :bool}
+          Protox.Field.new!(
+            tag: 33,
+            label: :none,
+            name: :deprecated,
+            kind: {:scalar, false},
+            type: :bool
+          )
         ]
       },
       {
         UGRPC.Protobuf.MethodOptions,
         :proto3,
         [
-          {33, :none, :deprecated, {:default, false}, :bool}
+          Protox.Field.new!(
+            tag: 33,
+            label: :none,
+            name: :deprecated,
+            kind: {:scalar, false},
+            type: :bool
+          )
         ]
       }
 

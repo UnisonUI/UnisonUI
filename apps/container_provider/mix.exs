@@ -10,6 +10,8 @@ defmodule ContainerProvider.MixProject do
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
       elixir: "~> 1.12",
+      elixirc_paths: elixirc_paths(Mix.env()),
+      test_coverage: [tool: ExCoveralls],
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
@@ -23,6 +25,8 @@ defmodule ContainerProvider.MixProject do
     ]
   end
 
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
@@ -36,6 +40,10 @@ defmodule ContainerProvider.MixProject do
       {:ok, "~> 2.3"},
       {:mox, "~> 1.0", only: :test},
       {:mock, "~> 0.3.6", only: :test},
+      {:bypass, "~> 2.1", only: :test},
+      {:plug_cowboy, "~> 2.5", only: :test, override: true},
+      {:cowboy, "~> 2.9", only: :test, override: true},
+      {:cowlib, "~> 2.11", only: :test, override: true},
       {:mint, "~> 1.3"},
       {:k8s, "~> 1.0"},
       {:jason, "~> 1.2"}
