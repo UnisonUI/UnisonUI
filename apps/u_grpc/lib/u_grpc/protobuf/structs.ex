@@ -71,12 +71,12 @@ defmodule GRPC.Protobuf.Structs do
         do:
           %{
             name: name,
-            fields: fields |> Enum.map(&elem(&1, 1)) |> Enum.sort_by(& &1.id, :asc),
+            fields: map_to_list(fields) |> Enum.sort_by(& &1.id, :asc),
             oneOf:
               one_ofs
-              |> Enum.into(%{}, fn {k, v} ->
-                v = v |> Enum.map(&elem(&1, 1)) |> Enum.sort_by(& &1.id, :asc)
-                {k, v}
+              |> Enum.into(%{}, fn {key, value} ->
+                value = map_to_list(value) |> Enum.sort_by(& &1.id, :asc)
+                {key, value}
               end),
             options: options
           }

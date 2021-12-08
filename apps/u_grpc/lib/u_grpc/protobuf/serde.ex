@@ -28,27 +28,35 @@ defmodule GRPC.Protobuf.Serde do
     end
   end
 
-  defp has_all_required_field(schema, type_name, data) do
-    schema.messages[type_name].fields
-    |> Enum.reduce_while(:ok, fn
-      {_, %Field{label: :required, name: name, type: type, schema: type_name}}, _ ->
-        unless Map.has_key?(data, name) do
-          {:halt, {:error, GRPC.Protobuf.RequiredFieldError.exception(name)}}
-        else
-          case type do
-            :message ->
-              result = has_all_required_field(schema, type_name, data[name])
-              if result == :ok, do: {:cont, :ok}, else: {:halt, result}
+  defp has_all_required_field(schema, type_name, data),
+    do:
+      schema.messages[type_name].fields
+      |> Enum.reduce_while(:ok, fn field, _ ->
+        check_field_in_data(field, schema, data)
+      end)
 
-            _ ->
-              {:cont, :ok}
+  defp check_field_in_data(
+         {_, %Field{label: :required, name: name, type: type, schema: type_name}},
+         schema,
+         data
+       ) do
+    unless Map.has_key?(data, name) do
+      {:halt, {:error, GRPC.Protobuf.RequiredFieldError.exception(name)}}
+    else
+      case type do
+        :message ->
+          case has_all_required_field(schema, type_name, data[name]) do
+            :ok -> {:cont, :ok}
+            result -> {:halt, result}
           end
-        end
 
-      _, _ ->
-        {:cont, :ok}
-    end)
+        _ ->
+          {:cont, :ok}
+      end
+    end
   end
+
+  defp check_field_in_data(_, _, _), do: {:cont, :ok}
 
   defp map_field_by_name({_, %Field{name: name} = field}), do: {name, field}
 
