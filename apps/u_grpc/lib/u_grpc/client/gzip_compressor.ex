@@ -1,4 +1,4 @@
-defmodule UGRPC.Client.GzipCompressor do
+defmodule GRPC.Client.GzipCompressor do
   def enabled?, do: Application.get_env(:u_grpc, :compressor_enabled) == true
   def name, do: "gzip"
   def compress(data), do: :zlib.compress(data)

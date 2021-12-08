@@ -28,7 +28,7 @@ defmodule ContainerProvider.Specifications do
     address = "#{ip}:#{port}"
     endpoint = "#{protocol}://#{address}"
 
-    with {:ok, schema} <- UGRPC.Reflection.load_schema(endpoint) do
+    with {:ok, schema} <- GRPC.Reflection.load_schema(endpoint) do
       metadata = %Metadata{provider: "container", file: address}
 
       %Grpc{

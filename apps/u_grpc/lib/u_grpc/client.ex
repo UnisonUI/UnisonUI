@@ -1,4 +1,4 @@
-defmodule UGRPC.Client do
+defmodule GRPC.Client do
   @headers [
     {"content-type", "application/grpc"},
     {"user-agent", "grpc-unisonui/1.0.0"},
@@ -8,10 +8,10 @@ defmodule UGRPC.Client do
   require Logger
   use GenServer, restart: :temporary
 
-  alias UGRPC.Error
-  alias UGRPC.Client.{GzipCompressor, Connection}
-  alias UGRPC.Protobuf.Structs.Schema
-  alias UGRPC.Protobuf.Serde
+  alias GRPC.Error
+  alias GRPC.Client.{GzipCompressor, Connection}
+  alias GRPC.Protobuf.Structs.Schema
+  alias GRPC.Protobuf.Serde
   alias Mint.HTTP2
 
   defstruct [:conn, requests: %{}]
@@ -33,20 +33,20 @@ defmodule UGRPC.Client do
   end
 
   @spec request(
-          connection :: UGRPC.Client.Connection.t(),
-          schema :: UGRPC.Protobuf.Structs.Schema.t(),
+          connection :: GRPC.Client.Connection.t(),
+          schema :: GRPC.Protobuf.Structs.Schema.t(),
           service_name :: String.t(),
           method_name :: String.t()
         ) ::
-          {:ok, UGRPC.Client.Connection.t()} | {:error, term()}
+          {:ok, GRPC.Client.Connection.t()} | {:error, term()}
   def request(%Connection{pid: pid} = connection, schema, service_name, method_name),
     do: GenServer.call(pid, {:request, connection, schema, service_name, method_name})
 
-  @spec send_data(connection :: UGRPC.Client.Connection.t(), data :: map()) :: :ok
+  @spec send_data(connection :: GRPC.Client.Connection.t(), data :: map()) :: :ok
   def send_data(%Connection{pid: pid, ref: request_ref}, data),
     do: GenServer.cast(pid, {:send, request_ref, data})
 
-  @spec close(UGRPC.Client.Connection.t()) :: :ok
+  @spec close(GRPC.Client.Connection.t()) :: :ok
   def close(%Connection{pid: pid, ref: request_ref}),
     do: GenServer.cast(pid, {:send, request_ref, :eof})
 
@@ -222,7 +222,7 @@ defmodule UGRPC.Client do
           state.requests[request_ref].from,
           {:error,
            Error.new(
-             UGRPC.Status.internal(),
+             GRPC.Status.internal(),
              "status got is #{status} instead of 200"
            )}
         )

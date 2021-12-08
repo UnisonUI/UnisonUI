@@ -1,5 +1,5 @@
-defmodule UGRPC.Endpoint do
+defmodule GRPC.Endpoint do
   use GRPC.Endpoint
 
-  run(UGRPC.TestGrpcServer)
+  run(GRPC.TestGrpcServer)
 end

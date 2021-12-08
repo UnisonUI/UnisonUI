@@ -1,4 +1,4 @@
-defmodule UGRPC.MixProject do
+defmodule GRPC.MixProject do
   use Mix.Project
 
   def project do
@@ -21,7 +21,7 @@ defmodule UGRPC.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {UGRPC.Application, []}
+      mod: {GRPC.Application, []}
     ]
   end
 

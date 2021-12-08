@@ -1,4 +1,4 @@
-defmodule UGRPC.Application do
+defmodule GRPC.Application do
   @moduledoc false
 
   use Application
@@ -6,11 +6,11 @@ defmodule UGRPC.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      UGRPC.ClientSupervisor,
-      UGRPC.Reflection.Supervisor
+      GRPC.ClientSupervisor,
+      GRPC.Reflection.Supervisor
     ]
 
-    opts = [strategy: :one_for_one, name: UGRPC.Supervisor]
+    opts = [strategy: :one_for_one, name: GRPC.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

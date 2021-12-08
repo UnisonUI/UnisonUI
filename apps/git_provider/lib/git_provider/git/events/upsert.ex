@@ -67,7 +67,7 @@ defmodule GitProvider.Git.Events.Upsert do
   defmodule Grpc do
     @type t :: %__MODULE__{
             path: String.t(),
-            schema: UGRPC.Protobuf.Structs.Schema.t(),
+            schema: GRPC.Protobuf.Structs.Schema.t(),
             specs: GitProvider.Git.Configuration.Grpc.spec(),
             repository: GitProvider.Git.Repository.t()
           }
@@ -118,7 +118,7 @@ defmodule GitProvider.Git.Events.Upsert do
 
       def load_content(%Upsert.Grpc{path: path} = event) do
         OK.for do
-          schema <- UGRPC.Protobuf.compile(path)
+          schema <- GRPC.Protobuf.compile(path)
         after
           %Upsert.Grpc{event | schema: schema}
         end

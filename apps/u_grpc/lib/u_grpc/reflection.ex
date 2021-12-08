@@ -1,5 +1,5 @@
-defmodule UGRPC.Reflection do
+defmodule GRPC.Reflection do
   @spec load_schema(server :: String.t()) ::
-          {:ok, UGRPC.Protobuf.Structs.Schema.t()} | {:error, term()}
-  defdelegate load_schema(server), to: UGRPC.Reflection.Supervisor
+          {:ok, GRPC.Protobuf.Structs.Schema.t()} | {:error, term()}
+  defdelegate load_schema(server), to: GRPC.Reflection.Supervisor
 end
