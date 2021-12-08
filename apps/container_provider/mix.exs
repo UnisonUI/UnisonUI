@@ -33,7 +33,7 @@ defmodule ContainerProvider.MixProject do
       {:u_grpc, in_umbrella: true},
       {:clustering, in_umbrella: true},
       {:services, in_umbrella: true},
-      {:logstash_logger_formatter, "~> 1.0"},
+      {:logstash_logger_formatter, "~> 1.1"},
       {:horde, "~> 0.8.5"},
       {:norm, "~> 0.13"},
       {:durex, "~> 0.2"},

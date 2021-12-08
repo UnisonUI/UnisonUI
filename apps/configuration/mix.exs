@@ -27,7 +27,7 @@ defmodule Configuration.MixProject do
   defp deps do
     [
       {:toml, "~> 0.6"},
-      {:logstash_logger_formatter, "~> 1.0"}
+      {:logstash_logger_formatter, "~> 1.1"}
     ]
   end
 end

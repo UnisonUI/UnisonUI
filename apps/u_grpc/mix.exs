@@ -41,7 +41,7 @@ defmodule UGRPC.MixProject do
       {:protobuf, "~> 0.8", only: :test},
       {:ok, "~> 2.3"},
       {:gen_state_machine, "~> 3.0"},
-      {:logstash_logger_formatter, "~> 1.0"}
+      {:logstash_logger_formatter, "~> 1.1"}
     ]
   end
 end

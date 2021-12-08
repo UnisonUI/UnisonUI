@@ -28,7 +28,7 @@ defmodule UnisonUI.MixProject do
   defp deps do
     [
       {:services, in_umbrella: true},
-      {:logstash_logger_formatter, "~> 1.0"},
+      {:logstash_logger_formatter, "~> 1.1"},
       {:jason, "~> 1.2"},
       {:plug, "~> 1.12.1"},
       {:plug_cowboy, "~> 2.5.2"},
