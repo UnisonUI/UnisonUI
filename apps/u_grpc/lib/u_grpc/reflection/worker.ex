@@ -20,7 +20,7 @@ defmodule GRPC.Reflection.Worker do
   def load_schema(pid, server), do: GenStateMachine.call(pid, server)
 
   def load_schema({:call, from}, server, _state) do
-    with {:ok, client} <- GRPC.new_client(server),
+    with {:ok, client} <- GRPC.Client.new(server),
          {:ok, request} <- GRPC.Client.request(client, @reflection_schema, @service, @method) do
       GRPC.Client.send_data(request, @list_services_request)
       {:next_state, :handle_services_listing, {from, request}}

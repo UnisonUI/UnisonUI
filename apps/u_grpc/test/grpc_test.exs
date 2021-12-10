@@ -13,13 +13,13 @@ defmodule GRPCTest do
   describe "connect/1" do
     test "trying to connect to a non running server" do
       assert {:error, %Mint.TransportError{reason: :econnrefused}} ==
-               GRPC.new_client("http://localhost:4242")
+               GRPC.Client.new("http://localhost:4242")
     end
   end
 
   describe "request/4" do
     test "an invalid method or service" do
-      {:ok, connection} = GRPC.new_client("http://localhost:50051")
+      {:ok, connection} = GRPC.Client.new("http://localhost:50051")
 
       assert {:error, :not_found} ==
                GRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayByebye")
@@ -28,7 +28,7 @@ defmodule GRPCTest do
 
   describe "non streaming" do
     test "with non error" do
-      {:ok, connection} = GRPC.new_client("http://localhost:50051")
+      {:ok, connection} = GRPC.Client.new("http://localhost:50051")
 
       {:ok, connection} =
         GRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayHello")
@@ -41,7 +41,7 @@ defmodule GRPCTest do
 
   describe "streaming" do
     test "with non error" do
-      {:ok, connection} = GRPC.new_client("http://localhost:50051")
+      {:ok, connection} = GRPC.Client.new("http://localhost:50051")
 
       {:ok, connection} =
         GRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayHelloToAll")
