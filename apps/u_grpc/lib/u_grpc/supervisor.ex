@@ -6,18 +6,18 @@ defmodule GRPC.ClientSupervisor do
   @impl true
   def init(_args), do: {:ok, %{}}
 
-  @spec new_client(server :: String.t()) :: {:ok, GRPC.Client.Connection.t()} | {:error, term()}
+  @spec spawn_client(server :: String.t()) :: {:ok, GRPC.Client.Connection.t()} | {:error, term()}
 
-  def new_client(server) do
+  def spawn_client(server) do
     try do
-      GenServer.call(__MODULE__, {:new_client, server})
+      GenServer.call(__MODULE__, {:spawn_client, server})
     catch
       :exit, {e, _} -> {:error, e}
     end
   end
 
   @impl true
-  def handle_call({:new_client, server}, _from, state) do
+  def handle_call({:spawn_client, server}, _from, state) do
     case Map.get(state, server) do
       nil ->
         case start_child(server) do

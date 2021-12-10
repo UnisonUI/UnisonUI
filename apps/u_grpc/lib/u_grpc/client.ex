@@ -16,7 +16,7 @@ defmodule GRPC.Client do
 
   defstruct [:conn, requests: %{}]
 
-  defdelegate new_client(server), to: GRPC.ClientSupervisor
+  defdelegate new(server), to: GRPC.ClientSupervisor, as: :spawn_client
 
   @spec start_link(server :: String.t()) :: GenServer.on_start()
   def start_link(server), do: GenServer.start_link(__MODULE__, server)
