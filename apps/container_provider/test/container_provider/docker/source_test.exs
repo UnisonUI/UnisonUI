@@ -1,5 +1,5 @@
 defmodule ContainerProvider.Docker.SourceTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   @service_name "test"
   @id "12345"

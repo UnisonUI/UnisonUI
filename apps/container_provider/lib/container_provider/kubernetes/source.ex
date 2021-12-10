@@ -80,7 +80,7 @@ defmodule ContainerProvider.Kubernetes.Source do
           state
       end
 
-    Process.send(self(), :list_services, polling_interval)
+    Process.send_after(self(), :list_services, polling_interval)
     {:noreply, state}
   end
 
