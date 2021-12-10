@@ -20,6 +20,18 @@ defmodule Services.OpenApi do
   defstruct [:id, :name, :content, use_proxy: false, metadata: %Services.Metadata{}]
 end
 
+defmodule Services.AsyncApi do
+  @type t :: %__MODULE__{
+          id: String.t(),
+          name: String.t(),
+          content: String.t(),
+          use_proxy: boolean(),
+          metadata: Services.Metadata.t()
+        }
+  @enforce_keys [:id, :name, :content]
+  defstruct [:id, :name, :content, use_proxy: false, metadata: %Services.Metadata{}]
+end
+
 defmodule Services.Grpc do
   @type server :: [address: String.t(), port: pos_integer(), use_tls: boolean()]
   @type t :: %__MODULE__{
@@ -33,10 +45,14 @@ defmodule Services.Grpc do
   defstruct [:id, :name, :schema, servers: %{}, metadata: %Services.Metadata{}]
 end
 
-defimpl Services.Hash, for: [Services.Grpc, Services.OpenApi] do
-  alias Services.{Grpc, OpenApi}
+defimpl Services.Hash, for: [Services.AsyncApi, Services.Grpc, Services.OpenApi] do
+  alias Services.{AsyncApi, Grpc, OpenApi}
 
   def compute_hash(%OpenApi{content: content}) do
+    :crypto.hash(:sha, content) |> Base.encode16(case: :lower)
+  end
+
+  def compute_hash(%AsyncApi{content: content}) do
     :crypto.hash(:sha, content) |> Base.encode16(case: :lower)
   end
 
