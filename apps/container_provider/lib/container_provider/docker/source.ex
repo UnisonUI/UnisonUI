@@ -110,10 +110,12 @@ defmodule ContainerProvider.Docker.Source do
            networks
            |> Enum.map(fn {_, %{"IPAddress" => ip_address}} -> ip_address end)
            |> Enum.at(0),
-         [service_name: service_name, openapi: openapi, grpc: grpc] <-
+         true <- Labels.valid?(labels),
+         [service_name: service_name, openapi: openapi, asyncapi: asyncapi, grpc: grpc] <-
            Labels.extract_endpoint(labels, ip) do
       [
         Specifications.retrieve_specification(id, service_name, openapi),
+        Specifications.retrieve_specification(id, service_name, asyncapi),
         Specifications.retrieve_specification(id, service_name, grpc)
       ]
       |> Enum.reject(&is_nil/1)

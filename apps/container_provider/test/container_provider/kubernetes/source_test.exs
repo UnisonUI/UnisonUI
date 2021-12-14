@@ -98,8 +98,9 @@ defmodule ContainerProvider.Kubernetes.SourceTest do
 
       assert_receive ^up, 1_000
       remove_item(agent, "ns1_1")
+      down = %Services.Event.Down{id: @id1}
 
-      # assert_receive ^up, 1_000
+      assert_receive ^down, 1_000
     end
   end
 
