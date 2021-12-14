@@ -122,14 +122,29 @@ defmodule GitProvider.Git.Server do
          configuration_file,
          files
        ) do
-    with {:ok, %Configuration{name: service_name, openapi: openapi, grpc: grpc}} <-
+    with {:ok,
+          %Configuration{name: service_name, openapi: openapi, asyncapi: asyncapi, grpc: grpc}} <-
            Configuration.from_file(configuration_file) do
       openapi =
-        Specifications.from_configuration(openapi, directory, service_name, repo_service_name)
+        Specifications.from_configuration(
+          {:openapi, openapi},
+          directory,
+          service_name,
+          repo_service_name
+        )
+
+      asyncapi =
+        Specifications.from_configuration(
+          {:asyncapi, asyncapi},
+          directory,
+          service_name,
+          repo_service_name
+        )
 
       grpc = Specifications.from_configuration(grpc, directory, service_name, repo_service_name)
 
-      new_specifications = Specifications.merge(openapi, grpc)
+      new_specifications =
+        Enum.reduce([openapi, asyncapi, grpc], %Specifications{}, &Specifications.merge/2)
 
       files_changed =
         detect_changes(

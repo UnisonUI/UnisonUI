@@ -15,11 +15,11 @@ defmodule GitProvider.Git.Events do
   def from_specifications(%Specifications{specifications: specifications}, repository) do
     Enum.map(specifications, fn {path, {type, specs}} ->
       case type do
-        :openapi ->
-          %Upsert.OpenApi{path: path, specs: specs, repository: repository}
-
         :grpc ->
           %Upsert.Grpc{path: path, specs: specs, repository: repository}
+
+        type ->
+          %Upsert.AsyncOpenApi{type: type, path: path, specs: specs, repository: repository}
       end
     end)
   end

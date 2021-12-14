@@ -1,11 +1,17 @@
 version: "2"
 name: "test"
+asyncapi:
+  useProxy: true
+  specifications:
+    - "file.yaml"
+    - name: "another service"
+      path: "other.yaml"
 openapi:
   useProxy: true
   specifications:
-   - "file.yaml"
-   - name: "another service"
-     path: "other.yaml"
+    - "file.yaml"
+    - name: "another service"
+      path: "other.yaml"
 grpc:
   protobufs:
     "path/spec.proto":
@@ -19,4 +25,3 @@ grpc:
           port: 8080
           name: other server
           useTls: true
-

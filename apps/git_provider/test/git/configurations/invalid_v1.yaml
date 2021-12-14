@@ -1,9 +1,9 @@
 name: "test"
 useProxy: true
 specifications:
- - "file.yaml"
- - name: "another service"
-   path: "other.yaml"
+  - "file.yaml"
+  - name: "another service"
+    path: "other.yaml"
 grpc:
   protobufs:
     "path/spec.proto":

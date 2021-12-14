@@ -1,23 +1,25 @@
 defmodule GitProvider.Git.Events.Upsert do
   @type t ::
-          GitProvider.Git.Events.Upsert.OpenApi.t()
+          GitProvider.Git.Events.Upsert.AsyncOpenApi.t()
           | GitProvider.Git.Events.Upsert.Grpc.t()
-  defmodule OpenApi do
+  defmodule AsyncOpenApi do
     @type t :: %__MODULE__{
+            type: :openapi | :asyncapi,
             path: String.t(),
             content: String.t(),
             specs: GitProvider.Git.Configuration.OpenApi.spec(),
             repository: GitProvider.Git.Repository.t()
           }
-    defstruct [:path, :content, :specs, :repository]
+    defstruct [:type, :path, :content, :specs, :repository]
 
     defimpl Services.Event.From, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
       alias GitProvider.Git.Repository
       alias Services.Event.Up
-      alias Services.{OpenApi, Metadata}
+      alias Services.{AsyncApi, OpenApi, Metadata}
 
-      def from(%Upsert.OpenApi{
+      def from(%Upsert.AsyncOpenApi{
+            type: type,
             path: path,
             content: content,
             specs: specs,
@@ -38,13 +40,19 @@ defmodule GitProvider.Git.Events.Upsert do
 
         id = "#{name}:#{filename}"
 
-        service = %OpenApi{
+        service = %{
           id: id,
           name: service_name,
           content: content,
           use_proxy: use_proxy,
           metadata: %Metadata{provider: provider, file: filename}
         }
+
+        service =
+          case type do
+            :asyncapi -> struct(AsyncApi, service)
+            :openapi -> struct(OpenApi, service)
+          end
 
         %Up{service: service}
       end
@@ -54,11 +62,11 @@ defmodule GitProvider.Git.Events.Upsert do
       alias GitProvider.Git.Events.Upsert
       require OK
 
-      def load_content(%Upsert.OpenApi{path: path} = event) do
+      def load_content(%Upsert.AsyncOpenApi{path: path} = event) do
         OK.for do
           content <- File.read(path)
         after
-          %Upsert.OpenApi{event | content: content}
+          %Upsert.AsyncOpenApi{event | content: content}
         end
       end
     end

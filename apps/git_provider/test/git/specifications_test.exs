@@ -12,8 +12,8 @@ defmodule GitProvider.Git.SpecificationTest do
         [name: nil, use_proxy: nil, path: "file2"]
       ]
 
-      config = %Configuration.OpenApi{use_proxy: true, specifications: specifications}
-      result = Specifications.from_configuration(config, "/", "service", "repo")
+      config = %Configuration.AsyncOpenApi{use_proxy: true, specifications: specifications}
+      result = Specifications.from_configuration({:openapi, config}, "/", "service", "repo")
 
       assert result == %Specifications{
                specifications: %{

@@ -1,7 +1,7 @@
 defmodule GitProvider.Git.Specifications do
   @type specification :: {
-          :openapi | :grpc,
-          GitProvider.Git.Configuration.OpenApi.spec()
+          :asyncapi | :openapi | :grpc,
+          GitProvider.Git.Configuration.AsyncOpenApi.spec()
           | GitProvider.Git.Configuration.Grpc.spec()
         }
 
@@ -10,13 +10,14 @@ defmodule GitProvider.Git.Specifications do
 
   @spec from_configuration(
           config ::
-            GitProvider.Git.Configuration.OpenApi.t() | GitProvider.Git.Configuration.Grpc.t(),
+            {:asyncapi | :openapi, GitProvider.Git.Configuration.AsyncOpenApi.t()}
+            | GitProvider.Git.Configuration.Grpc.t(),
           directory :: String.t(),
           service_name :: String.t(),
           repo_service_name :: String.t()
         ) :: t()
   def from_configuration(
-        %{use_proxy: use_proxy, specifications: specifications},
+        {type, %{use_proxy: use_proxy, specifications: specifications}},
         directory,
         service_name,
         repo_service_name
@@ -36,7 +37,7 @@ defmodule GitProvider.Git.Specifications do
                 proxy -> proxy
               end)
 
-            {path, {:openapi, specs}}
+            {path, {type, specs}}
           end)
       }
 

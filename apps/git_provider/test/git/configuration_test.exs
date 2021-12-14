@@ -1,6 +1,6 @@
 defmodule GitProvider.Git.ConfigurationTest do
   alias GitProvider.Git.Configuration
-  alias GitProvider.Git.Configuration.{Grpc, OpenApi}
+  alias GitProvider.Git.Configuration.{Grpc, AsyncOpenApi}
   use ExUnit.Case
 
   test "parse valid v1" do
@@ -10,7 +10,7 @@ defmodule GitProvider.Git.ConfigurationTest do
       struct == %Configuration{
         version: "1",
         name: "test",
-        openapi: %OpenApi{
+        openapi: %AsyncOpenApi{
           specifications: [
             [path: "file.yaml", name: nil, use_proxy: false],
             [path: "other.yaml", name: "another service", use_proxy: false]
@@ -28,7 +28,14 @@ defmodule GitProvider.Git.ConfigurationTest do
       struct == %Configuration{
         version: "2",
         name: "test",
-        openapi: %OpenApi{
+        openapi: %AsyncOpenApi{
+          specifications: [
+            [path: "file.yaml", name: nil, use_proxy: false],
+            [path: "other.yaml", name: "another service", use_proxy: false]
+          ],
+          use_proxy: true
+        },
+        asyncapi: %AsyncOpenApi{
           specifications: [
             [path: "file.yaml", name: nil, use_proxy: false],
             [path: "other.yaml", name: "another service", use_proxy: false]

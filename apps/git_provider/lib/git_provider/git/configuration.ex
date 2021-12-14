@@ -2,15 +2,16 @@ defmodule GitProvider.Git.Configuration do
   import Norm
   use OK.Pipe
 
-  alias GitProvider.Git.Configuration.{OpenApi, Grpc}
+  alias GitProvider.Git.Configuration.{AsyncOpenApi, Grpc}
 
   @type t :: %__MODULE__{
           version: String.t(),
           name: String.t() | nil,
-          openapi: OpenApi.t() | nil,
+          openapi: AsyncOpenApi.t() | nil,
+          asyncapi: AsyncOpenApi.t() | nil,
           grpc: Grpc.t() | nil
         }
-  defstruct [:name, :openapi, :grpc, version: "1"]
+  defstruct [:name, :openapi, :asyncapi, :grpc, version: "1"]
 
   def s,
     do:
@@ -18,13 +19,13 @@ defmodule GitProvider.Git.Configuration do
         schema(%__MODULE__{
           version: "1",
           name: spec(is_binary() or is_nil()),
-          openapi: one_of([spec(is_nil()), OpenApi.s()]),
+          openapi: one_of([spec(is_nil()), AsyncOpenApi.s()]),
           grpc: spec(is_nil())
         }),
         schema(%__MODULE__{
           version: spec(is_binary() and (&(&1 != "1"))),
           name: spec(is_binary() or is_nil()),
-          openapi: one_of([spec(is_nil()), OpenApi.s()]),
+          openapi: one_of([spec(is_nil()), AsyncOpenApi.s()]),
           grpc: one_of([spec(is_nil()), Grpc.s()])
         })
       ])
@@ -38,11 +39,14 @@ defmodule GitProvider.Git.Configuration do
     fields =
       keywords
       |> Enum.map(fn
+        {"asyncapi", value} when is_map(value) ->
+          {:asyncapi, AsyncOpenApi.decode(value)}
+
         {"openapi", value} when is_map(value) ->
-          {:openapi, OpenApi.decode(value)}
+          {:openapi, AsyncOpenApi.decode(value)}
 
         {"specifications", value} when is_list(value) ->
-          {:openapi, OpenApi.decode(%{"specifications" => value})}
+          {:openapi, AsyncOpenApi.decode(%{"specifications" => value})}
 
         {"grpc", value} when is_map(value) ->
           {:grpc, Grpc.decode(value)}
@@ -71,7 +75,7 @@ defmodule GitProvider.Git.Configuration do
     struct!(__MODULE__, new_fields)
   end
 
-  defmodule OpenApi do
+  defmodule AsyncOpenApi do
     @type spec :: [path: String.t(), name: String.t() | nil, use_proxy: boolean() | nil]
     @type t :: %__MODULE__{
             specifications: [spec()],

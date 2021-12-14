@@ -22,16 +22,17 @@ defmodule GitProvider.Git.EventsTest do
 
         expected =
           Enum.map(types, fn
-            :openapi ->
-              %Events.Upsert.OpenApi{
-                path: "openapi",
+            :grpc ->
+              %Events.Upsert.Grpc{
+                path: "grpc",
                 specs: [],
                 repository: @repo
               }
 
-            :grpc ->
-              %Events.Upsert.Grpc{
-                path: "grpc",
+            type ->
+              %Events.Upsert.AsyncOpenApi{
+                type: type,
+                path: to_string(type),
                 specs: [],
                 repository: @repo
               }
@@ -47,14 +48,16 @@ defmodule GitProvider.Git.EventsTest do
   describe "load_content/1" do
     test "openapi file exists" do
       event =
-        Events.load_content(%Events.Upsert.OpenApi{
+        Events.load_content(%Events.Upsert.AsyncOpenApi{
+          type: :openapi,
           path: "test/git/specifications/openapi.yaml",
           specs: [],
           repository: @repo
         })
 
       assert event ==
-               success(%Events.Upsert.OpenApi{
+               success(%Events.Upsert.AsyncOpenApi{
+                 type: :openapi,
                  path: "test/git/specifications/openapi.yaml",
                  specs: [],
                  content: ~s/openapi: "3.1.0"\n/,
@@ -64,7 +67,8 @@ defmodule GitProvider.Git.EventsTest do
 
     test "openapi file does not exist" do
       event =
-        Events.load_content(%Events.Upsert.OpenApi{
+        Events.load_content(%Events.Upsert.AsyncOpenApi{
+          type: :openapi,
           path: "unknown",
           specs: [],
           repository: @repo
@@ -93,7 +97,8 @@ defmodule GitProvider.Git.EventsTest do
     end
 
     test "upsert openapi" do
-      assert Services.Event.from(%Events.Upsert.OpenApi{
+      assert Services.Event.from(%Events.Upsert.AsyncOpenApi{
+               type: :openapi,
                path: "/openapi.yaml",
                specs: [name: "test", use_proxy: false],
                content: "test",
