@@ -8,7 +8,7 @@ info:
     url: https://raw.githubusercontent.com/UnisonUI/unisonui/master/LICENSE
   version: 1.0.0
 paths:
-  /services:
+  /webhook/services:
     post:
       summary: Create or update a service
       requestBody:
@@ -17,7 +17,7 @@ paths:
           application/json:
             schema:
               oneOf:
-                - $ref: "#/components/schemas/OpenApi"
+                - $ref: "#/components/schemas/AsyncOpenApi"
                 - $ref: "#/components/schemas/Grpc"
       responses:
         204:
@@ -29,7 +29,7 @@ paths:
               schema:
                 type: string
 
-  /services/{serviceName}:
+  /webhook/services/{serviceName}:
     delete:
       summary: Delete a service
       parameters:
@@ -50,12 +50,17 @@ paths:
                 type: string
 components:
   schemas:
-    OpenApi:
+    AsyncOpenApi:
       type: object
       required:
+        - type
         - name
         - specification
       properties:
+        type:
+          type: string
+          description: Specify if the specification is an AsyncApi or OpenApi one
+          enum: [asyncapi, openapi]
         name:
           type: string
           description: Service's name

@@ -3,14 +3,12 @@ defmodule UnisonUI.Routes.Services do
   require Logger
   use Plug.Router
 
-  plug(:match)
-  plug(:dispatch)
-
-  defp services_behaviour, do: Application.fetch_env!(:services, :storage_backend)
+  plug :match
+  plug :dispatch
 
   get "/" do
     body =
-      services_behaviour().available_services()
+      Services.available_services()
       |> then(fn
         {:ok, services} ->
           services
@@ -25,7 +23,7 @@ defmodule UnisonUI.Routes.Services do
   end
 
   get "/*remaining" do
-    case services_behaviour().service(Enum.join(remaining, "/")) do
+    case Services.service(Enum.join(remaining, "/")) do
       {:ok, %Services.Grpc{schema: schema, servers: servers}} ->
         response = %{
           schema: schema,
@@ -36,9 +34,9 @@ defmodule UnisonUI.Routes.Services do
             end)
         }
 
-        conn |> put_resp_content_type("text/plain") |> resp(200, Jason.encode!(response))
+        conn |> put_resp_content_type("application/json") |> resp(200, Jason.encode!(response))
 
-      {:ok, %Services.OpenApi{content: content}} ->
+      {:ok, %{content: content}} ->
         conn |> put_resp_content_type("text/plain") |> resp(200, content)
 
       _ ->

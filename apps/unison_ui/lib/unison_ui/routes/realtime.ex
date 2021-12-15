@@ -2,6 +2,7 @@ defmodule UnisonUI.Routes.Realtime do
   @moduledoc false
   require Logger
   use Plug.Router
+
   plug :match
   plug :dispatch
 
