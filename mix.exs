@@ -10,7 +10,8 @@ defmodule Unisonui.MixProject do
       u_grpc: :permanent
     ]
 
-  defp providers, do: [git_provider: :permanent, container_provider: :permanent]
+  defp providers,
+    do: [git_provider: :permanent, container_provider: :permanent, webhook_provider: :permanent]
 
   defp providers_apps(:all), do: common_apps() ++ providers()
   defp providers_apps(provider), do: [{provider, :permanent} | common_apps()]
@@ -43,6 +44,7 @@ defmodule Unisonui.MixProject do
       releases: [
         unisonui_git_provider: provider_release(:git_provider),
         unisonui_container_provider: provider_release(:container_provider),
+        unisonui_webhook_provider: provider_release(:webook_provider),
         unisonui: [
           steps: [:assemble],
           applications: all_apps(),

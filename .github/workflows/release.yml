@@ -38,7 +38,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [unisonui, unisonui_git_provider, unisonui_container_provider]
+        app:
+          - unisonui
+          - unisonui_git_provider
+          - unisonui_container_provider
+          - unisonui_webhook_provider
     steps:
       - uses: actions/checkout@v2
         with:

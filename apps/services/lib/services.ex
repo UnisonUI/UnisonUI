@@ -1,5 +1,5 @@
 defmodule Services do
-  @type t :: Services.OpenApi.t() | Services.Grpc.t()
+  @type t :: Services.AsyncApi.t() | Services.OpenApi.t() | Services.Grpc.t()
 
   defp storage_backend, do: Application.fetch_env!(:services, :storage_backend)
 
