@@ -1,6 +1,6 @@
 import Config
 
-config :clustering, mode: false
+config :clustering, provider: false
 
 config :clustering, hosts: []
 

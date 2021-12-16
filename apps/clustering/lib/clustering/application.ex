@@ -6,7 +6,7 @@ defmodule Clustering.Application do
   def start(_type, _args) do
     opts = [strategy: :one_for_one, name: Clustering.Supervisor]
 
-    Application.get_env(:clustering, :mode)
+    Application.get_env(:clustering, :provider)
     |> topologies()
     |> children()
     |> Supervisor.start_link(opts)
