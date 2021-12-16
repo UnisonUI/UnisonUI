@@ -11,8 +11,8 @@ defmodule Services.State do
   def available_services(state),
     do: Enum.into(state.services, [], fn {_, service} -> %Event.Up{service: service} end)
 
-  @spec service(state :: t(), id :: String.t()) :: String.t() | nil
-  def service(state, id), do: state.services[id]
+  @spec service(state :: t(), id :: String.t()) :: Services.t() | nil
+  def service(%__MODULE__{services: services}, id), do: services[id]
 
   @spec reduce(state :: t(), event :: Services.Event.t()) :: {t(), [Services.Event.t()]}
   def reduce(%__MODULE__{} = state, event) do
@@ -34,7 +34,7 @@ defmodule Services.State do
         {%__MODULE__{services: services}, events}
 
       %Event.Down{id: id} = event ->
-        { %__MODULE__{services: Map.delete(state.services, id)},[event]}
+        {%__MODULE__{services: Map.delete(state.services, id)}, [event]}
     end
   end
 
