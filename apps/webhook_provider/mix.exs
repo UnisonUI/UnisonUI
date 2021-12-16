@@ -27,6 +27,7 @@ defmodule WebhookProvider.MixProject do
   defp deps do
     [
       {:services, in_umbrella: true},
+      {:u_grpc, in_umbrella: true},
       {:logstash_logger_formatter, "~> 1.1"},
       {:jason, "~> 1.2"},
       {:plug, "~> 1.12.1"},
