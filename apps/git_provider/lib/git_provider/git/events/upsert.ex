@@ -7,7 +7,7 @@ defmodule GitProvider.Git.Events.Upsert do
             type: :openapi | :asyncapi,
             path: String.t(),
             content: String.t(),
-            specs: GitProvider.Git.Configuration.OpenApi.spec(),
+            specs: GitProvider.Git.Configuration.AsyncOpenApi.spec(),
             repository: GitProvider.Git.Repository.t()
           }
     defstruct [:type, :path, :content, :specs, :repository]

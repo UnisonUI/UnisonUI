@@ -19,17 +19,18 @@ defmodule WebhookProvider.SelfSpecificationServer do
 
   @impl true
   def handle_info(:publish, true) do
-    Services.dispatch_events([
-      %Event.Up{
-        service: %OpenApi{
-          id: "unisonui:webhook",
-          name: "Webhook provider",
-          content: @specification,
-          use_proxy: false,
-          metadata: %Metadata{provider: "webhook", file: "webhook-specification.yaml"}
+    _ =
+      Services.dispatch_events([
+        %Event.Up{
+          service: %OpenApi{
+            id: "unisonui:webhook",
+            name: "Webhook provider",
+            content: @specification,
+            use_proxy: false,
+            metadata: %Metadata{provider: "webhook", file: "webhook-specification.yaml"}
+          }
         }
-      }
-    ])
+      ])
 
     {:stop, :normal, true}
   end

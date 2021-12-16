@@ -1,7 +1,7 @@
 defmodule Services.Storage.Raft do
   require Logger
   alias Services.State
-  @dialyzer :no_return
+
   @behaviour Services.Storage
 
   @spec alive?() :: boolean()
@@ -28,7 +28,7 @@ defmodule Services.Storage.Raft do
 
   @spec dispatch_events(event :: [Services.Event.t()]) :: :ok | {:error, :timeout | term()}
   def dispatch_events(events) do
-      case :ra.process_command(:unisonui, {:events, events}) do
+    case :ra.process_command(:unisonui, {:events, events}) do
       {:error, reason} ->
         {:error, reason}
 
