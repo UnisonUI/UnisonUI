@@ -123,7 +123,7 @@
     }
 
     &-hint {
-      @apply absolute invisible p-1 whitespace-no-wrap;
+      @apply absolute invisible p-1 whitespace-nowrap;
       @apply text-gray-200 bg-gray-800 rounded-sm bg-opacity-75;
     }
 

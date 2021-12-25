@@ -1,13 +1,16 @@
+const path = require('path')
+
 const plugins = {
   'postcss-import': {
     path: ['src/css']
   },
   'postcss-mixins': {
-    mixinsDir: 'src/css/mixins'
+    mixinsDir: path.join(__dirname, 'src', 'css', 'mixins')
   },
   'postcss-url': {},
   'postcss-font-magician': {},
-  tailwindcss: {},
+  'tailwindcss/nesting': {},
+  'tailwindcss': {},
   'postcss-nested': {},
   'postcss-preset-env': {
     stage: 0,
