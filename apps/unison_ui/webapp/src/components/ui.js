@@ -10,12 +10,12 @@ import * as cornify from '../cornified'
 import Konami from 'react-konami-code'
 import NoService from './noService'
 
-const SwaggerWithRouter = loadable(() => import('./swagger'))
-const GrpcWithRouter = loadable(() => import('./grpc'))
+const OpenAPI = loadable(() => import('./openapi'))
+const GRPC = loadable(() => import('./grpc'))
 const history = createBrowserHistory()
 
 export default class App extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
     this.state = {
       menuOpen: false,
@@ -27,21 +27,21 @@ export default class App extends Component {
     this._toggleTheme = this._toggleTheme.bind(this)
   }
 
-  handleStateChange (state) {
+  handleStateChange(state) {
     this.setState({ menuOpen: state.isOpen })
   }
 
-  closeMenu () {
+  closeMenu() {
     this.setState({ menuOpen: false })
   }
 
-  _toggleTheme () {
+  _toggleTheme() {
     const newTheme = !this.state.darkMode
     localStorage.setItem('darkMode', newTheme)
     this.setState({ darkMode: newTheme })
   }
 
-  componentDidMount () {
+  componentDidMount() {
     axios.get('/services').then(res => {
       const services = res.data
         .map(event => {
@@ -71,7 +71,7 @@ export default class App extends Component {
     }
   }
 
-  handleEndpoint (data) {
+  handleEndpoint(data) {
     let services = this.state.services
     switch (data.event) {
       case 'serviceUp':
@@ -126,7 +126,7 @@ export default class App extends Component {
     this.search(document.getElementById('search').value)
   }
 
-  getServices () {
+  getServices() {
     const services = this.state.filtered
     const items = [
       <input
@@ -162,7 +162,7 @@ export default class App extends Component {
     return items
   }
 
-  search (input) {
+  search(input) {
     let newList = {}
 
     if (input !== '') {
@@ -186,13 +186,13 @@ export default class App extends Component {
     })
   }
 
-  getNavLinkClass (services) {
+  getNavLinkClass(services) {
     return services.some(service => history.location.hash === `#/${service.id}`)
       ? 'active'
       : ''
   }
 
-  render () {
+  render() {
     const service = Object.values(this.state.services)
       .flat()
       .find(service => history.location.hash === `#/${service.id}`)
@@ -213,7 +213,7 @@ export default class App extends Component {
         </button>
         <Konami
           action={() => cornify.pizzazz()}
-          timeout="15000"
+          timeout={15000}
           onTimeout={() => cornify.clear()}
         />
         <Router>
@@ -228,17 +228,17 @@ export default class App extends Component {
           <main id="page-wrap">
             {service
               ? (
-                  type === 'openapi'
-                    ? (
-                <SwaggerWithRouter useProxy={useProxy} />
-                      )
-                    : (
-                <GrpcWithRouter title={service.name} />
-                      )
-                )
+                type === 'openapi'
+                  ? (
+                    <OpenAPI useProxy={useProxy} />
+                  )
+                  : (
+                    <GRPC title={service.name} />
+                  )
+              )
               : (
-              <NoService />
-                )}
+                <NoService />
+              )}
           </main>
         </Router>
       </div>

@@ -4,6 +4,7 @@ defmodule UnisonUI.Application do
 
   def start(_type, _args) do
     children = [
+      UnisonUI.SelfSpecificationServer,
       {Task.Supervisor, name: UnisonUI.TaskSupervisor},
       Plug.Cowboy.child_spec(
         scheme: :http,

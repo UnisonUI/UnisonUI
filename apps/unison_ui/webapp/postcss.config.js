@@ -11,7 +11,6 @@ const plugins = {
   'postcss-font-magician': {},
   'tailwindcss/nesting': {},
   'tailwindcss': {},
-  'postcss-nested': {},
   'postcss-preset-env': {
     stage: 0,
     browsers: 'last 2 versions'

@@ -1,10 +1,11 @@
-defmodule WebhookProvider.SelfSpecificationServer do
+defmodule UnisonUI.SelfSpecificationServer do
   use GenServer, restart: :temporary
   require Services
 
   alias Services.{Event, Metadata, OpenApi}
 
-  @specification File.read!("priv/webhook-specification.yaml")
+  @openapi_specification File.read!("priv/openapi.yaml")
+  @asyncapi_specification File.read!("priv/asyncapi.yaml")
 
   @spec start_link(term()) :: GenServer.on_start()
   def start_link(_opts), do: GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -23,11 +24,11 @@ defmodule WebhookProvider.SelfSpecificationServer do
       Services.dispatch_events([
         %Event.Up{
           service: %OpenApi{
-            id: "unisonui:webhook",
-            name: "Webhook provider",
-            content: @specification,
+            id: "unisonui:unisonui",
+            name: "UnisonUI",
+            content: @openapi_specification,
             use_proxy: false,
-            metadata: %Metadata{provider: "webhook", file: "webhook-specification.yaml"}
+            metadata: %Metadata{provider: "unisonui", file: "openapi.yaml"}
           }
         }
       ])
@@ -37,5 +38,5 @@ defmodule WebhookProvider.SelfSpecificationServer do
 
   def handle_info(:publish, false), do: {:stop, :normal, false}
 
-  defp self_specifications?, do: Application.fetch_env!(:webhook_provider, :self_specification)
+  defp self_specifications?, do: Application.fetch_env!(:unison_ui, :self_specification)
 end

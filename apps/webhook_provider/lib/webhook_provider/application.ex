@@ -6,7 +6,7 @@ defmodule WebhookProvider.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      {WebhookProvider.SelfSpecificationServer, name: WebhookProvider.SelfSpecificationServer},
+      WebhookProvider.SelfSpecificationServer,
       Plug.Cowboy.child_spec(
         scheme: :http,
         plug: WebhookProvider.Routes,

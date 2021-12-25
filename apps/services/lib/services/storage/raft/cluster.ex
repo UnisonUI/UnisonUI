@@ -1,7 +1,6 @@
 defmodule Services.Storage.Raft.Cluster do
   @moduledoc false
   use GenServer
-  require Logger
 
   @ra_state_machine {:module, Services.Storage.Raft.InternalState, %{}}
 
@@ -31,12 +30,17 @@ defmodule Services.Storage.Raft.Cluster do
     nodes = Enum.map(settings[:nodes], fn node -> {:unisonui, String.to_atom(node)} end)
     self = {:unisonui, node()}
 
+    nodes =
+      case nodes do
+        [_ | _] = nodes -> nodes
+        _ -> [self]
+      end
+
     with {:error, _} <- :ra.restart_server(:default, self) do
       _ =
-        :ra.start_server(
+        :ra.start_cluster(
           :default,
           :unisonui,
-          self,
           @ra_state_machine,
           nodes
         )

@@ -1,9 +1,10 @@
 defmodule Clustering.GlobalServer do
   defmacro __using__(opts) do
     supervisor = opts[:supervisor] || Clustering.DynamicSupervisor
+    restart = opts[:restart] || :transient
 
     quote do
-      use GenServer
+      use GenServer, restart: unquote(restart)
       import Clustering.GlobalServer
       require Logger
 
@@ -11,7 +12,7 @@ defmodule Clustering.GlobalServer do
         do: %{
           id: __MODULE__,
           start: {__MODULE__, :start_link, [opts]},
-          restart: :transient
+          restart: unquote(restart)
         }
 
       @spec start_child(any()) :: DynamicSupervisor.on_start_child()
