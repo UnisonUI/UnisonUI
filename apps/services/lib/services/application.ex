@@ -11,7 +11,6 @@ defmodule Services.Application do
       {storage_supervisor(), []}
     ]
 
-    :ok = :ra.start()
     opts = [strategy: :one_for_one, name: Services.Supervisor]
     Supervisor.start_link(children, opts)
   end

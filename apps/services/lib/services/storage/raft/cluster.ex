@@ -10,7 +10,9 @@ defmodule Services.Storage.Raft.Cluster do
 
   def running?, do: GenServer.call(__MODULE__, :running?)
   @impl true
+  @spec init(any) :: {:stop, :nodes_required} | {:ok, false, {:continue, :bootstrap}}
   def init(_) do
+    :ok = :ra.start()
     settings = Application.fetch_env!(:services, :raft)
 
     case settings[:nodes] do
@@ -25,6 +27,7 @@ defmodule Services.Storage.Raft.Cluster do
   @impl true
   def handle_continue(:bootstrap, _) do
     settings = Application.fetch_env!(:services, :raft)
+
     nodes = Enum.map(settings[:nodes], fn node -> {:unisonui, String.to_atom(node)} end)
     self = {:unisonui, node()}
 

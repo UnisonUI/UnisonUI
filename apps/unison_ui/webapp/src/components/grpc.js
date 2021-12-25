@@ -1,21 +1,22 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import { withRouter } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import axios from 'axios'
 import Error from './grpc/error'
 import Layout from './grpc/layout'
 
 class Grpc extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
     this.state = {
       error: null,
       spec: null
     }
+    this.location = useLocation()
     this._loadSpec = this._loadSpec.bind(this)
   }
 
-  _loadSpec (id) {
+  _loadSpec(id) {
     if (id) {
       axios
         .get(`/services/${id}`)
@@ -24,33 +25,33 @@ class Grpc extends Component {
     }
   }
 
-  componentDidMount () {
-    this._loadSpec(this.props.location.pathname.substring(1))
+  componentDidMount() {
+    this._loadSpec(this.location.pathname.substring(1))
   }
 
-  componentDidUpdate (prevProps) {
-    if (this.props.location.pathname !== prevProps.location.pathname) {
-      this._loadSpec(this.props.location.pathname.substring(1))
+  componentDidUpdate(prevProps) {
+    if (this.location.pathname !== prevlocation.pathname) {
+      this._loadSpec(this.location.pathname.substring(1))
     }
   }
 
-  render () {
+  render() {
     const loading = this.loadingWidget()
-    const id = this.props.location.pathname.substring(1)
+    const id = this.location.pathname.substring(1)
     return (
       <div>
         {!loading
           ? (
-          <Layout title={this.props.title} spec={this.state.spec} id={id} />
-            )
+            <Layout title={this.props.title} spec={this.state.spec} id={id} />
+          )
           : (
-              loading
-            )}
+            loading
+          )}
       </div>
     )
   }
 
-  loadingWidget () {
+  loadingWidget() {
     let loadingMessage = null
     if (this.state.spec) return loadingMessage
     if (!this.state.error) {
@@ -79,10 +80,4 @@ class Grpc extends Component {
   }
 }
 
-Grpc.propTypes = {
-  match: PropTypes.object.isRequired,
-  location: PropTypes.object.isRequired,
-  history: PropTypes.object.isRequired
-}
-
-export default withRouter(Grpc)
+export default Grpc

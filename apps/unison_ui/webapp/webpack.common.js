@@ -19,42 +19,48 @@ module.exports = {
       chunks: 'all'
     }
   },
+  resolve: {
+    fallback: {
+      buffer: require.resolve('buffer/'),
+      stream: require.resolve("stream-browserify")
+    }
+  },
   module: {
     rules: [{
-        test: /\.html$/,
-        loader: 'html-loader'
-      }, {
-        test: /\.((png)|(svg)|(gif))(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'file-loader',
-        options: {
-          name: 'images/[name].[sha512:hash:hex:10].[ext]',
-          publicPath: '/statics/'
-        }
-      },
-      {
-        test: /\.((eot)|(woff)|(woff2)|(ttf))(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'file-loader',
-        options: {
-          name: 'fonts/[name].[sha512:hash:hex:10].[ext]',
-          publicPath: '/statics/'
-        }
-      },
-      {
-        loader: 'babel-loader',
-        test: /\.jsx?$/,
-        options: {
-          retainLines: true,
-          cacheDirectory: true
-        }
-      },
-      {
-        test: /\.css$/,
-        use: [
-          MiniCssExtractPlugin.loader,
-          'css-loader',
-          'postcss-loader'
-        ]
+      test: /\.html$/,
+      loader: 'html-loader'
+    }, {
+      test: /\.((png)|(svg)|(gif))(\?v=\d+\.\d+\.\d+)?$/,
+      loader: 'file-loader',
+      options: {
+        name: 'images/[name].[sha512:hash:hex:10].[ext]',
+        publicPath: '/statics/'
       }
+    },
+    {
+      test: /\.((eot)|(woff)|(woff2)|(ttf))(\?v=\d+\.\d+\.\d+)?$/,
+      loader: 'file-loader',
+      options: {
+        name: 'fonts/[name].[sha512:hash:hex:10].[ext]',
+        publicPath: '/statics/'
+      }
+    },
+    {
+      loader: 'babel-loader',
+      test: /\.jsx?$/,
+      options: {
+        retainLines: true,
+        cacheDirectory: true
+      }
+    },
+    {
+      test: /\.css$/,
+      use: [
+        MiniCssExtractPlugin.loader,
+        'css-loader',
+        'postcss-loader'
+      ]
+    }
     ]
   },
 

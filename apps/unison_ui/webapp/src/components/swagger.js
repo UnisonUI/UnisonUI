@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React, { Component } from 'react'
-import { withRouter } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import SwaggerUI from 'swagger-ui-react'
 
 const theme = () => {
@@ -32,7 +32,8 @@ const RestUILayoutPlugin = system => {
 }
 
 class Swagger extends Component {
-  render () {
+  render() {
+    const location = useLocation()
     const useProxy = !!this.props.useProxy
     const id = this.props.location.pathname.substring(1)
     const plugins = [RestUILayoutPlugin]
@@ -55,10 +56,4 @@ class Swagger extends Component {
   }
 }
 
-Swagger.propTypes = {
-  match: PropTypes.object.isRequired,
-  location: PropTypes.object.isRequired,
-  history: PropTypes.object.isRequired
-}
-
-export default withRouter(Swagger)
+export default Swagger
