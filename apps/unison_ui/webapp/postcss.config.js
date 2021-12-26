@@ -1,24 +1,21 @@
 const path = require('path')
 
-const plugins = {
-  'postcss-import': {
-    path: ['src/css']
-  },
-  'postcss-mixins': {
+const plugins = [
+  require('postcss-import')({
+    path: [path.join(__dirname, 'src', 'css')]
+  }),
+  require('postcss-mixins')({
     mixinsDir: path.join(__dirname, 'src', 'css', 'mixins')
-  },
-  'postcss-url': {},
-  'postcss-font-magician': {},
-  'tailwindcss/nesting': {},
-  'tailwindcss': {},
-  'postcss-preset-env': {
-    stage: 0,
-    browsers: 'last 2 versions'
-  }
-}
+  }),
+  require('postcss-url'),
+  require('postcss-font-magician'),
+  require('tailwindcss/nesting'),
+  require('tailwindcss'),
+  require('autoprefixer')
+]
 
 if (process.env.NODE_ENV === 'production') {
-  plugins['@fullhuman/postcss-purgecss'] = {
+  plugins.push(require('@fullhuman/postcss-purgecss')({
     content: [
       'src/**/*.html',
       'src/**/*.js',
@@ -28,7 +25,7 @@ if (process.env.NODE_ENV === 'production') {
     ],
     safelist: [/swagger-ui/, /opblock/, /opblock-summary/],
     defaultExtractor: content => content.match(/[A-Za-z0-9-_:/]+/g) || []
-  }
+  }))
 }
 
 module.exports = {

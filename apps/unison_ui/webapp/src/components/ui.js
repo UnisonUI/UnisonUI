@@ -23,7 +23,6 @@ export default class App extends Component {
       services: {},
       filtered: {}
     }
-    this.eventSource = new EventSource('/events')
     this._toggleTheme = this._toggleTheme.bind(this)
   }
 
@@ -39,6 +38,23 @@ export default class App extends Component {
     const newTheme = !this.state.darkMode
     localStorage.setItem('darkMode', newTheme)
     this.setState({ darkMode: newTheme })
+  }
+
+  _connect() {
+    const websocket = new WebSocket(
+      `ws${location.protocol.replace('http', '')}//${location.host
+      }/ws`
+    )
+
+    websocket.onclose = _ => {
+      setTimeout(() => this._connect(), 1000)
+    }
+
+    websocket.onmessage = e => {
+      if (e.data) {
+        this.handleEndpoint(JSON.parse(e.data))
+      }
+    }
   }
 
   componentDidMount() {
@@ -63,12 +79,7 @@ export default class App extends Component {
       this.setState({ services })
       this.search(document.getElementById('search').value)
     })
-
-    this.eventSource.onmessage = e => {
-      if (e.data) {
-        this.handleEndpoint(JSON.parse(e.data))
-      }
-    }
+    this._connect()
   }
 
   handleEndpoint(data) {

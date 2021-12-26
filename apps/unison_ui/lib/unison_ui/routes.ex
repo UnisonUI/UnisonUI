@@ -12,8 +12,8 @@ defmodule UnisonUI.Routes do
   plug :redirect_index
   plug :match
   plug :dispatch
+
   forward "/statics", to: UnisonUI.Routes.Statics
-  forward "/events", to: UnisonUI.Routes.Realtime
   forward "/services", to: UnisonUI.Routes.Services
 
   match _ do

@@ -1,17 +1,25 @@
 defmodule UnisonUI.Routes.Realtime do
+  alias UnisonUI.Services.Realtime.Consumers
   @moduledoc false
+  @behaviour :cowboy_websocket
   require Logger
-  use Plug.Router
 
-  plug :match
-  plug :dispatch
+  @impl true
+  def init(req, state), do: {:cowboy_websocket, req, state}
 
-  get "/" do
-    new_conn =
-      conn
-      |> put_resp_content_type("text/event-stream")
-      |> send_chunked(200)
-
-    UnisonUI.Services.Realtime.Consumers.subscribe(new_conn)
+  @impl true
+  def websocket_init(state) do
+    Logger.debug("Websocket starting")
+    Consumers.subscribe(self())
+    {:ok, state}
   end
+
+  @impl true
+  def websocket_info({:event, event}, state) do
+    {:reply, {:text, event}, state}
+  end
+
+  @impl true
+  @spec websocket_handle(any, any) :: {:ok, any}
+  def websocket_handle(_frame, state), do: {:ok, state}
 end
