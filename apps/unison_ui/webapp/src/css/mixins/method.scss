@@ -1,19 +1,19 @@
 @mixin method ($color) {
-  @apply nm-flat-#{$color}-200-sm #{!important};
+  @apply nm-flat-#{""+$color}-200-sm #{!important};
 
   &:hover {
-    @apply nm-flat-#{$color}-300-sm #{!important};
+    @apply nm-flat-#{""+$color}-300-sm #{!important};
   }
 
   .opblock-summary-method {
-    @apply nm-concave-#{$color}-400-sm;
+    @apply nm-concave-#{""+$color}-400-sm;
   }
   
   .opblock-summary {
-    @apply border-#{$color}-400;
+    @apply border-#{""+$color}-400;
   }
 
   .tab-header .tab-item.active h4 span::after {
-    @apply bg-#{$color}-400;
+    @apply bg-#{""+$color}-400;
   }
 }
