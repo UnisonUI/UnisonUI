@@ -83,7 +83,7 @@
     @apply rounded-lg;
     @apply m-3; 
     @apply transition-all duration-500 ease-in-out text-gray-900;
-    @mixin nm-flat background;
+    @include nm-flat( background);
     .tab-header {
       @apply flex flex-1;
       .tab-item {
@@ -113,36 +113,36 @@
     }
 
     &.opblock-post {
-        @mixin method green;
+        @include method(green);
     }
 
     &.opblock-put {
-        @mixin method orange;
+        @include method(orange);
     }
 
     &.opblock-delete {
-        @mixin method red;
+        @include method(red);
     }
 
     &.opblock-get {
-        @mixin method blue;
+        @include method(blue);
     }
 
     &.opblock-patch {
-        @mixin method teal;
+        @include method(teal);
     }
 
     &.opblock-head {
-        @mixin method purple;
+        @include method(purple);
     }
 
     &.opblock-options {
-        @mixin method indigo;
+        @include method(indigo);
     }
 
     &.opblock-deprecated {
         opacity: .6;
-        @mixin method gray;
+        @include method(gray);
     }
 
     &.is-open {
@@ -282,7 +282,7 @@
     }
 
     .body-param-content-type {
-      @mixin select &
+      @include select(&)
     }
 
     label {

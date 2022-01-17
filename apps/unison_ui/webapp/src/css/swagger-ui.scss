@@ -1,22 +1,22 @@
-@import "swagger-ui/form.css";
-@import "swagger-ui/table.css";
-@import "swagger-ui/buttons.css";
-@import "swagger-ui/information.css";
-@import "swagger-ui/models.css";
-@import "swagger-ui/operations.css";
-@import "swagger-ui/response.css";
-@import "swagger-ui/highlight.css";
-@import "swagger-ui/schemes.css";
-@import "swagger-ui/markdown.css";
-@import "swagger-ui/modal.css";
-@import "swagger-ui/authorize.css";
-@import "swagger-ui/errors.css";
-
+@import "swagger-ui/form";
+@import "swagger-ui/table";
+@import "swagger-ui/buttons";
+@import "swagger-ui/information";
+@import "swagger-ui/models";
+@import "swagger-ui/operations";
+@import "swagger-ui/response";
+@import "swagger-ui/highlight";
+@import "swagger-ui/schemes";
+@import "swagger-ui/markdown";
+@import "swagger-ui/modal";
+@import "swagger-ui/authorize";
+@import "swagger-ui/errors";
+@import "mixins";
 
 .swagger-ui {
   .wrapper {
     @apply rounded-lg p-4 mx-4 my-8 w-full;
-    @mixin nm-flat background;
+    @include nm-flat(background);
   }
   .svg-assets {
     @apply hidden;

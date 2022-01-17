@@ -1,8 +1,7 @@
 import loadable from '@loadable/component'
 import { Moon, Sun } from 'react-feather'
-import { createBrowserHistory } from 'history'
 import React, { Component } from 'react'
-import { HashRouter as Router } from 'react-router-dom'
+import { HashRouter as Router, useNavigate } from 'react-router-dom'
 import Menu from 'react-burger-menu/lib/menus/push'
 import ServiceLink from './serviceLink'
 import axios from 'axios'
@@ -10,9 +9,13 @@ import * as cornify from '../cornified'
 import Konami from 'react-konami-code'
 import NoService from './noService'
 
+// import AsyncAPI from './asyncapi'
+// import OpenAPI from './openapi'
+// import GRPC from './grpc'
+
+const AsyncAPI = loadable(() => import('./asyncapi'))
 const OpenAPI = loadable(() => import('./openapi'))
 const GRPC = loadable(() => import('./grpc'))
-const history = createBrowserHistory()
 
 export default class App extends Component {
   constructor(props) {
@@ -83,6 +86,7 @@ export default class App extends Component {
   }
 
   handleEndpoint(data) {
+    const navigate = useNavigate()
     let services = this.state.services
     switch (data.event) {
       case 'serviceUp':
@@ -128,8 +132,8 @@ export default class App extends Component {
         )
         break
       case 'serviceChanged':
-        if (`#/${data.id}` === history.location.hash) {
-          return history.go(0)
+        if (`#/${data.id}` === location.hash) {
+          return navigate(0)
         }
         break
     }
@@ -198,7 +202,7 @@ export default class App extends Component {
   }
 
   getNavLinkClass(services) {
-    return services.some(service => history.location.hash === `#/${service.id}`)
+    return services.some(service => location.hash === `#/${service.id}`)
       ? 'active'
       : ''
   }
@@ -206,13 +210,7 @@ export default class App extends Component {
   render() {
     const service = Object.values(this.state.services)
       .flat()
-      .find(service => history.location.hash === `#/${service.id}`)
-    let useProxy = false
-    let type = null
-    if (service) {
-      useProxy = service.useProxy
-      type = service.type
-    }
+      .find(service => location.hash === `#/${service.id}`)
     return (
       <div
         id="outer-container"
@@ -238,15 +236,7 @@ export default class App extends Component {
           </Menu>
           <main id="page-wrap">
             {service
-              ? (
-                type === 'openapi'
-                  ? (
-                    <OpenAPI useProxy={useProxy} />
-                  )
-                  : (
-                    <GRPC title={service.name} />
-                  )
-              )
+              ? this._loadComponent(service)
               : (
                 <NoService />
               )}
@@ -254,5 +244,17 @@ export default class App extends Component {
         </Router>
       </div>
     )
+  }
+  _loadComponent(service) {
+    switch (service.type) {
+      case "openapi":
+        return (<OpenAPI useProxy={service.useProxy} />)
+      case 'asyncapi':
+        return (<AsyncAPI />)
+      case 'grpc':
+        return (<GRPC title={service.name} />)
+      default:
+        break;
+    }
   }
 }

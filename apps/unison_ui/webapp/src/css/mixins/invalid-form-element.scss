@@ -1,4 +1,4 @@
-@define-mixin invalid-form-element {
+@mixin invalid-form-element {
   @apply nm-inset-red-600;
   &::placeholder {
     @apply text-red-200;

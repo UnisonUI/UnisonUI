@@ -1,12 +1,12 @@
 const path = require('path')
 
 const plugins = [
-  require('postcss-import')({
-    path: [path.join(__dirname, 'src', 'css')]
-  }),
-  require('postcss-mixins')({
-    mixinsDir: path.join(__dirname, 'src', 'css', 'mixins')
-  }),
+  // require('postcss-import')({
+  //   path: [path.join(__dirname, 'src', 'css')]
+  // }),
+  // require('postcss-mixins')({
+  //   mixinsDir: path.join(__dirname, 'src', 'css', 'mixins')
+  // }),
   require('postcss-url'),
   require('postcss-font-magician'),
   require('tailwindcss/nesting'),
@@ -29,5 +29,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 module.exports = {
+  syntax: 'postcss-scss',
   plugins: plugins
 }

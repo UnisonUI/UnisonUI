@@ -92,7 +92,7 @@ main {
   @apply top-0 flex-col;
 
   &.show {
-    @apply flex !important;
+    @apply flex #{!important};
   }
 
   @screen md {

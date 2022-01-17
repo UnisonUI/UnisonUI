@@ -3,6 +3,7 @@ const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebPackPlugin = require('html-webpack-plugin')
 const CompressionPlugin = require('compression-webpack-plugin')
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
 
 module.exports = {
   entry: {
@@ -19,11 +20,8 @@ module.exports = {
     }
   },
   resolve: {
-    roots: [path.resolve(__dirname)],
-    fallback: {
-      buffer: require.resolve('buffer/'),
-      stream: require.resolve("stream-browserify")
-    }
+    alias: { mixins: path.resolve(__dirname, "src", "css", "mixins") },
+    roots: [path.resolve(__dirname)]
   },
   module: {
     rules: [
@@ -48,16 +46,18 @@ module.exports = {
         }
       },
       {
-        test: /\.css$/,
+        test: /\.s?css$/,
         use: [
           MiniCssExtractPlugin.loader,
           'css-loader',
-          'postcss-loader'
+          'postcss-loader',
+          'sass-loader'
         ]
       }
     ]
   },
   plugins: [
+    new NodePolyfillPlugin(),
     new webpack.ProvidePlugin({
       Buffer: ['buffer', 'Buffer']
     }),

@@ -49,6 +49,6 @@
   }
 
   .content-type-wrapper {
-    @mixin select &
+    @include select(&)
   }
 }

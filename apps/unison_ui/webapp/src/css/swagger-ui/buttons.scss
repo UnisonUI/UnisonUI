@@ -4,7 +4,7 @@
     @apply py-4 px-8;
     @apply rounded-full text-primary transform;
     @apply transition duration-200 ease-in-out;
-    @mixin nm-flat background, 0.1em;
+    @include nm-flat(background, 0.1em);
     &.btn-sm {
       @apply py-2 px-4 text-sm;
     }
@@ -18,11 +18,11 @@
     }
     
     &.cancel {
-      @apply nm-flat-red-200-sm  text-gray-900 !important;
+      @apply nm-flat-red-200-sm  text-gray-900 #{!important};
     }
 
     &.authorize {
-      @apply nm-flat-green-200-sm text-gray-900  !important;
+      @apply nm-flat-green-200-sm text-gray-900  #{!important};
 
       span {
         @apply float-left pr-4;
@@ -34,7 +34,7 @@
     }
 
     &.execute {
-      @apply nm-flat-blue-200-sm text-gray-900 !important;
+      @apply nm-flat-blue-200-sm text-gray-900 #{!important};
     }
   }
 

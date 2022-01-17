@@ -29,7 +29,7 @@
     }
 
     h4 {
-      @apply mt-1 mr-0 ml-3 mb-3 !important;
+      @apply mt-1 mr-0 ml-3 mb-3 #{!important};
     }
 
     .wrapper {

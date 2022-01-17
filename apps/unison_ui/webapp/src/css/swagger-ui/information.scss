@@ -35,11 +35,11 @@
         @apply nm-convex-gray-500-sm;
         @apply inline-block;
         @apply align-text-top;
-        @apply text-xs !important;
+        @apply text-xs #{!important};
         @apply px-2 py-1 ml-3;
 
         &.version-stamp {
-          @apply nm-convex-green-500-sm !important;
+          @apply nm-convex-green-500-sm #{!important};
         }
 
         top: -5px;

@@ -4,7 +4,7 @@ on:
     branches:
       - "master"
     paths:
-      - 'site/**'
+      - "site/**"
 jobs:
   build:
     name: Deploy
@@ -15,7 +15,7 @@ jobs:
       - name: Deploy the site
         uses: MaethorNaur/hugo-deploy-gh-pages@master
         env:
-          HUGO_VERSION: 0.87.0
+          HUGO_VERSION: 0.91.2
           TARGET_REPO: UnisonUI/unisonui.github.io
           TARGET_BRANCH: master
           TOKEN: ${{ secrets.TOKEN }}

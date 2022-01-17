@@ -1,3 +1,4 @@
+@import 'mixins';
 :root {
   --background: #edf2f7;
   --background-shadow: #99b5d2;
@@ -76,9 +77,9 @@ main {
 
 .bm-cross-button {
   @apply rounded-full;
-  @mixin nm-flat background;
+  @include nm-flat(background);
   &:hover {
-    @mixin nm-flat background, 0.4em;
+    @include nm-flat(background, 0.4em);
   }
 }
 
@@ -114,9 +115,9 @@ main {
   @apply p-4 mb-5;
   @apply transition duration-500 ease-in-out;
   
-  @mixin nm-flat background;
+  @include nm-flat(background);
   &:hover {
-    @mixin nm-flat background, 0.4em;
+    @include nm-flat(background, 0.4em);
   }
 
   &:focus {
@@ -125,7 +126,7 @@ main {
 
   &.active {
     @apply cursor-default;
-    @mixin nm-inset background;
+    @include nm-inset(background);
     a {
       @apply text-red-700;
     }
@@ -151,6 +152,9 @@ main {
       &[data-type="grpc"] {
         @apply bg-blue-200 text-blue-800;
       }
+      &[data-type="asyncapi"] {
+        @apply bg-violet-200 text-violet-800;
+      }
     }
   }
 }
@@ -175,9 +179,9 @@ h1.bm-item {
  .search {
   @apply border-0 appearance-none rounded-full;
   @apply w-full my-6 leading-tight;
-  @mixin nm-inset background;
+  @include nm-inset(background);
   @apply text-sm text-primary cursor-text;
   &:hover {
-   @mixin nm-inset background;
+   @include nm-inset(background);
   }
  }

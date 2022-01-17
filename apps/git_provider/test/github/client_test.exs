@@ -44,7 +44,11 @@ defmodule GitProvider.Github.ClientTest do
         assert Client.list_projects("http://localhost", "token") ==
                  {:ok,
                   [
-                    %Project{name: "test/repo", url: "http://localhost/test/repo", branch: "main"},
+                    %Project{
+                      name: "test/repo",
+                      url: "http://localhost/test/repo",
+                      branch: "main"
+                    },
                     %Project{name: "test/repo", url: "http://localhost/test/repo", branch: "main"}
                   ]}
       end

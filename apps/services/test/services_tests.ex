@@ -1,6 +1,6 @@
 defmodule ServicesTest do
   use ExUnit.Case
-  alias Services.{Grpc, Hash,Metadata, OpenApi}
+  alias Services.{Grpc, Hash, Metadata, OpenApi}
 
   describe "Services.Hash.compute_hash/1" do
     test "GRPC service" do

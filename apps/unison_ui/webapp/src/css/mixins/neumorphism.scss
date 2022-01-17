@@ -1,0 +1,9 @@
+@mixin nm-flat ($color,$size: 0.2em) {
+  background: var(--#{$color});
+  box-shadow: $size $size calc($size * 2) var(--#{$color}-shadow), calc($size * -1) calc($size * -1) calc($size * 2) var(--#{$color}-highlight); 
+}
+
+@mixin nm-inset ($color,$size: 0.2em) {
+  background: var(--#{$color});
+  box-shadow: inset $size $size calc($size * 2) var(--#{$color}-shadow), inset calc($size * -1) calc($size * -1) calc($size * 2) var(--#{$color}-highlight); 
+}

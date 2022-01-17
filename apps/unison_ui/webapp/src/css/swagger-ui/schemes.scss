@@ -15,7 +15,7 @@
         @apply absolute right-0 h-full pr-8 pointer-events-none block;
         width: 24px;
         top: 60%;
-        content: url('../mixins/chevron-down.svg'); 
+        content: url('~mixins/chevron-down.svg'); 
       }
     }
   }
@@ -28,7 +28,7 @@
   .servers {
     label {
       @apply block;
-      @mixin select &;
+      @include select(&);
     }
     h4.message {
       @apply pb-8;
@@ -44,7 +44,7 @@
         width: 50%;
 
         &:last-of-type {
-          @mixin select &;
+          @include select(&);
         }
         &:first-of-type {
           max-width: inherit !important;

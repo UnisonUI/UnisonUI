@@ -70,9 +70,28 @@ defmodule Unisonui.MixProject do
     ]
   end
 
+  def alias() do
+    webapp = ["apps", "unison_ui", "webapp"] |> Path.join() |> Path.expand()
+
+    [
+      npm_install: System.cmd("npm", ["install"], cd: webapp),
+      watch:
+        [webapp, "node_modules", ".bin", "webpack"]
+        |> Path.join()
+        |> Path.expand()
+        |> System.cmd(["--watch", "--config", "webpack.dev.js", "--progress"], cd: webapp),
+      build:
+        [webapp, "node_modules", ".bin", "webpack"]
+        |> Path.join()
+        |> Path.expand()
+        |> System.cmd(["--config", "webpack.dev.js", "--progress"], cd: webapp)
+    ]
+  end
+
   def npm_deploy(release) do
-    System.cmd("npm", ["install"], cd: "apps/unison_ui/webapp/")
-    System.cmd("npm", ["run", "build:#{Mix.env()}"], cd: "apps/unison_ui/webapp/")
+    webapp = ["apps", "unison_ui", "webapp"] |> Path.join() |> Path.expand()
+    System.cmd("npm", ["install"], cd: webapp)
+    System.cmd("npm", ["run", "build:#{Mix.env()}"], cd: webapp)
     release
   end
 
