@@ -8,56 +8,42 @@ info:
     url: https://raw.githubusercontent.com/UnisonUI/unisonui/master/LICENSE
   version: 2.0.0
 channels:
-  /events:
-    description: SSE (server-side event) endpoint for server pushing new events
+  /ws:
+    description: Websocket endpoint for server pushing new events
     subscribe:
-      bindings:
-        http:
-          type: request
-          method: GET
-    publish:
       message:
-        $ref: "#/components/messages/Event"
-components:
-  messages:
-    Event:
-      payload:
-        type: object
-        format: text
-        required:
-          - id
-          - event
-          - data
-        properties:
-          id:
-            type: integer
-            description: event's id
-          event:
-            type: string
-            description: event's type
-          data:
-            type: object
-            format: json
-            properties:
-              event:
-                type: string
-                enum: ["serviceUp", "serviceDown"]
-                description: Event's type
-              id:
-                type: string
-                description: Service's id
-              name:
-                type: string
-                description: Service's name
-              metadata:
-                type: object
-                description: Service's metadata
-
-      bindings:
-        http:
-          headers:
-            type: object
-            properties:
-              Content-Type:
-                type: string
-                enum: ["text/event-stream"]
+        title: Event
+        name: Event
+        payload:
+          type: object
+          required:
+            - id
+            - event
+            - type
+            - name
+            - metadata
+          properties:
+            id:
+              type: string
+              description: Service's id
+            name:
+              type: string
+              description: Service's name
+            metadata:
+              type: object
+              description: Service's metadata
+            event:
+              type: string
+              enum: [serviceUp, serviceDown, serviceChanged]
+              description: Event's type
+            type:
+              type: string
+              enum: [asyncapi, openapi, grpc]
+              description: Type of the service
+            useProxy:
+              type: boolean
+              description: Should use UnisonUI as proxy
+        bindings:
+          ws:
+            type: request
+            method: GET
