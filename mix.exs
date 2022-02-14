@@ -52,7 +52,7 @@ defmodule Unisonui.MixProject do
             {Toml.Provider,
              [
                path: {:system, "UNISON_UI_ROOT", "/config.toml"},
-               transforms: [Configuration.LoggingTransformer]
+               transforms: [Configuration.Transformer]
              ]}
           ]
         ]
