@@ -13,15 +13,14 @@ defmodule WebhookProvider.Routes.Services do
   plug :dispatch
 
   post "/" do
-    service =
-      case Service.from_map(conn.body_params) do
-        nil ->
-          resp(conn, 400, "Invalid input")
+    case Service.from_map(conn.body_params) do
+      nil ->
+        resp(conn, 400, "Invalid input")
 
-        service ->
-          _ = Services.dispatch_events([%Event.Up{service: service}])
-          resp(conn, 204, "")
-      end
+      service ->
+        _ = Services.dispatch_events([%Event.Up{service: service}])
+        resp(conn, 204, "")
+    end
   end
 
   delete "/:service_name" do

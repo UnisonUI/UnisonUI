@@ -34,7 +34,7 @@ defmodule ContainerProvider.MixProject do
       {:clustering, in_umbrella: true},
       {:services, in_umbrella: true},
       {:logstash_logger_formatter, "~> 1.1"},
-      {:horde, "~> 0.8.5"},
+      {:horde, "~> 0.8.6"},
       {:norm, "~> 0.13"},
       {:durex, "~> 0.2"},
       {:ok, "~> 2.3"},
@@ -46,7 +46,7 @@ defmodule ContainerProvider.MixProject do
       {:cowlib, "~> 2.11", only: :test, override: true},
       {:mint, "~> 1.4"},
       {:k8s, "~> 1.0"},
-      {:jason, "~> 1.2"}
+      {:jason, "~> 1.3"}
     ]
   end
 end

@@ -29,8 +29,8 @@ defmodule WebhookProvider.MixProject do
       {:services, in_umbrella: true},
       {:u_grpc, in_umbrella: true},
       {:logstash_logger_formatter, "~> 1.1"},
-      {:jason, "~> 1.2"},
-      {:plug, "~> 1.12.1"},
+      {:jason, "~> 1.3"},
+      {:plug, "~> 1.13.3"},
       {:plug_cowboy, "~> 2.5.2"},
       {:cowboy, "~> 2.9", override: true},
       {:cowlib, "~> 2.11", override: true}
