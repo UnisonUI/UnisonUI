@@ -28,9 +28,8 @@ defmodule UnisonUI.Routes.Services do
         response = %{
           schema: schema,
           servers:
-            servers
-            |> Enum.into([], fn {name, [address: _, port: _, use_tls: use_tls]} ->
-              %{name: name, useTls: use_tls}
+            Enum.into(servers, [], fn {name, server} ->
+              %{name: name, useTls: server[:use_tls]}
             end)
         }
 
