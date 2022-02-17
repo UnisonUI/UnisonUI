@@ -39,7 +39,7 @@ defmodule GitProvider.MixProject do
       {:jason, "~> 1.3"},
       {:horde, "~> 0.8.6"},
       {:norm, "~> 0.13"},
-      {:durex, "~> 0.2"},
+      {:durex, "~> 0.3"},
       {:ok, "~> 2.3"},
       {:neuron, "~> 5.0"},
       {:yaml_elixir, "~> 2.5"},

@@ -36,7 +36,7 @@ defmodule ContainerProvider.MixProject do
       {:logstash_logger_formatter, "~> 1.1"},
       {:horde, "~> 0.8.6"},
       {:norm, "~> 0.13"},
-      {:durex, "~> 0.2"},
+      {:durex, "~> 0.3"},
       {:ok, "~> 2.3"},
       {:mox, "~> 1.0", only: :test},
       {:mock, "~> 0.3.7", only: :test},
