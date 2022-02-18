@@ -38,22 +38,14 @@ defmodule ContainerProvider.Docker.Source do
   def handle_info({:stream, {:data, data}}, state) do
     events =
       case data do
-        %{"status" => "start", "id" => id, "Actor" => %{"Attributes" => labels}} ->
+        %{"status" => status, "id" => id, "Actor" => %{"Attributes" => labels}}
+        when status in ["start", "stop"] ->
           case extract_labels(labels) do
             nil ->
               []
 
             labels ->
-              handle_service_up(id, labels)
-          end
-
-        %{"status" => "stop", "id" => id, "Actor" => %{"Attributes" => labels}} ->
-          case extract_labels(labels) do
-            nil ->
-              []
-
-            _ ->
-              [%Down{id: id}]
+              handle_event(status, id, labels)
           end
 
         _ ->
@@ -76,10 +68,33 @@ defmodule ContainerProvider.Docker.Source do
 
   def handle_info(_, state), do: {:noreply, state}
 
+  defp handle_event("start", id, labels) do
+    with {:ok,
+          %{
+            status: 200,
+            data: %{"NetworkSettings" => %{"Networks" => networks}}
+          }} <- GetClient.request("/containers/#{id}/json"),
+         [ip | _] <- Enum.map(networks, fn {_, %{"IPAddress" => ip_address}} -> ip_address end),
+         [service_name: service_name, openapi: openapi, asyncapi: asyncapi, grpc: grpc] <-
+           Labels.extract_endpoint(labels, ip) do
+      [
+        Specifications.retrieve_specification(id, service_name, openapi),
+        Specifications.retrieve_specification(id, service_name, asyncapi),
+        Specifications.retrieve_specification(id, service_name, grpc)
+      ]
+      |> Enum.reject(&is_nil/1)
+      |> Enum.map(&%Up{service: &1})
+    else
+      _ -> []
+    end
+  end
+
+  defp handle_event("stop", id, _labels), do: [%Down{id: id}]
+
   defp extract_labels(labels) do
     labels = Labels.from_map(labels)
 
-    if is_nil(labels.openapi) and is_nil(labels.grpc) do
+    if Labels.valid?(labels) do
       nil
     else
       labels
@@ -99,29 +114,4 @@ defmodule ContainerProvider.Docker.Source do
         ~s(/events?since=0&filters={"event":["start","stop"],"type":["container"]}),
         self()
       )
-
-  defp handle_service_up(id, labels) do
-    with {:ok,
-          %{
-            status: 200,
-            data: %{"NetworkSettings" => %{"Networks" => networks}}
-          }} <- GetClient.request("/containers/#{id}/json"),
-         ip <-
-           networks
-           |> Enum.map(fn {_, %{"IPAddress" => ip_address}} -> ip_address end)
-           |> Enum.at(0),
-         true <- Labels.valid?(labels),
-         [service_name: service_name, openapi: openapi, asyncapi: asyncapi, grpc: grpc] <-
-           Labels.extract_endpoint(labels, ip) do
-      [
-        Specifications.retrieve_specification(id, service_name, openapi),
-        Specifications.retrieve_specification(id, service_name, asyncapi),
-        Specifications.retrieve_specification(id, service_name, grpc)
-      ]
-      |> Enum.reject(&is_nil/1)
-      |> Enum.map(&%Up{service: &1})
-    else
-      _ -> []
-    end
-  end
 end
