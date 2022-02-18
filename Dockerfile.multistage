@@ -1,4 +1,4 @@
-FROM hexpm/elixir:1.12.2-erlang-24.0.5-alpine-3.14.0 as builder
+FROM hexpm/elixir:1.13.3-erlang-24.2.1-alpine-3.15.0 as builder
 WORKDIR /app
 ENV MIX_ENV=prod
 
