@@ -45,22 +45,22 @@ const config = {
     [
       require.resolve('./src/plugins/changelog/index.js'),
       {
-        blogTitle: 'Docusaurus changelog',
+        blogTitle: 'UnisonUI releases',
         blogDescription:
-          'Keep yourself up-to-date about new features in every release',
+          'Keep yourself up-to-date about all releases',
         blogSidebarCount: 'ALL',
-        blogSidebarTitle: 'Changelog',
-        routeBasePath: '/changelog',
+        blogSidebarTitle: 'Releases',
+        routeBasePath: '/releases',
         showReadingTime: false,
         postsPerPage: 20,
         archiveBasePath: null,
         authorsMapPath: 'authors.json',
         feedOptions: {
           type: 'all',
-          title: 'Docusaurus changelog',
+          title: 'UnisonUI releases',
           description:
-            'Keep yourself up-to-date about new features in every release',
-          copyright: `Copyright © ${new Date().getFullYear()} Facebook, Inc.`,
+            'Keep yourself up-to-date about all releases',
+          copyright: `Copyright © ${new Date().getFullYear()} UnisonUI. Built with Docusaurus.`,
           language: 'en',
         },
       },
@@ -82,7 +82,7 @@ const config = {
             position: 'left',
             label: 'Getting started',
           },
-          { to: '/changelog', label: 'Releases', position: 'left' },
+          { to: '/releases', label: 'Releases', position: 'left' },
           {
             type: 'docsVersionDropdown',
             position: 'right',
@@ -90,7 +90,8 @@ const config = {
           },
           {
             href: 'https://github.com/UnisonUI/UnisonUI',
-            label: 'GitHub',
+            className: 'header-github-link',
+            'aria-label': 'GitHub repository',
             position: 'right',
           },
         ],
@@ -116,7 +117,7 @@ const config = {
             items: [
               {
                 label: 'Releases',
-                to: '/changelog',
+                to: '/releases',
               },
               {
                 label: 'GitHub',
@@ -125,7 +126,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} UnisonUI, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} UnisonUI. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,
