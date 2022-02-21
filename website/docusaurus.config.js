@@ -2,6 +2,19 @@
 
 const lightCodeTheme = require('prism-react-renderer/themes/github');
 const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const versions = require('./versions.json');
+const isDev = process.env.NODE_ENV === 'development';
+
+function getNextBetaVersionName() {
+  const expectedPrefix = '2.0.0-beta.';
+
+  const lastReleasedVersion = versions[0];
+  let version = 0;
+  if (lastReleasedVersion.includes(expectedPrefix)) {
+    version = parseInt(lastReleasedVersion.replace(expectedPrefix, ''), 10);
+  }
+  return `${expectedPrefix}${version + 1}`;
+}
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -21,8 +34,13 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          lastVersion: '1.0.0',
-          includeCurrentVersion: true
+          lastVersion: isDev ? 'current' : versions[0],
+          includeCurrentVersion: isDev,
+          versions: isDev ? {
+            current: {
+              label: `${getNextBetaVersionName()} 🚧`,
+            },
+          } : {},
         },
         blog: {
           showReadingTime: true,
@@ -41,6 +59,7 @@ const config = {
       }),
     ],
   ],
+  themes: ['docusaurus-theme-search-typesense'],
   plugins: [
     [
       require.resolve('./src/plugins/changelog/index.js'),
@@ -132,6 +151,29 @@ const config = {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
+      typesense: {
+        typesenseCollectionName: 'unisonui', // Replace with your own doc site's name. Should match the collection name in the scraper settings.
+        typesenseServerConfig: {
+          nodes: [
+            {
+              host: '68ylab7tp0umcwikp-1.a1.typesense.net',
+              port: 443,
+              protocol: 'https',
+            },
+            {
+              host: '68ylab7tp0umcwikp-2.a1.typesense.net',
+              port: 443,
+              protocol: 'https',
+            },
+            {
+              host: '68ylab7tp0umcwikp-3.a1.typesense.net',
+              port: 443,
+              protocol: 'https',
+            },
+          ],
+          apiKey: 'Mg35kTZQ01Ut8rygGUUH4TSuPlplahhQ',
+        }
+      }
     }),
 };
 
