@@ -78,7 +78,7 @@
   },
   "dependencies": {
     "@loadable/component": "^5.14.1",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "eventsource": "^1.1.0",
     "postcss-debug": "^0.4.2",
     "react": "^16.14.0",
