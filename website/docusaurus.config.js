@@ -41,6 +41,31 @@ const config = {
       }),
     ],
   ],
+  plugins: [
+    [
+      require.resolve('./src/plugins/changelog/index.js'),
+      {
+        blogTitle: 'Docusaurus changelog',
+        blogDescription:
+          'Keep yourself up-to-date about new features in every release',
+        blogSidebarCount: 'ALL',
+        blogSidebarTitle: 'Changelog',
+        routeBasePath: '/changelog',
+        showReadingTime: false,
+        postsPerPage: 20,
+        archiveBasePath: null,
+        authorsMapPath: 'authors.json',
+        feedOptions: {
+          type: 'all',
+          title: 'Docusaurus changelog',
+          description:
+            'Keep yourself up-to-date about new features in every release',
+          copyright: `Copyright © ${new Date().getFullYear()} Facebook, Inc.`,
+          language: 'en',
+        },
+      },
+    ],
+  ],
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
@@ -57,7 +82,7 @@ const config = {
             position: 'left',
             label: 'Getting started',
           },
-          { to: '/blog', label: 'Blog', position: 'left' },
+          { to: '/changelog', label: 'Releases', position: 'left' },
           {
             type: 'docsVersionDropdown',
             position: 'right',
@@ -90,8 +115,8 @@ const config = {
             title: 'More',
             items: [
               {
-                label: 'Blog',
-                to: '/blog',
+                label: 'Releases',
+                to: '/changelog',
               },
               {
                 label: 'GitHub',

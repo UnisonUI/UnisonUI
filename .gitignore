@@ -90,3 +90,4 @@ priv/plts/
 nonode@nohost/
 *127.0.0.1/
 /apps/unison_ui/priv/statics/
+website/changelog
