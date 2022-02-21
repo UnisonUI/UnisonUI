@@ -42,9 +42,6 @@ const config = {
             },
           } : {},
         },
-        blog: {
-          showReadingTime: true,
-        },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
@@ -60,6 +57,7 @@ const config = {
     ],
   ],
   plugins: [
+    require.resolve("@cmfcmf/docusaurus-search-local"),
     [
       require.resolve('./src/plugins/changelog/index.js'),
       {
@@ -150,11 +148,7 @@ const config = {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
-      algolia: {
-        appId: 'appId',
-        apiKey: 'apiKey',
-        indexName: 'unisonui',
-      },
+
     }),
 };
 
