@@ -28,5 +28,6 @@ jobs:
           target_branch: master
           repo: UnisonUI/unisonui.github.io
           build_dir: website/build
+          fqdn: unisonui.tech
         env:
           GH_PAT: ${{ secrets.TOKEN }}
