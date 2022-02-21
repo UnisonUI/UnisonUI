@@ -59,7 +59,6 @@ const config = {
       }),
     ],
   ],
-  themes: ['docusaurus-theme-search-typesense'],
   plugins: [
     [
       require.resolve('./src/plugins/changelog/index.js'),
@@ -79,7 +78,7 @@ const config = {
           title: 'UnisonUI releases',
           description:
             'Keep yourself up-to-date about all releases',
-          copyright: `Copyright © ${new Date().getFullYear()} UnisonUI. Built with Docusaurus.`,
+          copyright: `MIT ${new Date().getFullYear()} UnisonUI. Built with Docusaurus.`,
           language: 'en',
         },
       },
@@ -145,35 +144,17 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} UnisonUI. Built with Docusaurus.`,
+        copyright: `MIT ${new Date().getFullYear()} UnisonUI. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
       },
-      typesense: {
-        typesenseCollectionName: 'unisonui', // Replace with your own doc site's name. Should match the collection name in the scraper settings.
-        typesenseServerConfig: {
-          nodes: [
-            {
-              host: '68ylab7tp0umcwikp-1.a1.typesense.net',
-              port: 443,
-              protocol: 'https',
-            },
-            {
-              host: '68ylab7tp0umcwikp-2.a1.typesense.net',
-              port: 443,
-              protocol: 'https',
-            },
-            {
-              host: '68ylab7tp0umcwikp-3.a1.typesense.net',
-              port: 443,
-              protocol: 'https',
-            },
-          ],
-          apiKey: 'Mg35kTZQ01Ut8rygGUUH4TSuPlplahhQ',
-        }
-      }
+      algolia: {
+        appId: 'appId',
+        apiKey: 'apiKey',
+        indexName: 'unisonui',
+      },
     }),
 };
 
