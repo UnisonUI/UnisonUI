@@ -57,7 +57,12 @@ const config = {
     ],
   ],
   plugins: [
-    require.resolve("@cmfcmf/docusaurus-search-local"),
+    [
+      require.resolve("@cmfcmf/docusaurus-search-local"),
+      {
+        indexBlog: false,
+      }
+    ],
     [
       require.resolve('./src/plugins/changelog/index.js'),
       {
