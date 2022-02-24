@@ -1,6 +1,7 @@
 defmodule UnisonUI.Routes.Services do
   @moduledoc false
   require Logger
+  alias Services.Service
   use Plug.Router
 
   plug :match
@@ -24,12 +25,12 @@ defmodule UnisonUI.Routes.Services do
 
   get "/*remaining" do
     case Services.service(Enum.join(remaining, "/")) do
-      {:ok, %Services.Grpc{schema: schema, servers: servers}} ->
+      {:ok, %Service.Grpc{schema: schema, servers: servers}} ->
         response = %{
           schema: schema,
           servers:
             Enum.into(servers, [], fn {name, server} ->
-              %{name: name, useTls: server[:use_tls]}
+              %{name: name, useTls: server.use_tls}
             end)
         }
 

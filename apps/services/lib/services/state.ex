@@ -1,5 +1,7 @@
 defmodule Services.State do
-  alias Services.{Event, Hash}
+  alias Services.Event
+  alias Services.Service.Hash
+  :w
 
   @type t :: %__MODULE__{services: %{String.t() => Services.t()}}
   defstruct [:services]

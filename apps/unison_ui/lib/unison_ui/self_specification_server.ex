@@ -2,7 +2,7 @@ defmodule UnisonUI.SelfSpecificationServer do
   use GenServer, restart: :temporary
   require Services
 
-  alias Services.{AsyncApi, Event, Metadata, OpenApi}
+  alias Services.{Event, Service}
 
   @openapi_specification File.read!("priv/openapi.yaml")
   @asyncapi_specification File.read!("priv/asyncapi.yaml")
@@ -23,21 +23,21 @@ defmodule UnisonUI.SelfSpecificationServer do
     _ =
       Services.dispatch_events([
         %Event.Up{
-          service: %AsyncApi{
+          service: %Service.AsyncApi{
             id: "unisonui:unisonui-asyncapi",
             name: "UnisonUI",
             content: @asyncapi_specification,
             use_proxy: false,
-            metadata: %Metadata{provider: "unisonui", file: "asyncapi.yaml"}
+            metadata: %Service.Metadata{provider: "unisonui", file: "asyncapi.yaml"}
           }
         },
         %Event.Up{
-          service: %OpenApi{
+          service: %Service.OpenApi{
             id: "unisonui:unisonui-openapi",
             name: "UnisonUI",
             content: @openapi_specification,
             use_proxy: false,
-            metadata: %Metadata{provider: "unisonui", file: "openapi.yaml"}
+            metadata: %Service.Metadata{provider: "unisonui", file: "openapi.yaml"}
           }
         }
       ])

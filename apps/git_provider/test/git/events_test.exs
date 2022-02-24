@@ -4,9 +4,8 @@ defmodule GitProvider.Git.EventsTest do
 
   import OK, only: [success: 1, failure: 1]
 
-  alias Services.{OpenApi, Grpc, Metadata}
-  alias Services.Event.{Down, Up}
-  alias GitProvider.Git.{Events, Repository, Specifications}
+  alias Services.{Event, Service}
+  alias GitProvider.Git.{Events, Repository, Specifications, Configuration}
 
   @repo %Repository{}
 
@@ -16,7 +15,13 @@ defmodule GitProvider.Git.EventsTest do
         specifications = %Specifications{
           specifications:
             Enum.into(types, %{}, fn type ->
-              {to_string(type), {type, []}}
+              specs =
+                case type do
+                  :grpc -> %Configuration.Grpc.Specification{}
+                  _ -> %Configuration.AsyncOpenApi.Specification{}
+                end
+
+              {to_string(type), {type, specs}}
             end)
         }
 
@@ -25,7 +30,7 @@ defmodule GitProvider.Git.EventsTest do
             :grpc ->
               %Events.Upsert.Grpc{
                 path: "grpc",
-                specs: [],
+                specs: %Configuration.Grpc.Specification{},
                 repository: @repo
               }
 
@@ -33,7 +38,7 @@ defmodule GitProvider.Git.EventsTest do
               %Events.Upsert.AsyncOpenApi{
                 type: type,
                 path: to_string(type),
-                specs: [],
+                specs: %Configuration.AsyncOpenApi.Specification{},
                 repository: @repo
               }
           end)
@@ -51,7 +56,7 @@ defmodule GitProvider.Git.EventsTest do
         Events.load_content(%Events.Upsert.AsyncOpenApi{
           type: :openapi,
           path: "test/git/specifications/openapi.yaml",
-          specs: [],
+          specs: %Configuration.AsyncOpenApi.Specification{},
           repository: @repo
         })
 
@@ -59,7 +64,7 @@ defmodule GitProvider.Git.EventsTest do
                success(%Events.Upsert.AsyncOpenApi{
                  type: :openapi,
                  path: "test/git/specifications/openapi.yaml",
-                 specs: [],
+                 specs: %Configuration.AsyncOpenApi.Specification{},
                  content: ~s/openapi: "3.1.0"\n/,
                  repository: @repo
                })
@@ -86,21 +91,21 @@ defmodule GitProvider.Git.EventsTest do
 
   describe "from/1" do
     test "delete event" do
-      assert Services.Event.from(%Events.Delete{
+      assert Event.from(%Events.Delete{
                path: "test",
                repository: %Repository{
                  name: "test",
                  directory: "/"
                }
              }) ==
-               %Down{id: "test:test"}
+               %Event.Down{id: "test:test"}
     end
 
     test "upsert openapi" do
-      assert Services.Event.from(%Events.Upsert.AsyncOpenApi{
+      assert Event.from(%Events.Upsert.AsyncOpenApi{
                type: :openapi,
                path: "/openapi.yaml",
-               specs: [name: "test", use_proxy: false],
+               specs: %Configuration.AsyncOpenApi.Specification{name: "test", use_proxy: false},
                content: "test",
                repository: %Repository{
                  name: "test",
@@ -108,21 +113,21 @@ defmodule GitProvider.Git.EventsTest do
                  uri: "file:///test"
                }
              }) ==
-               %Up{
-                 service: %OpenApi{
+               %Event.Up{
+                 service: %Service.OpenApi{
                    id: "test:openapi.yaml",
                    name: "test",
                    content: "test",
                    use_proxy: false,
-                   metadata: %Metadata{provider: "local", file: "openapi.yaml"}
+                   metadata: %Service.Metadata{provider: "local", file: "openapi.yaml"}
                  }
                }
     end
 
     test "upsert grpc" do
-      assert Services.Event.from(%Events.Upsert.Grpc{
+      assert Event.from(%Events.Upsert.Grpc{
                path: "/helloworld.proto",
-               specs: [name: "test", servers: []],
+               specs: %Configuration.Grpc.Specification{name: "test", servers: []},
                schema: %{},
                repository: %Repository{
                  name: "test",
@@ -130,13 +135,13 @@ defmodule GitProvider.Git.EventsTest do
                  uri: "file:///test"
                }
              }) ==
-               %Up{
-                 service: %Grpc{
+               %Event.Up{
+                 service: %Service.Grpc{
                    id: "test:helloworld.proto",
                    name: "test",
                    schema: %{},
                    servers: [],
-                   metadata: %Metadata{provider: "local", file: "helloworld.proto"}
+                   metadata: %Service.Metadata{provider: "local", file: "helloworld.proto"}
                  }
                }
     end

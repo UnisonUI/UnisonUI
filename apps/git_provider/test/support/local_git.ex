@@ -1,7 +1,10 @@
 defmodule GitProvider.LocalGit do
-  @default_spec "specifications:
+  @default_spec ~s/version: "2"
+openapi:
+  specifications:
     - test
-  "
+/
+
   defstruct [:path]
 
   defp cmd(cd, args), do: System.cmd("git", args, cd: cd, stderr_to_stdout: true)

@@ -1,21 +1,32 @@
 defmodule ContainerProvider.Specifications do
   alias ContainerProvider.HttpClient
-  alias Services.{Grpc, OpenApi, Metadata}
+  alias Services.Service
   require Logger
-  def retrieve_specification(_, _, nil), do: nil
 
-  def retrieve_specification(id, service_name, endpoint: endpoint, use_proxy: use_proxy) do
+  def retrieve_specification(id, service_name,
+        type: type,
+        endpoint: endpoint,
+        use_proxy: use_proxy
+      ) do
     with data when not is_nil(data) <- HttpClient.download_file(endpoint) do
       %URI{path: path} = URI.parse(endpoint)
-      metadata = %Metadata{provider: "container", file: String.slice(path, 1..-1)}
+      metadata = %Service.Metadata{provider: "container", file: String.slice(path, 1..-1)}
 
-      %OpenApi{
+      fields = %{
         id: id,
         name: service_name,
         content: data,
         use_proxy: use_proxy,
         metadata: metadata
       }
+
+      struct =
+        case type do
+          :openapi -> Service.OpenApi
+          :asyncapi -> Service.AsyncApi
+        end
+
+      struct!(struct, fields)
     end
   end
 
@@ -29,13 +40,13 @@ defmodule ContainerProvider.Specifications do
     endpoint = "#{protocol}://#{address}"
 
     with {:ok, schema} <- GRPC.Reflection.load_schema(endpoint) do
-      metadata = %Metadata{provider: "container", file: address}
+      metadata = %Service.Metadata{provider: "container", file: address}
 
-      %Grpc{
+      %Service.Grpc{
         id: id,
         name: service_name,
         schema: schema,
-        servers: %{address => server},
+        servers: %{address => struct(Service.Grpc.Server, server)},
         metadata: metadata
       }
     else
@@ -44,4 +55,6 @@ defmodule ContainerProvider.Specifications do
         nil
     end
   end
+
+  def retrieve_specification(_, _, _), do: nil
 end

@@ -1,6 +1,7 @@
 defmodule Services.StateTest do
   use ExUnit.Case, async: true
-  alias Services.{Event, OpenApi, State}
+  alias Services.{Event, State}
+  alias Services.Service.OpenApi
 
   describe "reduce/2" do
     setup do

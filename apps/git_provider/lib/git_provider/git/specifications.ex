@@ -1,4 +1,6 @@
 defmodule GitProvider.Git.Specifications do
+  alias GitProvider.Git.Configuration.{AsyncOpenApi, Grpc}
+
   @type specification :: {
           :asyncapi | :openapi | :grpc,
           GitProvider.Git.Configuration.AsyncOpenApi.spec()
@@ -17,7 +19,7 @@ defmodule GitProvider.Git.Specifications do
           repo_service_name :: String.t()
         ) :: t()
   def from_configuration(
-        {type, %{use_proxy: use_proxy, specifications: specifications}},
+        {type, %AsyncOpenApi{use_proxy: use_proxy, specifications: specifications}},
         directory,
         service_name,
         repo_service_name
@@ -25,14 +27,15 @@ defmodule GitProvider.Git.Specifications do
       do: %__MODULE__{
         specifications:
           Enum.into(specifications, %{}, fn specs ->
-            path = directory |> Path.join(specs[:path]) |> Path.expand()
+            path = directory |> Path.join(specs.path) |> Path.expand()
 
             specs =
-              Keyword.update!(specs, :name, fn
+              specs
+              |> Map.update!(:name, fn
                 nil -> service_name || repo_service_name
                 name -> name
               end)
-              |> Keyword.update!(:use_proxy, fn
+              |> Map.update!(:use_proxy, fn
                 nil -> use_proxy
                 proxy -> proxy
               end)
@@ -42,7 +45,7 @@ defmodule GitProvider.Git.Specifications do
       }
 
   def from_configuration(
-        %{servers: servers, files: files},
+        %Grpc{servers: servers, files: files},
         directory,
         service_name,
         repo_service_name
@@ -54,11 +57,11 @@ defmodule GitProvider.Git.Specifications do
 
             specs =
               specs
-              |> Keyword.update!(:name, fn
+              |> Map.update!(:name, fn
                 nil -> service_name || repo_service_name
                 name -> name
               end)
-              |> Keyword.update!(:servers, fn
+              |> Map.update!(:servers, fn
                 [] -> servers
                 servers -> servers
               end)

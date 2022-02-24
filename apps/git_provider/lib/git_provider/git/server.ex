@@ -99,17 +99,12 @@ defmodule GitProvider.Git.Server do
   def handle_info(_, state), do: {:noreply, state}
 
   defp find_config_file(directory) do
-    restui = Path.join(directory, ".restui.yaml")
     unisonui = Path.join(directory, ".unisonui.yaml")
 
     if File.exists?(unisonui) do
       unisonui
     else
-      if File.exists?(restui) do
-        restui
-      else
-        nil
-      end
+      nil
     end
   end
 

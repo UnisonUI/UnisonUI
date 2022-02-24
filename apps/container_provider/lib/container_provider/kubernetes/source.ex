@@ -56,8 +56,16 @@ defmodule ContainerProvider.Kubernetes.Source do
 
               events =
                 [
-                  Specifications.retrieve_specification(id, service_name, openapi),
-                  Specifications.retrieve_specification(id, service_name, asyncapi),
+                  Specifications.retrieve_specification(
+                    id,
+                    service_name,
+                    openapi && Keyword.put(openapi, :type, :openapi)
+                  ),
+                  Specifications.retrieve_specification(
+                    id,
+                    service_name,
+                    asyncapi && Keyword.put(asyncapi, :type, :asyncapi)
+                  ),
                   Specifications.retrieve_specification(id, service_name, grpc)
                 ]
                 |> Enum.reject(&is_nil/1)

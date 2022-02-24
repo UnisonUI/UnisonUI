@@ -5,11 +5,11 @@ defmodule GitProvider.Git.Events.Delete do
   defimpl Services.Event.From, for: __MODULE__ do
     alias GitProvider.Git.Events.Delete
     alias GitProvider.Git.Repository
-    alias Services.Event.Down
+    alias Services.Event
 
     def from(%Delete{path: path, repository: %Repository{name: name, directory: directory}}) do
       path = String.replace_prefix(path, directory, "") |> String.trim_leading("/")
-      %Down{id: "#{name}:#{path}"}
+      %Event.Down{id: "#{name}:#{path}"}
     end
   end
 

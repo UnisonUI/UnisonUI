@@ -1,6 +1,6 @@
 defmodule WebhookProvider.Service do
   require Logger
-  alias Services.{AsyncApi, Grpc, OpenApi, Metadata}
+  alias Services.Service
 
   def from_map(service) do
     decode_asyncopenapi(service) || decode_grpc(service)
@@ -19,8 +19,8 @@ defmodule WebhookProvider.Service do
 
       type =
         case type do
-          "asyncapi" -> AsyncApi
-          "openapi" -> OpenApi
+          "asyncapi" -> Service.AsyncApi
+          "openapi" -> Service.OpenApi
         end
 
       struct(type, service)
@@ -36,7 +36,7 @@ defmodule WebhookProvider.Service do
          :ok <- File.write(file, schema),
          {:ok, schema} <- GRPC.Protobuf.compile(file),
          _ <- File.rm(file) do
-      %Grpc{
+      %Service.Grpc{
         id: id(name),
         name: name,
         schema: schema,
@@ -59,7 +59,7 @@ defmodule WebhookProvider.Service do
 
   def id(service_name), do: "webhook:#{service_name}"
 
-  defp metadata(service_name), do: %Metadata{provider: "webhook", file: service_name}
+  defp metadata(service_name), do: %Service.Metadata{provider: "webhook", file: service_name}
 
   defp random_file,
     do:

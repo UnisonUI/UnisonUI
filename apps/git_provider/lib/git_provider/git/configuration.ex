@@ -1,44 +1,27 @@
 defmodule GitProvider.Git.Configuration do
-  import Norm
   use OK.Pipe
+  use TypeCheck
 
   alias GitProvider.Git.Configuration.{AsyncOpenApi, Grpc}
 
-  @type t :: %__MODULE__{
-          version: String.t(),
-          name: String.t() | nil,
-          openapi: AsyncOpenApi.t() | nil,
-          asyncapi: AsyncOpenApi.t() | nil,
-          grpc: Grpc.t() | nil
-        }
-  defstruct [:name, :openapi, :asyncapi, :grpc, version: "1"]
+  defstruct [:name, :openapi, :asyncapi, :grpc, :version]
 
-  def s,
-    do:
-      one_of([
-        schema(%__MODULE__{
-          version: "1",
-          name: spec(is_binary() or is_nil()),
-          openapi: one_of([spec(is_nil()), AsyncOpenApi.s()]),
-          grpc: spec(is_nil())
-        }),
-        schema(%__MODULE__{
-          version: spec(is_binary() and (&(&1 != "1"))),
-          name: spec(is_binary() or is_nil()),
-          openapi: one_of([spec(is_nil()), AsyncOpenApi.s()]),
-          grpc: one_of([spec(is_nil()), Grpc.s()])
-        })
-      ])
+  @type! t :: %__MODULE__{
+           version: literal("2"),
+           name: String.t() | nil,
+           openapi: AsyncOpenApi.t() | nil,
+           asyncapi: AsyncOpenApi.t() | nil,
+           grpc: Grpc.t() | nil
+         }
 
   @spec from_file(path :: String.t()) :: {:ok, t()} | {:error, term()}
   def from_file(path) do
-    YamlElixir.read_from_file(path) ~> decode() ~>> conform(s())
+    YamlElixir.read_from_file(path) ~> decode() ~>> TypeCheck.dynamic_conforms(t())
   end
 
   defp decode(keywords) do
     fields =
-      keywords
-      |> Enum.map(fn
+      Enum.map(keywords, fn
         {"asyncapi", value} when is_map(value) ->
           {:asyncapi, AsyncOpenApi.decode(value)}
 
@@ -51,38 +34,34 @@ defmodule GitProvider.Git.Configuration do
         {"grpc", value} when is_map(value) ->
           {:grpc, Grpc.decode(value)}
 
-        {"useProxy", value} ->
-          {:use_proxy, value}
-
         {key, value} ->
           {String.to_atom(key), value}
       end)
-      |> Enum.into(%{})
 
-    new_fields =
-      case {Map.get(fields, :use_proxy), Map.get(fields, :version, "1")} do
-        {use_proxy, "1"} when is_boolean(use_proxy) ->
-          fields
-          |> Map.update(:openapi, %{}, fn openapi ->
-            %{openapi | use_proxy: use_proxy}
-          end)
-          |> Map.delete(:use_proxy)
-
-        _ ->
-          fields
-      end
-
-    struct!(__MODULE__, new_fields)
+    struct(__MODULE__, fields)
   end
 
   defmodule AsyncOpenApi do
-    @type spec :: [path: String.t(), name: String.t() | nil, use_proxy: boolean() | nil]
-    @type t :: %__MODULE__{
-            specifications: [spec()],
-            use_proxy: boolean()
-          }
+    defmodule Specification do
+      use TypeCheck
+      defstruct [:path, :name, use_proxy: false]
+
+      @type! t :: %__MODULE__{
+               path: String.t(),
+               name: String.t() | nil,
+               use_proxy: boolean()
+             }
+    end
+
+    use TypeCheck
+    alias __MODULE__.Specification
+
     defstruct [:specifications, use_proxy: false]
-    def s, do: schema(%__MODULE__{use_proxy: spec(is_boolean())})
+
+    @type! t :: %__MODULE__{
+             specifications: [Specification.t()],
+             use_proxy: boolean()
+           }
 
     def decode(keywords) do
       fields =
@@ -93,19 +72,19 @@ defmodule GitProvider.Git.Configuration do
               value
               |> Enum.map(fn
                 path when is_binary(path) ->
-                  [path: path, name: nil, use_proxy: false]
+                  %Specification{path: path}
 
                 spec when is_map(spec) ->
                   spec
-                  |> Enum.reduce([path: nil, name: nil, use_proxy: false], fn
+                  |> Enum.reduce(%Specification{}, fn
                     {"path", path}, acc ->
-                      Keyword.update!(acc, :path, fn _ -> to_string(path) end)
+                      %Specification{acc | path: to_string(path)}
 
                     {"name", name}, acc ->
-                      Keyword.update!(acc, :name, fn _ -> to_string(name) end)
+                      %Specification{acc | name: to_string(name)}
 
                     {"useProxy", use_proxy}, acc ->
-                      Keyword.update!(acc, :use_proxy, fn _ -> use_proxy end)
+                      %Specification{acc | use_proxy: to_string(use_proxy)}
 
                     _, acc ->
                       acc
@@ -121,54 +100,68 @@ defmodule GitProvider.Git.Configuration do
             []
         end)
 
-      struct!(__MODULE__, fields)
+      struct(__MODULE__, fields)
     end
   end
 
   defmodule Grpc do
-    @type servers :: %{String.t() => Services.Grpc.server()}
-    @type spec :: [name: String.t() | nil, servers: servers()]
-    @type t :: %__MODULE__{
-            servers: servers(),
-            files: %{String.t() => spec()}
-          }
-    defstruct [:servers, :files]
+    use TypeCheck
 
-    def s, do: schema(%__MODULE__{})
+    # %{binary() => Services.Service.Grpc.Server.t()}
+    @opaque! servers :: map()
+
+    defmodule Specification do
+      use TypeCheck
+      defstruct [:name, :servers]
+
+      @type! t :: %__MODULE__{
+               name: String.t() | nil,
+               servers: GitProvider.Git.Configuration.Grpc.servers()
+             }
+    end
+
+    alias __MODULE__.Specification
+    alias Services.Service.Grpc.Server
+
+    defstruct [:files, servers: %{}]
+
+    @type! t :: %__MODULE__{
+             servers: servers(),
+             # (%{binary() => Specification.t()}
+             files: map()
+           }
 
     defp decode_server(keywords) do
-      server =
-        Enum.reduce(keywords, [address: nil, port: nil, use_tls: false, name: nil], fn
-          {"address", address}, acc ->
-            Keyword.update!(acc, :address, fn _ -> to_string(address) end)
+      {server, name} =
+        Enum.reduce(keywords, {%Server{}, nil}, fn
+          {"address", address}, {acc, name} ->
+            {%Server{acc | address: to_string(address)}, name}
 
-          {"name", name}, acc ->
-            Keyword.update!(acc, :name, fn _ -> to_string(name) end)
+          {"name", name}, {acc, _} ->
+            {acc, name}
 
-          {"port", port}, acc ->
-            Keyword.update!(acc, :port, fn _ -> port end)
+          {"port", port}, {acc, name} ->
+            {%Server{acc | port: port}, name}
 
-          {"useTls", use_tls}, acc ->
-            Keyword.update!(acc, :use_tls, fn _ -> use_tls end)
+          {"useTls", use_tls}, {acc, name} ->
+            {%Server{acc | use_tls: use_tls}, name}
 
           _, acc ->
             acc
         end)
 
-      {server[:name] || "#{server[:address]}:#{server[:port]}", Keyword.delete(server, :name)}
+      {name || "#{server.address}:#{server.port}", server}
     end
 
     defp decode_file({file, keywords}),
       do:
         {file,
-         Enum.reduce(keywords, [name: nil, servers: %{}], fn
+         Enum.reduce(keywords, %Specification{}, fn
            {"name", name}, acc ->
-             Keyword.update!(acc, :name, fn _ -> to_string(name) end)
+             %Specification{acc | name: to_string(name)}
 
            {"servers", servers}, acc ->
-             Keyword.update!(acc, :servers, fn _ ->
-               servers |> Enum.map(&decode_server/1) |> Enum.into(%{})
-             end)
+             %Specification{acc | servers: Enum.into(servers, %{}, &decode_server/1)}
 
            _, acc ->
              acc
@@ -179,13 +172,13 @@ defmodule GitProvider.Git.Configuration do
         keywords
         |> Enum.map(fn
           {"servers", value} when is_list(value) ->
-            {:servers, value |> Enum.map(&decode_server/1) |> Enum.into(%{})}
+            {:servers, Enum.into(value, %{}, &decode_server/1)}
 
           {"protobufs", value} when is_map(value) ->
-            {:files, Enum.map(value, &decode_file/1) |> Enum.into(%{})}
+            {:files, Enum.into(value, %{}, &decode_file/1)}
         end)
 
-      struct!(__MODULE__, fields)
+      struct(__MODULE__, fields)
     end
   end
 end

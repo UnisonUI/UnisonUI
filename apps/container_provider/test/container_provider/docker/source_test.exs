@@ -1,5 +1,6 @@
 defmodule ContainerProvider.Docker.SourceTest do
   use ExUnit.Case, async: false
+  alias Services.{Event, Service}
 
   @service_name "test"
   @id "12345"
@@ -52,11 +53,11 @@ defmodule ContainerProvider.Docker.SourceTest do
 
     start_source("http://localhost:#{bypass.port}")
 
-    up = %Services.Event.Up{
-      service: %Services.OpenApi{
+    up = %Event.Up{
+      service: %Service.OpenApi{
         content: "OK",
         id: @id,
-        metadata: %Services.Metadata{
+        metadata: %Service.Metadata{
           file: "openapi.yaml",
           provider: "container"
         },
@@ -65,7 +66,7 @@ defmodule ContainerProvider.Docker.SourceTest do
       }
     }
 
-    down = %Services.Event.Down{id: @id}
+    down = %Event.Down{id: @id}
     assert_receive ^up, 1_000
 
     assert_receive ^down, 1_000

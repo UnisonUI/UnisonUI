@@ -3,30 +3,35 @@ defmodule GitProvider.Git.ServerTest do
   alias GitProvider.LocalGit
   alias GitProvider.Git.{Repository, Server}
   alias Services.Storage.Memory
+  alias Services.{Event, Service}
 
   @duration 50
 
-  @specs "specifications:
+  @event_down %Event.Down{id: "test:test"}
+
+  @specs ~s/version: "2"
+openapi:
+  specifications:
     - test2
-  "
+/
   @grpc_specs ~s/version: "2"
-  openapi:
-    specifications:
-      - test
-  grpc:
-    servers:
-      - address: 127.0.0.1
-        port: 8080
+openapi:
+  specifications:
+    - test
+grpc:
+  servers:
+    - address: 127.0.0.1
+      port: 8080
   protobufs:
-    "helloworld.proto": {}assert_receive
-  /
+    "helloworld.proto": {}
+/
 
   defp expected_event_up(id, file \\ nil),
-    do: %Services.Event.Up{
-      service: %Services.OpenApi{
+    do: %Event.Up{
+      service: %Service.OpenApi{
         content: id,
         id: "test:#{id}",
-        metadata: %Services.Metadata{
+        metadata: %Service.Metadata{
           file: file || id,
           provider: "local"
         },
@@ -35,7 +40,6 @@ defmodule GitProvider.Git.ServerTest do
       }
     }
 
-  @event_down %Services.Event.Down{id: "test:test"}
   setup_all do
     Application.put_env(:services, :storage_backend, Services.Storage.Memory)
     Application.put_env(:services, :aggregator, AggregatorStub)

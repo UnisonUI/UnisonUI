@@ -2,7 +2,7 @@ defmodule WebhookProvider.SelfSpecificationServer do
   use GenServer, restart: :temporary
   require Services
 
-  alias Services.{Event, Metadata, OpenApi}
+  alias Services.{Event, Service}
 
   @specification File.read!("priv/webhook-specification.yaml")
 
@@ -22,12 +22,12 @@ defmodule WebhookProvider.SelfSpecificationServer do
     _ =
       Services.dispatch_events([
         %Event.Up{
-          service: %OpenApi{
+          service: %Service.OpenApi{
             id: "unisonui:webhook",
             name: "Webhook provider",
             content: @specification,
             use_proxy: false,
-            metadata: %Metadata{provider: "webhook", file: "webhook-specification.yaml"}
+            metadata: %Service.Metadata{provider: "webhook", file: "webhook-specification.yaml"}
           }
         }
       ])

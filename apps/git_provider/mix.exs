@@ -38,7 +38,7 @@ defmodule GitProvider.MixProject do
       {:finch, "~> 0.9.1"},
       {:jason, "~> 1.3"},
       {:horde, "~> 0.8.6"},
-      {:norm, "~> 0.13"},
+      {:type_check, "~> 0.10.7"},
       {:durex, "~> 0.3"},
       {:ok, "~> 2.3"},
       {:neuron, "~> 5.0"},

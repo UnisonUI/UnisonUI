@@ -4,7 +4,7 @@ defmodule ContainerProvider.Docker.Source do
   require Services
   alias ContainerProvider.Docker.{GetClient, EventsClient}
   alias ContainerProvider.{Labels, Specifications}
-  alias Services.Event.{Down, Up}
+  alias Services.Event
 
   def start_link(uri), do: GenServer.start_link(__MODULE__, uri, name: __MODULE__)
 
@@ -78,23 +78,31 @@ defmodule ContainerProvider.Docker.Source do
          [service_name: service_name, openapi: openapi, asyncapi: asyncapi, grpc: grpc] <-
            Labels.extract_endpoint(labels, ip) do
       [
-        Specifications.retrieve_specification(id, service_name, openapi),
-        Specifications.retrieve_specification(id, service_name, asyncapi),
+        Specifications.retrieve_specification(
+          id,
+          service_name,
+          openapi && Keyword.put(openapi, :type, :openapi)
+        ),
+        Specifications.retrieve_specification(
+          id,
+          service_name,
+          asyncapi && Keyword.put(asyncapi, :type, :asyncapi)
+        ),
         Specifications.retrieve_specification(id, service_name, grpc)
       ]
       |> Enum.reject(&is_nil/1)
-      |> Enum.map(&%Up{service: &1})
+      |> Enum.map(&%Event.Up{service: &1})
     else
       _ -> []
     end
   end
 
-  defp handle_event("stop", id, _labels), do: [%Down{id: id}]
+  defp handle_event("stop", id, _labels), do: [%Event.Down{id: id}]
 
   defp extract_labels(labels) do
     labels = Labels.from_map(labels)
 
-    if Labels.valid?(labels) do
+    unless Labels.valid?(labels) do
       nil
     else
       labels

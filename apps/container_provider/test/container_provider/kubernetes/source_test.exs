@@ -1,5 +1,7 @@
 defmodule ContainerProvider.Kubernetes.SourceTest do
   use ExUnit.Case, async: false
+  alias Services.{Event, Service}
+
   import Mock
   @service_name "test"
   @id1 "ns1_1"
@@ -68,11 +70,11 @@ defmodule ContainerProvider.Kubernetes.SourceTest do
     with_mocks([mock_k8s_connection(), mock_k8s_run(agent)]) do
       start_source()
 
-      up = %Services.Event.Up{
-        service: %Services.OpenApi{
+      up = %Event.Up{
+        service: %Service.OpenApi{
           content: "OK",
           id: @id1,
-          metadata: %Services.Metadata{
+          metadata: %Service.Metadata{
             file: "openapi.yaml",
             provider: "container"
           },
@@ -83,11 +85,11 @@ defmodule ContainerProvider.Kubernetes.SourceTest do
 
       assert_receive ^up, 1_000
 
-      up = %Services.Event.Up{
-        service: %Services.OpenApi{
+      up = %Event.Up{
+        service: %Service.OpenApi{
           content: "OK",
           id: @id2,
-          metadata: %Services.Metadata{
+          metadata: %Service.Metadata{
             file: "openapi.yaml",
             provider: "container"
           },

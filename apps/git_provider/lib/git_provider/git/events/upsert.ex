@@ -7,7 +7,7 @@ defmodule GitProvider.Git.Events.Upsert do
             type: :openapi | :asyncapi,
             path: String.t(),
             content: String.t(),
-            specs: GitProvider.Git.Configuration.AsyncOpenApi.spec(),
+            specs: GitProvider.Git.Configuration.AsyncOpenApi.Specification.t(),
             repository: GitProvider.Git.Repository.t()
           }
     defstruct [:type, :path, :content, :specs, :repository]
@@ -15,14 +15,14 @@ defmodule GitProvider.Git.Events.Upsert do
     defimpl Services.Event.From, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
       alias GitProvider.Git.Repository
-      alias Services.Event.Up
-      alias Services.{AsyncApi, OpenApi, Metadata}
+      alias GitProvider.Git.Configuration.AsyncOpenApi.Specification
+      alias Services.{Event, Service}
 
       def from(%Upsert.AsyncOpenApi{
             type: type,
             path: path,
             content: content,
-            specs: specs,
+            specs: %Specification{name: service_name, use_proxy: use_proxy},
             repository:
               %Repository{
                 name: name,
@@ -30,8 +30,6 @@ defmodule GitProvider.Git.Events.Upsert do
               } = repo
           }) do
         provider = Repository.provider(repo)
-        service_name = specs[:name]
-        use_proxy = specs[:use_proxy]
 
         filename =
           path
@@ -45,16 +43,16 @@ defmodule GitProvider.Git.Events.Upsert do
           name: service_name,
           content: content,
           use_proxy: use_proxy,
-          metadata: %Metadata{provider: provider, file: filename}
+          metadata: %Service.Metadata{provider: provider, file: filename}
         }
 
         service =
           case type do
-            :asyncapi -> struct(AsyncApi, service)
-            :openapi -> struct(OpenApi, service)
+            :asyncapi -> struct(Service.AsyncApi, service)
+            :openapi -> struct(Service.OpenApi, service)
           end
 
-        %Up{service: service}
+        %Event.Up{service: service}
       end
     end
 
@@ -76,7 +74,7 @@ defmodule GitProvider.Git.Events.Upsert do
     @type t :: %__MODULE__{
             path: String.t(),
             schema: GRPC.Protobuf.Structs.Schema.t(),
-            specs: GitProvider.Git.Configuration.Grpc.spec(),
+            specs: GitProvider.Git.Configuration.Grpc.Specification.t(),
             repository: GitProvider.Git.Repository.t()
           }
     defstruct [:path, :schema, :specs, :repository]
@@ -84,13 +82,13 @@ defmodule GitProvider.Git.Events.Upsert do
     defimpl Services.Event.From, for: __MODULE__ do
       alias GitProvider.Git.Events.Upsert
       alias GitProvider.Git.Repository
-      alias Services.Event.Up
-      alias Services.{Grpc, Metadata}
+      alias GitProvider.Git.Configuration.Grpc.Specification
+      alias Services.{Event, Service}
 
       def from(%Upsert.Grpc{
             path: path,
             schema: schema,
-            specs: specs,
+            specs: %Specification{name: service_name, servers: servers},
             repository:
               %Repository{
                 name: name,
@@ -98,8 +96,6 @@ defmodule GitProvider.Git.Events.Upsert do
               } = repo
           }) do
         provider = Repository.provider(repo)
-        service_name = specs[:name]
-        servers = specs[:servers]
 
         filename =
           path
@@ -108,15 +104,15 @@ defmodule GitProvider.Git.Events.Upsert do
 
         id = "#{name}:#{filename}"
 
-        service = %Grpc{
+        service = %Service.Grpc{
           id: id,
           name: service_name,
           schema: schema,
           servers: servers,
-          metadata: %Metadata{provider: provider, file: filename}
+          metadata: %Service.Metadata{provider: provider, file: filename}
         }
 
-        %Up{service: service}
+        %Event.Up{service: service}
       end
     end
 
