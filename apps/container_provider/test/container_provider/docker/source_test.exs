@@ -103,8 +103,8 @@ defmodule ContainerProvider.Docker.SourceTest do
   end
 
   defp stop_source() do
-    stop_supervised!(AggregatorStub)
-    stop_supervised!(ContainerProvider.Docker.Source)
+    stop_supervised(AggregatorStub)
+    stop_supervised(ContainerProvider.Docker.Source)
   end
 
   defp setup_mock(bypass, labels, events) do
