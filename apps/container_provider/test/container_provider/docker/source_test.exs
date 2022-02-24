@@ -31,6 +31,7 @@ defmodule ContainerProvider.Docker.SourceTest do
 
       start_source("http://localhost:#{bypass.port}")
       refute_receive _, 1_000
+      stop_source()
     end
 
     test "could not decode event", %{bypass: bypass} do
@@ -40,6 +41,7 @@ defmodule ContainerProvider.Docker.SourceTest do
 
       start_source("http://localhost:#{bypass.port}")
       refute_receive _, 1_000
+      stop_source()
     end
   end
 
@@ -70,6 +72,7 @@ defmodule ContainerProvider.Docker.SourceTest do
     assert_receive ^up, 1_000
 
     assert_receive ^down, 1_000
+    stop_source()
   end
 
   test "there is a mising label", %{bypass: bypass} do
@@ -82,6 +85,7 @@ defmodule ContainerProvider.Docker.SourceTest do
     start_source("http://localhost:#{bypass.port}")
 
     refute_receive _, 1_000
+    stop_source()
   end
 
   test "there is a no labels", %{bypass: bypass} do
@@ -90,11 +94,17 @@ defmodule ContainerProvider.Docker.SourceTest do
     start_source("http://localhost:#{bypass.port}")
 
     refute_receive _, 1_000
+    stop_source()
   end
 
   defp start_source(host) do
     start_supervised!({AggregatorStub, self()})
     start_supervised!({ContainerProvider.Docker.Source, host})
+  end
+
+  defp stop_source() do
+    stop_supervised!(AggregatorStub)
+    stop_supervised!(ContainerProvider.Docker.Source)
   end
 
   defp setup_mock(bypass, labels, events) do
