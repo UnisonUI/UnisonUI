@@ -29,7 +29,7 @@ class Grpc extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (this.location.pathname !== prevlocation.pathname) {
+    if (this.location.pathname !== prevProps.location.pathname) {
       this._loadSpec(this.location.pathname.substring(1));
     }
   }
