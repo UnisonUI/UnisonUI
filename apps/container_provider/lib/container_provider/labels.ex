@@ -46,9 +46,9 @@ defmodule ContainerProvider.Labels do
   @spec extract_endpoint(labels :: t(), ip :: String.t() | nil) ::
           [
             service_name: String.t(),
-            openapi: async_openapi(),
-            asyncapi: async_openapi(),
-            grpc: grpc()
+            openapi: async_openapi() | nil,
+            asyncapi: async_openapi() | nil,
+            grpc: grpc() | nil
           ]
           | nil
   def extract_endpoint(_, nil), do: nil

@@ -3,8 +3,8 @@ defmodule GitProvider.Git.Specifications do
 
   @type specification :: {
           :asyncapi | :openapi | :grpc,
-          GitProvider.Git.Configuration.AsyncOpenApi.spec()
-          | GitProvider.Git.Configuration.Grpc.spec()
+          GitProvider.Git.Configuration.AsyncOpenApi.Specification.t()
+          | GitProvider.Git.Configuration.Grpc.Specification.t()
         }
 
   @type t :: %__MODULE__{specifications: %{String.t() => specification()}}
