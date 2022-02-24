@@ -99,7 +99,7 @@ defmodule ContainerProvider.Docker.SourceTest do
       {:ok, pid} ->
         pid
 
-      {:error, {:already_started, pid}} ->
+      {:error, {{:already_started, pid}, _}} ->
         stop_supervised(pid)
         start_supervised!({ContainerProvider.Docker.Source, host})
     end
