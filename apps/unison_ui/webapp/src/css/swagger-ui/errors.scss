@@ -3,7 +3,7 @@
     @apply m-4 py-2 px-4;
     @apply rounded-lg;
     @apply nm-flat-red-200;
-    animation: scaleUp .5s;
+    animation: scaleUp 0.5s;
 
     .error-wrapper {
       @apply mt-0 mr-0 ml-2 mb-2;
@@ -37,7 +37,7 @@
 
   @keyframes scaleUp {
     0% {
-      transform: scale(.8);
+      transform: scale(0.8);
       opacity: 0;
     }
 

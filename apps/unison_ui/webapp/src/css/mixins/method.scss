@@ -1,4 +1,4 @@
-@mixin method ($color) {
+@mixin method($color) {
   @apply nm-flat-#{""+$color}-200-sm #{!important};
 
   &:hover {
@@ -8,7 +8,7 @@
   .opblock-summary-method {
     @apply nm-concave-#{""+$color}-400-sm;
   }
-  
+
   .opblock-summary {
     @apply border-#{""+$color}-400;
   }

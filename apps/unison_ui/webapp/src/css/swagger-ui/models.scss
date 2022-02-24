@@ -48,7 +48,6 @@
         background: none;
       }
     }
-
   }
   .model {
     @apply text-sm font-light font-code;
@@ -58,10 +57,11 @@
     }
 
     .deprecated {
-      span, td {
+      span,
+      td {
         @apply text-gray-700;
       }
-  
+
       > td:first-of-type {
         @apply line-through;
       }
@@ -85,7 +85,7 @@
       @apply transition-transform transform rotate-0 duration-200 ease-in;
       transform-origin: 50% 50%;
       top: 6px;
-      margin: auto .3em;
+      margin: auto 0.3em;
 
       &.collapsed {
         @apply transform -rotate-90;
@@ -95,7 +95,7 @@
         @apply block;
         width: 20px;
         height: 20px;
-        content: '';
+        content: "";
         background: url(~mixins/chevron-down.svg) center center no-repeat;
         background-size: 100%;
       }
@@ -105,7 +105,7 @@
       @apply relative cursor-pointer;
       .view-line-link {
         @apply absolute cursor-pointer;
-        top: -.4em;
+        top: -0.4em;
       }
     }
 
@@ -157,5 +157,4 @@
       @apply text-gray-700;
     }
   }
-
 }

@@ -1,86 +1,86 @@
-const path = require('path')
-const webpack = require('webpack')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const HtmlWebPackPlugin = require('html-webpack-plugin')
-const CompressionPlugin = require('compression-webpack-plugin')
-const NodePolyfillPlugin = require("node-polyfill-webpack-plugin")
+const path = require("path");
+const webpack = require("webpack");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const HtmlWebPackPlugin = require("html-webpack-plugin");
+const CompressionPlugin = require("compression-webpack-plugin");
+const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 module.exports = {
   entry: {
-    main: path.join(__dirname, 'src', 'index.js')
+    main: path.join(__dirname, "src", "index.js"),
   },
   output: {
-    path: path.join(__dirname, '..', 'priv', 'statics'),
-    publicPath: '/statics/'
+    path: path.join(__dirname, "..", "priv", "statics"),
+    publicPath: "/statics/",
   },
   optimization: {
     splitChunks: {
-      automaticNameDelimiter: '-',
-      chunks: 'all'
-    }
+      automaticNameDelimiter: "-",
+      chunks: "all",
+    },
   },
   resolve: {
     alias: { mixins: path.resolve(__dirname, "src", "css", "mixins") },
-    roots: [path.resolve(__dirname)]
+    roots: [path.resolve(__dirname)],
   },
   module: {
     rules: [
       {
         test: /\.html$/,
-        loader: 'html-loader'
+        loader: "html-loader",
       },
       {
         test: /\.((eot)|(woff)|(woff2)|(ttf))(\?v=\d+\.\d+\.\d+)?$/,
-        loader: 'file-loader',
+        loader: "file-loader",
         options: {
-          name: 'fonts/[name].[sha512:hash:hex:10].[ext]',
-          publicPath: '/statics/'
-        }
+          name: "fonts/[name].[sha512:hash:hex:10].[ext]",
+          publicPath: "/statics/",
+        },
       },
       {
-        loader: 'babel-loader',
+        loader: "babel-loader",
         test: /\.jsx?$/,
         options: {
           retainLines: true,
-          cacheDirectory: true
-        }
+          cacheDirectory: true,
+        },
       },
       {
         test: /\.s?css$/,
         use: [
           MiniCssExtractPlugin.loader,
-          'css-loader',
-          'postcss-loader',
-          'sass-loader'
-        ]
-      }
-    ]
+          "css-loader",
+          "postcss-loader",
+          "sass-loader",
+        ],
+      },
+    ],
   },
   plugins: [
     new NodePolyfillPlugin(),
     new webpack.ProvidePlugin({
-      Buffer: ['buffer', 'Buffer']
+      Buffer: ["buffer", "Buffer"],
     }),
     new HtmlWebPackPlugin({
-      template: path.join(__dirname, 'src', 'index.html'),
-      filename: 'index.html'
+      template: path.join(__dirname, "src", "index.html"),
+      filename: "index.html",
     }),
     new CompressionPlugin({
-      filename: '[path][base].gz[query]',
-      algorithm: 'gzip',
+      filename: "[path][base].gz[query]",
+      algorithm: "gzip",
       threshold: 10240,
       minRatio: 0.8,
-      deleteOriginalAssets: false
+      deleteOriginalAssets: false,
     }),
     new CompressionPlugin({
-      filename: '[path][base].br[query]',
-      algorithm: 'brotliCompress',
+      filename: "[path][base].br[query]",
+      algorithm: "brotliCompress",
       compressionOptions: {
-        level: 11
+        level: 11,
       },
       threshold: 10240,
       minRatio: 0.8,
-      deleteOriginalAssets: false
-    })
-  ]
-}
+      deleteOriginalAssets: false,
+    }),
+  ],
+};

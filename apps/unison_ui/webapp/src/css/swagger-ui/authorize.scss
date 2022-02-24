@@ -15,14 +15,14 @@
       @apply pr-4 mr-2;
 
       &.modal-btn {
-        @apply pr-8 mr-4; 
+        @apply pr-8 mr-4;
       }
     }
-}
+  }
 
   .auth-container {
     @apply py-2 px-4 mt-0 mr-0 ml-2 mb-2;
-    border-bottom: 1px solid theme('colors.gray.200');
+    border-bottom: 1px solid theme("colors.gray.200");
 
     &:last-of-type {
       @apply m-0 border-0 py-2 px-4;
@@ -39,7 +39,8 @@
       box-shadow: inherit;
     }
 
-    input[type=text], input[type=password] {
+    input[type="text"],
+    input[type="password"] {
       min-width: 230px;
     }
 

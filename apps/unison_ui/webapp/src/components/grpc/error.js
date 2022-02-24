@@ -1,18 +1,18 @@
-import React, { Component } from 'react'
-import { Collapse } from './utils'
+import React, { Component } from "react";
+import { Collapse } from "./utils";
 
 export default class Error extends Component {
-  constructor (props) {
-    super(props)
-    this.state = { isVisible: true }
-    this.toggleVisibility = this.toggleVisibility.bind(this)
+  constructor(props) {
+    super(props);
+    this.state = { isVisible: true };
+    this.toggleVisibility = this.toggleVisibility.bind(this);
   }
 
-  toggleVisibility () {
-    this.setState({ isVisible: !this.state.isVisible })
+  toggleVisibility() {
+    this.setState({ isVisible: !this.state.isVisible });
   }
 
-  render () {
+  render() {
     return (
       <pre className="errors-wrapper">
         <hgroup className="error">
@@ -21,7 +21,7 @@ export default class Error extends Component {
             className="btn errors__clear-btn"
             onClick={this.toggleVisibility}
           >
-            {this.state.isVisible ? 'Hide' : 'Show'}
+            {this.state.isVisible ? "Hide" : "Show"}
           </button>
         </hgroup>
         <Collapse isOpened={this.state.isVisible}>
@@ -34,6 +34,6 @@ export default class Error extends Component {
           </div>
         </Collapse>
       </pre>
-    )
+    );
   }
 }

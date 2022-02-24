@@ -10,7 +10,7 @@
 
     &.invalid {
       @apply nm-flat-red-600;
-      animation: shake .4s 1;
+      animation: shake 0.4s 1;
     }
   }
 
@@ -26,12 +26,11 @@
     margin: 0 0 5px;
   }
 
-
-  input[type=text],
-  input[type=password],
-  input[type=search],
-  input[type=email],
-  input[type=file],
+  input[type="text"],
+  input[type="password"],
+  input[type="search"],
+  input[type="email"],
+  input[type="file"],
   textarea {
     @apply border-0 appearance-none rounded-lg;
     @apply w-full my-6 leading-tight nm-inset-gray-800;
@@ -51,7 +50,9 @@
     }
   }
 
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     &[disabled] {
       @apply cursor-not-allowed;
     }
@@ -60,26 +61,32 @@
     @include nm-inset(background);
   }
 
-  textarea, select {
+  textarea,
+  select {
     &[disabled] {
       @apply bg-background text-primary cursor-not-allowed;
     }
   }
 
   @keyframes shake {
-    10%, 90% {
+    10%,
+    90% {
       transform: translate3d(-1px, 0, 0);
     }
 
-    20%, 80% {
+    20%,
+    80% {
       transform: translate3d(2px, 0, 0);
     }
 
-    30%, 50%, 70% {
+    30%,
+    50%,
+    70% {
       transform: translate3d(-4px, 0, 0);
     }
 
-    40%, 60% {
+    40%,
+    60% {
       transform: translate3d(4px, 0, 0);
     }
   }
@@ -101,12 +108,11 @@
     }
   }
 
-
   .checkbox {
     @apply text-gray-900;
     padding: 5px 0 10px;
 
-    transition: opacity .5s;
+    transition: opacity 0.5s;
 
     label {
       @apply h-6 w-12 nm-inset-gray-200 rounded-full flex justify-start;
@@ -114,17 +120,18 @@
         @apply ease-in-out;
         transition: margin 0.4s;
       }
-      .item, .text {
+      .item,
+      .text {
         @apply flex-none;
       }
     }
-    
+
     p {
       @apply font-code italic;
       @apply m-0 font-normal #{!important};
     }
 
-    input[type=checkbox] {
+    input[type="checkbox"] {
       @apply hidden;
 
       & + label > .item {

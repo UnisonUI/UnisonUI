@@ -1,16 +1,16 @@
-import React, { Component } from 'react'
+import React, { Component } from "react";
 
 export class Execute extends Component {
-  constructor (props) {
-    super(props)
-    this.onClick = this.onClick.bind(this)
+  constructor(props) {
+    super(props);
+    this.onClick = this.onClick.bind(this);
   }
 
-  onClick () {
-    this.props.onExecute()
+  onClick() {
+    this.props.onExecute();
   }
 
-  render () {
+  render() {
     return (
       <button
         className="btn execute opblock-control__btn"
@@ -18,21 +18,21 @@ export class Execute extends Component {
       >
         Execute
       </button>
-    )
+    );
   }
 }
 
 export class Clear extends Component {
-  constructor (props) {
-    super(props)
-    this.onClick = this.onClick.bind(this)
+  constructor(props) {
+    super(props);
+    this.onClick = this.onClick.bind(this);
   }
 
-  onClick () {
-    this.props.onClear()
+  onClick() {
+    this.props.onClear();
   }
 
-  render () {
+  render() {
     return (
       <button
         className="btn btn-clear opblock-control__btn"
@@ -40,6 +40,6 @@ export class Clear extends Component {
       >
         Clear
       </button>
-    )
+    );
   }
 }

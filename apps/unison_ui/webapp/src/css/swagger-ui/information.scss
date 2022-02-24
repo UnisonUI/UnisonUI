@@ -5,11 +5,13 @@
     }
 
     pre {
-       @apply text-sm; 
+      @apply text-sm;
     }
 
-    p, li, table {
-      @apply font-code; 
+    p,
+    li,
+    table {
+      @apply font-code;
     }
 
     a {
@@ -22,7 +24,7 @@
     }
 
     > div {
-        margin: 0 0 5px;
+      margin: 0 0 5px;
     }
 
     .title {

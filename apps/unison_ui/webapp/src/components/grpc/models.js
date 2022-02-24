@@ -1,65 +1,65 @@
-import React, { Component } from 'react'
-import { isDeprecated, isMap, Collapse } from './utils'
-import { ChevronDown, ChevronRight } from 'react-feather'
+import React, { Component } from "react";
+import { isDeprecated, isMap, Collapse } from "./utils";
+import { ChevronDown, ChevronRight } from "react-feather";
 
-const braceOpen = '{'
-const braceClose = '}'
+const braceOpen = "{";
+const braceClose = "}";
 
-const bracketOpen = '['
-const bracketClose = ']'
+const bracketOpen = "[";
+const bracketClose = "]";
 
 export default class Models extends Component {
-  constructor (props) {
-    super(props)
-    this.state = { isVisible: true }
-    this.toggleVisibility = this.toggleVisibility.bind(this)
+  constructor(props) {
+    super(props);
+    this.state = { isVisible: true };
+    this.toggleVisibility = this.toggleVisibility.bind(this);
   }
 
-  toggleVisibility () {
-    this.setState({ isVisible: !this.state.isVisible })
+  toggleVisibility() {
+    this.setState({ isVisible: !this.state.isVisible });
   }
 
-  render () {
-    const { isVisible } = this.state
+  render() {
+    const { isVisible } = this.state;
     return (
-      <section className={isVisible ? 'models is-open' : 'models'}>
+      <section className={isVisible ? "models is-open" : "models"}>
         <h4 onClick={this.toggleVisibility}>
           <span>Messages/Enums</span>
           {isVisible ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
         </h4>
         <Collapse isOpened={isVisible}>
           {this.props.spec.messages
-            .filter(schema => !isMap(schema))
-            .map(schema => (
+            .filter((schema) => !isMap(schema))
+            .map((schema) => (
               <Model
                 key={`models-section-${schema.name}`}
                 schema={schema}
                 spec={this.props.spec}
               />
             ))}
-          {this.props.spec.enums.map(value => (
+          {this.props.spec.enums.map((value) => (
             <Model key={`models-section-${value.name}`} schema={value} />
           ))}
         </Collapse>
       </section>
-    )
+    );
   }
 }
 
 class Model extends Component {
-  constructor (props) {
-    super(props)
-    this.state = { isCollapsed: true }
-    this.toggleCollapsed = this.toggleCollapsed.bind(this)
+  constructor(props) {
+    super(props);
+    this.state = { isCollapsed: true };
+    this.toggleCollapsed = this.toggleCollapsed.bind(this);
   }
 
-  toggleCollapsed () {
-    this.setState({ isCollapsed: !this.state.isCollapsed })
+  toggleCollapsed() {
+    this.setState({ isCollapsed: !this.state.isCollapsed });
   }
 
-  render () {
-    const { isCollapsed } = this.state
-    const { fields, name, oneOf, values } = this.props.schema
+  render() {
+    const { isCollapsed } = this.state;
+    const { fields, name, oneOf, values } = this.props.schema;
     return (
       <div id={`model-${name}`} className="model-container" data-name={name}>
         <ModelCollapse
@@ -79,20 +79,20 @@ class Model extends Component {
           />
         </ModelCollapse>
       </div>
-    )
+    );
   }
 }
 
 class ModelCollapse extends Component {
-  render () {
-    const { toggleCollapsed, isCollapsed, name, self } = this.props
+  render() {
+    const { toggleCollapsed, isCollapsed, name, self } = this.props;
     const title = (
       <span className="model-box">
         <span className="model model-title">{name}</span>
       </span>
-    )
+    );
     if (!isCollapsed && self) {
-      return <span className="model-box">{this.props.children}</span>
+      return <span className="model-box">{this.props.children}</span>;
     }
     return (
       <span className="model-box">
@@ -101,41 +101,41 @@ class ModelCollapse extends Component {
         </span>
         <span onClick={toggleCollapsed} className="pointer">
           <span
-            className={'model-toggle' + (isCollapsed ? '' : ' collapsed')}
+            className={"model-toggle" + (isCollapsed ? "" : " collapsed")}
           ></span>
         </span>
-        {!isCollapsed ? this.props.children : ' '}
+        {!isCollapsed ? this.props.children : " "}
       </span>
-    )
+    );
   }
 }
 
 class ModelWrapper extends Component {
-  render () {
+  render() {
     return (
       <div className="model-box">
         <ObjectModel {...this.props} />
       </div>
-    )
+    );
   }
 }
 
 class PrimitiveModel extends Component {
-  render () {
-    const { type, schema, label } = this.props.field
-    let displayType = type.toLowerCase()
-    let isArray = label === 'repeated'
+  render() {
+    const { type, schema, label } = this.props.field;
+    let displayType = type.toLowerCase();
+    let isArray = label === "repeated";
     if (schema) {
       const subSchema = this.props.spec.messages.find(
-        sub => sub.name === schema && isMap(sub)
-      )
+        (sub) => sub.name === schema && isMap(sub)
+      );
       if (subSchema) {
-        isArray = false
+        isArray = false;
         displayType = `map<${
-          subSchema.fields.find(f => f.name === 'key').type
-        },${subSchema.fields.find(f => f.name === 'value').type}>`
+          subSchema.fields.find((f) => f.name === "key").type
+        },${subSchema.fields.find((f) => f.name === "value").type}>`;
       } else {
-        displayType = schema
+        displayType = schema;
       }
     }
     return (
@@ -148,12 +148,12 @@ class PrimitiveModel extends Component {
           </span>
         </span>
       </span>
-    )
+    );
   }
 }
 
 class ObjectModel extends Component {
-  render () {
+  render() {
     const {
       isCollapsed,
       toggleCollapsed,
@@ -162,21 +162,21 @@ class ObjectModel extends Component {
       oneOf,
       fields,
       name,
-      isOneOf
-    } = this.props
-    const isObject = !!fields
+      isOneOf,
+    } = this.props;
+    const isObject = !!fields;
 
-    const enums = Object.values(values || {}).map(value => (
+    const enums = Object.values(values || {}).map((value) => (
       <tr key={`value-${value}`} className="property-row">
         <td>{value}</td>
       </tr>
-    ))
+    ));
 
     const oneOfs = Object.entries(oneOf || {}).map(([name, fields]) => {
-      const classNames = ['property-row']
-      const key = `field-${name}`
+      const classNames = ["property-row"];
+      const key = `field-${name}`;
       return (
-        <tr key={key} className={classNames.join(' ')}>
+        <tr key={key} className={classNames.join(" ")}>
           <td>{name}</td>
           <td>
             <ObjectModel
@@ -189,25 +189,25 @@ class ObjectModel extends Component {
             />
           </td>
         </tr>
-      )
-    })
+      );
+    });
 
-    const entries = (fields || []).map(field => {
-      const classNames = ['property-row']
-      const isRequired = field.label === 'required'
+    const entries = (fields || []).map((field) => {
+      const classNames = ["property-row"];
+      const isRequired = field.label === "required";
 
       if (isDeprecated(field)) {
-        classNames.push('deprecated')
+        classNames.push("deprecated");
       }
 
       if (isRequired) {
-        classNames.push('required')
+        classNames.push("required");
       }
 
-      const key = `field-${field.name}`
+      const key = `field-${field.name}`;
 
       return (
-        <tr key={key} className={classNames.join(' ')}>
+        <tr key={key} className={classNames.join(" ")}>
           <td>
             {field.name} {isRequired && <span className="star">*</span>}
           </td>
@@ -215,12 +215,12 @@ class ObjectModel extends Component {
             <PrimitiveModel key={`object_${key}`} field={field} spec={spec} />
           </td>
         </tr>
-      )
-    })
+      );
+    });
 
     const body = (
       <div>
-        {isOneOf && <span className="prop-type">oneOf{' '}</span>}
+        {isOneOf && <span className="prop-type">oneOf </span>}
         <span className="brace-open object">
           {isObject ? braceOpen : bracketOpen}
         </span>
@@ -237,12 +237,11 @@ class ObjectModel extends Component {
           {isObject ? braceClose : bracketClose}
         </span>
       </div>
-    )
+    );
 
     return (
       <span className="model">
-        {!isOneOf
-          ? (
+        {!isOneOf ? (
           <ModelCollapse
             name={name}
             toggleCollapsed={toggleCollapsed}
@@ -250,11 +249,10 @@ class ObjectModel extends Component {
           >
             {body}
           </ModelCollapse>
-            )
-          : (
-              body
-            )}
+        ) : (
+          body
+        )}
       </span>
-    )
+    );
   }
 }

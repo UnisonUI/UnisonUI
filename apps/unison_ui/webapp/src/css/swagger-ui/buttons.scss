@@ -16,7 +16,7 @@
     &[disabled] {
       @apply cursor-not-allowed opacity-25;
     }
-    
+
     &.cancel {
       @apply nm-flat-red-200-sm  text-gray-900 #{!important};
     }
@@ -29,7 +29,7 @@
       }
 
       svg {
-        fill: theme('colors.primary');
+        fill: theme("colors.primary");
       }
     }
 
@@ -69,7 +69,8 @@
     @apply ml-4;
   }
 
-  .expand-methods, .expand-operation {
+  .expand-methods,
+  .expand-operation {
     border: none;
     background: none;
 
@@ -84,14 +85,14 @@
 
     &:hover {
       svg {
-        fill: theme('colors.red.500');
+        fill: theme("colors.red.500");
       }
     }
 
     svg {
-      transition: all .3s;
+      transition: all 0.3s;
 
-      fill: theme('colors.yellow.500');
+      fill: theme("colors.yellow.500");
     }
   }
 }

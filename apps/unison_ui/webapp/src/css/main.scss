@@ -1,4 +1,4 @@
-@import 'mixins';
+@import "mixins";
 :root {
   --background: #edf2f7;
   --background-shadow: #99b5d2;
@@ -6,14 +6,18 @@
   --primary: #1a202c;
   --primary-shadow: #12161f;
   --primary-highlight: #212837;
-
 }
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-*, *:after, *:before { -webkit-box-sizing: border-box; box-sizing: border-box; }
+*,
+*:after,
+*:before {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
 
 html {
   @apply h-full;
@@ -38,7 +42,7 @@ body {
   right: 50px;
   top: 50px;
   transition: color 0.3s;
-  &:hover{
+  &:hover {
     @apply text-red-700;
   }
 }
@@ -46,7 +50,6 @@ body {
 #app {
   @apply h-full;
 }
-
 
 #outer-container {
   @apply text-primary bg-background;
@@ -114,7 +117,7 @@ main {
   @apply inline-block rounded-lg;
   @apply p-4 mb-5;
   @apply transition duration-500 ease-in-out;
-  
+
   @include nm-flat(background);
   &:hover {
     @include nm-flat(background, 0.4em);
@@ -134,10 +137,10 @@ main {
 
   a {
     transition: color 0.3s;
-    &:hover, &:focus {
+    &:hover,
+    &:focus {
       @apply text-red-700;
     }
- 
   }
   .title {
     .name {
@@ -174,14 +177,14 @@ h1.bm-item {
   li {
     @apply text-sm;
   }
- }
+}
 
- .search {
+.search {
   @apply border-0 appearance-none rounded-full;
   @apply w-full my-6 leading-tight;
   @include nm-inset(background);
   @apply text-sm text-primary cursor-text;
   &:hover {
-   @include nm-inset(background);
+    @include nm-inset(background);
   }
- }
+}

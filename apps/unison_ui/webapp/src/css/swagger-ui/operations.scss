@@ -11,7 +11,7 @@
   .parameter-controls {
     @apply mt-3;
   }
-  
+
   .examples {
     &__title {
       @apply block mb-3;
@@ -19,11 +19,11 @@
     }
 
     &__section {
-     @apply mt-6;
-     &-header {
-      @apply text-sm font-bold;
-      @apply mb-2;
-     }
+      @apply mt-6;
+      &-header {
+        @apply text-sm font-bold;
+        @apply mb-2;
+      }
     }
   }
 
@@ -37,12 +37,12 @@
   }
 
   .example {
-   &__section {
-     @apply mt-6;
-     &-header {
-      @apply text-sm font-bold;
-      @apply mb-2;
-     }
+    &__section {
+      @apply mt-6;
+      &-header {
+        @apply text-sm font-bold;
+        @apply mb-2;
+      }
     }
   }
 
@@ -81,9 +81,9 @@
 
   .opblock {
     @apply rounded-lg;
-    @apply m-3; 
+    @apply m-3;
     @apply transition-all duration-500 ease-in-out text-gray-900;
-    @include nm-flat( background);
+    @include nm-flat(background);
     .tab-header {
       @apply flex flex-1;
       .tab-item {
@@ -103,7 +103,7 @@
                   left: 0;
                   width: 120%;
                   height: 4px;
-                  content: '';
+                  content: "";
                 }
               }
             }
@@ -113,36 +113,36 @@
     }
 
     &.opblock-post {
-        @include method(green);
+      @include method(green);
     }
 
     &.opblock-put {
-        @include method(orange);
+      @include method(orange);
     }
 
     &.opblock-delete {
-        @include method(red);
+      @include method(red);
     }
 
     &.opblock-get {
-        @include method(blue);
+      @include method(blue);
     }
 
     &.opblock-patch {
-        @include method(teal);
+      @include method(teal);
     }
 
     &.opblock-head {
-        @include method(purple);
+      @include method(purple);
     }
 
     &.opblock-options {
-        @include method(indigo);
+      @include method(indigo);
     }
 
     &.opblock-deprecated {
-        opacity: .6;
-        @include method(gray);
+      opacity: 0.6;
+      @include method(gray);
     }
 
     &.is-open {
@@ -156,14 +156,14 @@
       top: 3px;
       width: 20px;
     }
-      
+
     .opblock-summary-method {
       @apply text-xl font-bold text-center rounded-full;
       @apply py-2 px-3;
       min-width: 80px;
-      text-shadow: 0 1px 0 theme('colors.gray.600');
+      text-shadow: 0 1px 0 theme("colors.gray.600");
     }
-    
+
     .opblock-summary-path,
     .opblock-summary-operation-id,
     .opblock-summary-path__deprecated {
@@ -175,7 +175,7 @@
     .opblock-summary-path__deprecated {
       @apply line-through;
     }
-   
+
     .opblock-summary-description {
       @apply flex-1;
       @apply text-xl break-words font-body;
@@ -195,7 +195,7 @@
         .view-line-link {
           @apply my-0 mx-2;
           width: 18px;
-        } 
+        }
       }
     }
 
@@ -212,7 +212,7 @@
           @apply pt-0 pl-0 pb-0 pr-2;
         }
       }
-      
+
       h4 {
         @apply flex-1 m-0 text-xl;
       }
@@ -261,7 +261,7 @@
       hyphens: auto;
       overflow-wrap: break-word;
       headerline {
-        @apply block; 
+        @apply block;
       }
     }
   }
@@ -282,7 +282,7 @@
     }
 
     .body-param-content-type {
-      @include select(&)
+      @include select(&);
     }
 
     label {

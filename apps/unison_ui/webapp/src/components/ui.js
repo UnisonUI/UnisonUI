@@ -1,162 +1,161 @@
-import loadable from '@loadable/component'
-import { Moon, Sun } from 'react-feather'
-import React, { Component } from 'react'
-import { HashRouter as Router, useNavigate } from 'react-router-dom'
-import Menu from 'react-burger-menu/lib/menus/push'
-import ServiceLink from './serviceLink'
-import axios from 'axios'
-import * as cornify from '../cornified'
-import Konami from 'react-konami-code'
-import NoService from './noService'
+import loadable from "@loadable/component";
+import { Moon, Sun } from "react-feather";
+import React, { Component } from "react";
+import { HashRouter as Router, useNavigate } from "react-router-dom";
+import Menu from "react-burger-menu/lib/menus/push";
+import ServiceLink from "./serviceLink";
+import axios from "axios";
+import * as cornify from "../cornified";
+import Konami from "react-konami-code";
+import NoService from "./noService";
 
 // import AsyncAPI from './asyncapi'
 // import OpenAPI from './openapi'
 // import GRPC from './grpc'
 
-const AsyncAPI = loadable(() => import('./asyncapi'))
-const OpenAPI = loadable(() => import('./openapi'))
-const GRPC = loadable(() => import('./grpc'))
+const AsyncAPI = loadable(() => import("./asyncapi"));
+const OpenAPI = loadable(() => import("./openapi"));
+const GRPC = loadable(() => import("./grpc"));
 
 export default class App extends Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       menuOpen: false,
-      darkMode: localStorage.getItem('darkMode') === 'true',
+      darkMode: localStorage.getItem("darkMode") === "true",
       services: {},
-      filtered: {}
-    }
-    this._toggleTheme = this._toggleTheme.bind(this)
+      filtered: {},
+    };
+    this._toggleTheme = this._toggleTheme.bind(this);
   }
 
   handleStateChange(state) {
-    this.setState({ menuOpen: state.isOpen })
+    this.setState({ menuOpen: state.isOpen });
   }
 
   closeMenu() {
-    this.setState({ menuOpen: false })
+    this.setState({ menuOpen: false });
   }
 
   _toggleTheme() {
-    const newTheme = !this.state.darkMode
-    localStorage.setItem('darkMode', newTheme)
-    this.setState({ darkMode: newTheme })
+    const newTheme = !this.state.darkMode;
+    localStorage.setItem("darkMode", newTheme);
+    this.setState({ darkMode: newTheme });
   }
 
   _connect() {
     const websocket = new WebSocket(
-      `ws${location.protocol.replace('http', '')}//${location.host
-      }/ws`
-    )
+      `ws${location.protocol.replace("http", "")}//${location.host}/ws`
+    );
 
-    websocket.onclose = _ => {
-      setTimeout(() => this._connect(), 1000)
-    }
+    websocket.onclose = (_) => {
+      setTimeout(() => this._connect(), 1000);
+    };
 
-    websocket.onmessage = e => {
+    websocket.onmessage = (e) => {
       if (e.data) {
-        this.handleEndpoint(JSON.parse(e.data))
+        this.handleEndpoint(JSON.parse(e.data));
       }
-    }
+    };
   }
 
   componentDidMount() {
-    axios.get('/services').then(res => {
+    axios.get("/services").then((res) => {
       const services = res.data
-        .map(event => {
+        .map((event) => {
           return {
             id: event.id,
             name: event.name,
             metadata: event.metadata,
             useProxy: event.useProxy,
-            type: event.type
-          }
+            type: event.type,
+          };
         })
         .reduce((obj, service) => {
           if (!obj[service.name]) {
-            obj[service.name] = []
+            obj[service.name] = [];
           }
-          obj[service.name].push(service)
-          return obj
-        }, {})
-      this.setState({ services })
-      this.search(document.getElementById('search').value)
-    })
-    this._connect()
+          obj[service.name].push(service);
+          return obj;
+        }, {});
+      this.setState({ services });
+      this.search(document.getElementById("search").value);
+    });
+    this._connect();
   }
 
   handleEndpoint(data) {
-    const navigate = useNavigate()
-    let services = this.state.services
+    const navigate = useNavigate();
+    let services = this.state.services;
     switch (data.event) {
-      case 'serviceUp':
+      case "serviceUp":
         if (!services[data.name]) {
-          services[data.name] = []
+          services[data.name] = [];
         }
 
-        if (!services[data.name].find(item => item.id === data.id)) {
+        if (!services[data.name].find((item) => item.id === data.id)) {
           services[data.name].push({
             id: data.id,
             name: data.name,
             metadata: data.metadata,
             useProxy: data.useProxy,
-            type: data.type
-          })
+            type: data.type,
+          });
         } else {
-          services[data.name] = services[data.name].map(service => {
-            if (service.id !== data.id) return service
+          services[data.name] = services[data.name].map((service) => {
+            if (service.id !== data.id) return service;
             else {
               return {
                 id: data.id,
                 name: data.name,
                 metadata: data.metadata,
                 useProxy: data.useProxy,
-                type: data.type
-              }
+                type: data.type,
+              };
             }
-          })
+          });
         }
-        break
-      case 'serviceDown':
+        break;
+      case "serviceDown":
         services = Object.entries(this.state.services).reduce(
           (obj, [name, services]) => {
             const filteredServices = services.filter(
-              item => item.id !== data.id
-            )
+              (item) => item.id !== data.id
+            );
             if (filteredServices.length) {
-              obj[name] = filteredServices
+              obj[name] = filteredServices;
             }
-            return obj
+            return obj;
           },
           {}
-        )
-        break
-      case 'serviceChanged':
+        );
+        break;
+      case "serviceChanged":
         if (`#/${data.id}` === location.hash) {
-          return navigate(0)
+          return navigate(0);
         }
-        break
+        break;
     }
-    this.setState({ services })
-    this.search(document.getElementById('search').value)
+    this.setState({ services });
+    this.search(document.getElementById("search").value);
   }
 
   getServices() {
-    const services = this.state.filtered
+    const services = this.state.filtered;
     const items = [
       <input
         type="text"
         id="search"
         className="search"
         placeholder="Search for a service..."
-        onChange={e => this.search(e.target.value)}
+        onChange={(e) => this.search(e.target.value)}
         key="_search"
-      />
-    ]
+      />,
+    ];
 
     if (Object.keys(services).length) {
-      const entries = Object.entries(services)
-      entries.sort((a, b) => a[0].localeCompare(b[0]))
+      const entries = Object.entries(services);
+      entries.sort((a, b) => a[0].localeCompare(b[0]));
       entries.forEach(([name, services]) => {
         items.push(
           <div key={name} className={this.getNavLinkClass(services)}>
@@ -165,57 +164,57 @@ export default class App extends Component {
               closeMenu={() => this.closeMenu()}
             />
           </div>
-        )
-      })
+        );
+      });
     } else {
       items.push(
-        <h1 key="0" style={{ padding: '0.5em' }}>
+        <h1 key="0" style={{ padding: "0.5em" }}>
           No services available
         </h1>
-      )
+      );
     }
-    return items
+    return items;
   }
 
   search(input) {
-    let newList = {}
+    let newList = {};
 
-    if (input !== '') {
-      const keys = Object.keys(this.state.services)
+    if (input !== "") {
+      const keys = Object.keys(this.state.services);
 
       newList = keys
-        .filter(name => {
-          const lc = name.toLowerCase()
-          const filter = input.toLowerCase()
-          return lc.includes(filter)
+        .filter((name) => {
+          const lc = name.toLowerCase();
+          const filter = input.toLowerCase();
+          return lc.includes(filter);
         })
         .reduce((obj, name) => {
-          obj[name] = this.state.services[name]
-          return obj
-        }, {})
+          obj[name] = this.state.services[name];
+          return obj;
+        }, {});
     } else {
-      newList = Object.assign({}, this.state.services)
+      newList = Object.assign({}, this.state.services);
     }
     this.setState({
-      filtered: newList
-    })
+      filtered: newList,
+    });
   }
 
   getNavLinkClass(services) {
-    return services.some(service => location.hash === `#/${service.id}`)
-      ? 'active'
-      : ''
+    return services.some((service) => location.hash === `#/${service.id}`)
+      ? "active"
+      : "";
   }
 
   render() {
     const service = Object.values(this.state.services)
       .flat()
-      .find(service => location.hash === `#/${service.id}`)
+      .find((service) => location.hash === `#/${service.id}`);
     return (
       <div
         id="outer-container"
-        style={{ height: '100%' }}
-        className={this.state.darkMode ? 'dark' : ''}
+        style={{ height: "100%" }}
+        className={this.state.darkMode ? "dark" : ""}
       >
         <button className="themeSwitch" onClick={this._toggleTheme}>
           {this.state.darkMode ? <Sun size={42} /> : <Moon size={42} />}
@@ -227,32 +226,29 @@ export default class App extends Component {
         />
         <Router>
           <Menu
-            pageWrapId={'page-wrap'}
-            outerContainerId={'outer-container'}
+            pageWrapId={"page-wrap"}
+            outerContainerId={"outer-container"}
             isOpen={this.state.menuOpen}
-            onStateChange={state => this.handleStateChange(state)}
+            onStateChange={(state) => this.handleStateChange(state)}
           >
             {this.getServices()}
           </Menu>
           <main id="page-wrap">
-            {service
-              ? this._loadComponent(service)
-              : (
-                <NoService />
-              )}
+            {service ? this._loadComponent(service) : <NoService />}
           </main>
         </Router>
       </div>
-    )
+    );
   }
+
   _loadComponent(service) {
     switch (service.type) {
       case "openapi":
-        return (<OpenAPI useProxy={service.useProxy} />)
-      case 'asyncapi':
-        return (<AsyncAPI />)
-      case 'grpc':
-        return (<GRPC title={service.name} />)
+        return <OpenAPI useProxy={service.useProxy} />;
+      case "asyncapi":
+        return <AsyncAPI />;
+      case "grpc":
+        return <GRPC title={service.name} />;
       default:
         break;
     }

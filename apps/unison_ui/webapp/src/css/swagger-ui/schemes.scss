@@ -15,12 +15,13 @@
         @apply absolute right-0 h-full pr-8 pointer-events-none block;
         width: 24px;
         top: 60%;
-        content: url('~mixins/chevron-down.svg'); 
+        content: url("~mixins/chevron-down.svg");
       }
     }
   }
 
-  .servers-title, .schemes-title {
+  .servers-title,
+  .schemes-title {
     @apply text-4xl font-bold capitalize cursor-pointer block;
     @apply p-2 mb-3;
   }
@@ -35,7 +36,7 @@
     }
 
     table {
-      tr{
+      tr {
         @apply w-full;
       }
       td {

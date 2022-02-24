@@ -36,15 +36,16 @@
       &::after {
         @apply absolute -translate-y-1/2 -translate-x-1/2;
         @apply block;
-        content: ' ';
+        content: " ";
         top: 50%;
         left: 50%;
         width: 64px;
         height: 64px;
         margin: 8px;
         border-radius: 50%;
-        border: 6px solid theme('colors.primary');
-        border-color: theme('colors.primary') transparent theme('colors.primary') transparent;
+        border: 6px solid theme("colors.primary");
+        border-color: theme("colors.primary") transparent
+          theme("colors.primary") transparent;
         animation: lds-dual-ring 1.2s linear infinite;
         @keyframes lds-dual-ring {
           0% {

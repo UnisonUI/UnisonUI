@@ -29,12 +29,12 @@
         td {
           @apply align-top;
           @apply pt-2 pb-2 pl-0 pr-0;
-          border-top: 1px solid theme('colors.gray.800');
+          border-top: 1px solid theme("colors.gray.800");
 
           &:first-of-type {
-              max-width: 20%;
-              min-width: 6em;
-              padding: 10px 0;
+            max-width: 20%;
+            min-width: 6em;
+            padding: 10px 0;
           }
         }
       }
@@ -42,11 +42,12 @@
 
     thead {
       tr {
-        th, td {
+        th,
+        td {
           @apply font-body font-bold text-sm text-left;
           @apply border-opacity-25;
           padding: 12px 0;
-          border-bottom: 1px solid theme('colors.gray.500');
+          border-bottom: 1px solid theme("colors.gray.500");
         }
       }
     }
@@ -54,8 +55,8 @@
 
   .parameters-col_description {
     @apply mb-8;
-    width: 99%; 
-    input[type=text] {
+    width: 99%;
+    input[type="text"] {
       @apply w-full;
       max-width: 340px;
     }
@@ -75,12 +76,13 @@
       &::after {
         @apply relative text-xs p-2 text-red-600 text-opacity-75;
         top: -6px;
-        content: 'required';
+        content: "required";
       }
     }
   }
 
-  .parameter__in, .parameter__extension {
+  .parameter__in,
+  .parameter__extension {
     @apply text-sm italic font-code text-gray-600;
   }
 
@@ -93,14 +95,13 @@
     @apply pt-2 pb-2;
 
     input {
-        margin-right: 7px;
+      margin-right: 7px;
     }
 
     &.disabled {
       @apply opacity-75;
     }
   }
-
 
   .table-container {
     @apply p-3;
