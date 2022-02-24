@@ -1,3 +1,4 @@
 {
-  "skip_files": ["test/support", "lib/services/application.ex"]
+  "skip_files": ["test/support", "lib/services/application.ex"],
+  "coverage_options": { "minimum_coverage": 0 }
 }

@@ -20,17 +20,20 @@ defmodule Unisonui.MixProject do
 
   defp all_apps, do: common_apps() ++ providers() ++ web_apps()
 
+  defp config_providers,
+    do: [
+      {Toml.Provider,
+       [
+         path: {:system, "UNISON_UI_ROOT", "/config.toml"},
+         transforms: [Configuration.Transformer]
+       ]}
+    ]
+
   defp provider_release(name),
     do: [
       steps: [:assemble],
       applications: providers_apps(name),
-      config_providers: [
-        {Toml.Provider,
-         [
-           path: {:system, "UNISON_UI_ROOT", "/config.toml"},
-           transforms: [Configuration.LoggingTransformer]
-         ]}
-      ]
+      config_providers: config_providers()
     ]
 
   def project do
@@ -48,13 +51,7 @@ defmodule Unisonui.MixProject do
         unisonui: [
           steps: [:assemble],
           applications: all_apps(),
-          config_providers: [
-            {Toml.Provider,
-             [
-               path: {:system, "UNISON_UI_ROOT", "/config.toml"},
-               transforms: [Configuration.Transformer]
-             ]}
-          ]
+          config_providers: config_providers()
         ]
       ],
       dialyzer: [

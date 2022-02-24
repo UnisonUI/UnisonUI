@@ -3,5 +3,6 @@
     "test/support",
     "lib/u_grpc/status.ex",
     "lib/u_grpc/application.ex"
-  ]
+  ],
+  "coverage_options": { "minimum_coverage": 0 }
 }
