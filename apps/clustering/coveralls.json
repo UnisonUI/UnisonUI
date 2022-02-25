@@ -1,4 +1,6 @@
 {
-  "skip_files": ["test/support", "lib/clustering/application.ex"],
-  "coverage_options": { "minimum_coverage": 0 }
+  "skip_files": [
+    "lib/clustering/global_server.ex",
+    "lib/clustering/application.ex"
+  ]
 }
