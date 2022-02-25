@@ -25,7 +25,14 @@ defmodule ContainerProvider.Application do
     docker_children(docker_config[:enabled] && docker_config[:host])
   end
 
-  defp docker_children(host) when is_binary(host), do: [{ContainerProvider.Docker.Source, host}]
+  defp docker_children(host) when is_binary(host),
+    do: [
+      %{
+        id: ContainerProvider.Docker.Source,
+        start: {ContainerProvider.Docker.Source, :start_link, [host]},
+        restart: :transient
+      }
+    ]
 
   defp docker_children(_) do
     Logger.info("Docker provider has been disabled")

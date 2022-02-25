@@ -27,7 +27,7 @@ defmodule ContainerProvider.Docker.Source do
         reason = if is_exception(reason), do: Exception.message(reason), else: inspect(reason)
 
         Logger.warn("Docker source failed to start: #{reason}")
-        {:stop, :normal, state}
+        {:stop, :normal}
     end
   end
 

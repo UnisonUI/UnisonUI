@@ -1,6 +1,6 @@
 defmodule Unisonui.MixProject do
-  @version "2.0.0"
   use Mix.Project
+  @version "2.0.0"
 
   defp common_apps,
     do: [
@@ -42,7 +42,7 @@ defmodule Unisonui.MixProject do
       version: "2.0.0",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      test_coverage: [tool: ExCoveralls],
+      test_coverage: [tool: ExCoveralls, summary: [threshold: false]],
       preferred_cli_env: ["coveralls.html": :test, "coveralls.json": :test],
       releases: [
         unisonui_git_provider: provider_release(:git_provider),

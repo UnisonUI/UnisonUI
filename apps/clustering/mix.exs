@@ -11,6 +11,7 @@ defmodule Clustering.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
+      test_coverage: [tool: ExCoveralls, summary: [threshold: false]],
       deps: deps()
     ]
   end
