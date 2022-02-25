@@ -94,15 +94,7 @@ defmodule ContainerProvider.Docker.SourceTest do
 
   defp start_source(host) do
     start_supervised!({AggregatorStub, self()})
-
-    case start_supervised({ContainerProvider.Docker.Source, host}) do
-      {:ok, pid} ->
-        pid
-
-      {:error, {{:already_started, pid}, _}} ->
-        stop_supervised(pid)
-        start_supervised!({ContainerProvider.Docker.Source, host})
-    end
+    start_supervised!({ContainerProvider.Docker.Source, host})
   end
 
   defp setup_mock(bypass, labels, events) do
