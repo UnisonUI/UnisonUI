@@ -17,30 +17,30 @@ defmodule ContainerProvider.Docker.SourceTest do
     {:ok, bypass: bypass}
   end
 
-  # describe "Handling error" do
-  test "the events endpoint failed", %{bypass: bypass} do
-    Bypass.expect(bypass, fn conn ->
-      assert "GET" == conn.method
-      assert "/events" == conn.request_path
+  describe "Handling error" do
+    test "the events endpoint failed", %{bypass: bypass} do
+      Bypass.expect(bypass, fn conn ->
+        assert "GET" == conn.method
+        assert "/events" == conn.request_path
 
-      assert URI.encode(~s/since=0&filters={"event":["start","stop"],"type":["container"]}/) ==
-               conn.query_string
+        assert URI.encode(~s/since=0&filters={"event":["start","stop"],"type":["container"]}/) ==
+                 conn.query_string
 
-      Plug.Conn.resp(conn, 400, "Bad request")
-    end)
+        Plug.Conn.resp(conn, 400, "Bad request")
+      end)
 
-    start_source("http://localhost:#{bypass.port}")
-    refute_receive _, 1_000
-  end
+      start_source("http://localhost:#{bypass.port}")
+      refute_receive _, 1_000
+    end
 
-  test "could not decode event", %{bypass: bypass} do
-    Bypass.expect(bypass, "GET", "/events", fn conn ->
-      Plug.Conn.resp(conn, 200, "{}")
-    end)
+    test "could not decode event", %{bypass: bypass} do
+      Bypass.expect(bypass, "GET", "/events", fn conn ->
+        Plug.Conn.resp(conn, 200, "{}")
+      end)
 
-    start_source("http://localhost:#{bypass.port}")
-    refute_receive _, 1_000
-    # end
+      start_source("http://localhost:#{bypass.port}")
+      refute_receive _, 1_000
+    end
   end
 
   test "there is a container which is up and one down", %{bypass: bypass} do
@@ -94,7 +94,7 @@ defmodule ContainerProvider.Docker.SourceTest do
 
   defp start_source(host) do
     start_supervised!({AggregatorStub, self()})
-    start_supervised!({ContainerProvider.Docker.Source, host})
+    start_supervised!({ContainerProvider.Docker.Source, host}})
   end
 
   defp setup_mock(bypass, labels, events) do
