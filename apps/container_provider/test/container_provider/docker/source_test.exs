@@ -94,7 +94,7 @@ defmodule ContainerProvider.Docker.SourceTest do
 
   defp start_source(host) do
     start_supervised!({AggregatorStub, self()})
-    start_supervised!({ContainerProvider.Docker.Source, host}})
+    start_supervised!({ContainerProvider.Docker.Source, host})
   end
 
   defp setup_mock(bypass, labels, events) do
