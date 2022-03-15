@@ -33,7 +33,7 @@ defmodule GRPC.MixProject do
     [
       {:jason, "~> 1.3"},
       {:castore, "~> 0.1.15"},
-      {:protox, "~> 1.6.7"},
+      {:protox, "~> 1.6.10"},
       {:mint, "~> 1.4", override: true},
       {:grpc, "~> 0.5.0-beta.1", only: :test},
       {:cowboy, "~> 2.9", only: :test, override: true},
