@@ -1,4 +1,4 @@
-FROM hexpm/elixir:1.13.3-erlang-24.2.1-alpine-3.15.0 as builder
+FROM hexpm/elixir:1.13.4-erlang-24.3.3-alpine-3.15.0 as builder
 WORKDIR /app
 ENV MIX_ENV=prod
 
@@ -12,7 +12,7 @@ ARG RELEASE=unisonui
 RUN mix deps.get --only prod && \
   mix release ${RELEASE}
 
-FROM alpine:3.14.0
+FROM alpine:3.15.0
 ARG CONFD_VERSION=0.16.0
 RUN mkdir /app && chown -R nobody: /app
 WORKDIR /app
