@@ -1,4 +1,4 @@
-FROM alpine:3.15.0
+FROM alpine:3.15.4
 RUN mkdir /app && chown -R nobody: /app
 WORKDIR /app
 ENV UNISON_UI_ROOT=/app

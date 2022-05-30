@@ -87,7 +87,7 @@ defmodule Unisonui.MixProject do
 
   def npm_deploy(release) do
     webapp = ["apps", "unison_ui", "webapp"] |> Path.join() |> Path.expand()
-    System.cmd("npm", ["install"], cd: webapp)
+    System.cmd("npm", ["install", "--legacy-peer-deps"], cd: webapp)
     System.cmd("npm", ["run", "build:#{Mix.env()}"], cd: webapp)
     release
   end

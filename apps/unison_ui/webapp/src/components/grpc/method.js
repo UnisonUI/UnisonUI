@@ -58,7 +58,7 @@ export default class Method extends Component {
     let data = {};
     try {
       data = JSON.parse(this.state.value);
-    } catch (e) {}
+    } catch (e) { }
     this.setState({ executeInProgress: true });
     axios
       .post(
@@ -74,14 +74,13 @@ export default class Method extends Component {
         } else {
           response = error.response;
         }
-        this.setState({ executeInProgress: false, response: response });
+        this.setState({ executeInProgress: false, response });
       });
   }
 
   _streaming(id, service, method, server) {
     const ws = new WebSocket(
-      `ws${location.protocol.replace("http", "")}//${
-        location.host
+      `ws${location.protocol.replace("http", "")}//${location.host
       }/grpc/streaming/${id}/${service}/${method}?server=${server}`
     );
     ws.onopen = function (e) {
