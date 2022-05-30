@@ -46,7 +46,7 @@ function OpenAPI(props) {
   if (useProxy) plugins.push(ProxyPlugin);
   const requestInterceptor = (r) => {
     if (useProxy && r.url.startsWith("http")) {
-      r.url = `/proxy/${btoa(r.url)}`;
+      r.url = `/proxy/${r.url.toString("base64")}`;
     }
     return r;
   };

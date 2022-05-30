@@ -71,7 +71,7 @@ defmodule Unisonui.MixProject do
     webapp = ["apps", "unison_ui", "webapp"] |> Path.join() |> Path.expand()
 
     [
-      npm_install: System.cmd("npm", ["install"], cd: webapp),
+      npm_install: System.cmd("npm", ["install", "--legacy-peer-deps"], cd: webapp),
       watch:
         [webapp, "node_modules", ".bin", "webpack"]
         |> Path.join()
