@@ -8,12 +8,12 @@ defmodule Configuration.Transformer do
     if level in @levels, do: String.to_atom(level), else: :info
   end
 
-  def transform(:aggregator, storage) when is_binary(storage) do
-    String.to_atom(storage)
+  def transform(:aggregator, aggregator) when is_binary(aggregator) do
+    String.to_atom("Elixir.#{aggregator}")
   end
 
   def transform(:storage_backend, storage) when is_binary(storage) do
-    String.to_atom(storage)
+    String.to_atom("Elixir.#{storage}")
   end
 
   def transform(_, v), do: v

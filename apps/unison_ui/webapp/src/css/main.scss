@@ -1,4 +1,4 @@
-@import "mixins";
+// @import "mixins";
 :root {
   --background: #edf2f7;
   --background-shadow: #99b5d2;
@@ -37,35 +37,26 @@ body {
   --primary-highlight: #fff;
 }
 
-.themeSwitch {
-  @apply absolute;
-  right: 50px;
-  top: 50px;
-  transition: color 0.3s;
-  &:hover {
-    @apply text-red-700;
-  }
-}
-
 #app {
   @apply h-full;
 }
 
 #outer-container {
-  @apply text-primary bg-background;
+  @apply text-primary bg-background relative;
+  @apply flex flex-col;
 }
 
-main {
-  @apply h-full px-32 pt-16;
-  overflow: auto;
-}
+// main {
+//   @apply h-full px-32 pt-16;
+//   overflow: auto;
+// }
 
 #no-service {
   @apply absolute text-6xl font-black;
   left: 25%;
   top: 50%;
 }
-
+/*
 .bm-burger-button {
   position: fixed;
   width: 36px;
@@ -80,10 +71,6 @@ main {
 
 .bm-cross-button {
   @apply rounded-full;
-  @include nm-flat(background);
-  &:hover {
-    @include nm-flat(background, 0.4em);
-  }
 }
 
 .bm-cross {
@@ -117,19 +104,13 @@ main {
   @apply inline-block rounded-lg;
   @apply p-4 mb-5;
   @apply transition duration-500 ease-in-out;
-
-  @include nm-flat(background);
-  &:hover {
-    @include nm-flat(background, 0.4em);
-  }
-
+  @apply border-2;
   &:focus {
     @apply outline-none;
   }
 
   &.active {
     @apply cursor-default;
-    @include nm-inset(background);
     a {
       @apply text-red-700;
     }
@@ -180,11 +161,87 @@ h1.bm-item {
 }
 
 .search {
-  @apply border-0 appearance-none rounded-full;
   @apply w-full my-6 leading-tight;
-  @include nm-inset(background);
   @apply text-sm text-primary cursor-text;
-  &:hover {
-    @include nm-inset(background);
+}
+*/
+.header {
+  @apply mx-auto px-4 sm:px-6;
+  @apply flex flex-row;
+  @apply flex;
+  @apply justify-start space-x-10;
+  @apply justify-between items-center py-6;
+  @apply w-full;
+  @apply text-4xl lg:text-2xl;
+
+  .themeSwitch {
+    svg {
+      @apply hover:stroke-red-700;
+    }
+  }
+}
+
+#page-wrap {
+  @apply flex flex-col lg:flex-row;
+  @apply relative;
+  @apply overflow-hidden h-full w-full;
+
+  .menu {
+    @apply sticky;
+    @apply overflow-hidden;
+    @apply flex flex-col;
+    @apply w-screen lg:w-80;
+    @media (min-width: 1024px) {
+      height: calc(100vh - 40px);
+    }
+    background-color: var(--background-highlight);
+
+    .search {
+      @apply py-2;
+
+      input {
+        @apply border-b-2;
+        @apply outline-none;
+        @apply bg-transparent;
+        @apply mx-4 py-2 px-4;
+      }
+    }
+
+    .menu-item {
+      @apply text-sm;
+      @apply p-4;
+
+      &:hover {
+        @apply bg-background;
+      }
+      .active {
+        @apply font-semibold;
+      }
+
+      .title {
+        .name {
+          @apply mr-4;
+        }
+
+        .type {
+          @apply rounded-full font-semibold text-xs px-2 tracking-wide inline-block capitalize;
+          &.openapi {
+            @apply bg-teal-200 text-teal-800;
+          }
+          &.grpc {
+            @apply bg-blue-200 text-blue-800;
+          }
+          &.asyncapi {
+            @apply bg-violet-200 text-violet-800;
+          }
+        }
+      }
+    }
+  }
+
+  .content {
+    z-index: 1;
+    @apply relative w-full;
+    @apply overflow-x-hidden overflow-y-auto;
   }
 }

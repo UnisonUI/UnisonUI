@@ -1,8 +1,4 @@
-const plugins = [
-  require("postcss-font-magician"),
-  require("tailwindcss"),
-  require("autoprefixer"),
-];
+const plugins = [require("tailwindcss"), require("autoprefixer")];
 
 if (process.env.NODE_ENV === "production") {
   plugins.push(
@@ -23,5 +19,5 @@ if (process.env.NODE_ENV === "production") {
 
 module.exports = {
   syntax: "postcss-scss",
-  plugins: plugins,
+  plugins,
 };

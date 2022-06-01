@@ -14,7 +14,6 @@ defmodule UnisonUI.Routes do
   plug :dispatch
 
   forward "/statics", to: UnisonUI.Routes.Statics
-  forward "/services", to: UnisonUI.Routes.Services
 
   match _ do
     send_resp(conn, 404, "not found")
@@ -23,6 +22,9 @@ defmodule UnisonUI.Routes do
   def redirect_index(%Plug.Conn{path_info: path} = conn, _opts) do
     case path do
       [] ->
+        %{conn | path_info: ["statics", "index.html"]}
+
+      ["service", _] ->
         %{conn | path_info: ["statics", "index.html"]}
 
       ["favicon.ico"] ->

@@ -9,7 +9,14 @@ defmodule UnisonUI.Routes.Realtime do
   @impl true
   def websocket_init(state) do
     _ = Consumers.subscribe(self())
-    {:ok, state}
+
+    case Services.available_services() do
+      {:ok, events} ->
+        {:reply, {:text, Jason.encode!(%{events: events})}, state}
+
+      _ ->
+        {:stop, state}
+    end
   end
 
   @impl true

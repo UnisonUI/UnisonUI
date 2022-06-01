@@ -20,8 +20,11 @@ module.exports = {
     },
   },
   resolve: {
-    alias: { mixins: path.resolve(__dirname, "src", "css", "mixins") },
     roots: [path.resolve(__dirname)],
+    extensions: [".ts", ".tsx", ".js", ".mjs", ".json"],
+    fallback: {
+      fs: path.resolve(__dirname, "src/empty.js"),
+    },
   },
   module: {
     rules: [

@@ -2,6 +2,7 @@ defmodule ServicesTest do
   use ExUnit.Case
   import Services
 
+  @impl true
   wait_for_storage do
     {:ok, state}
   end

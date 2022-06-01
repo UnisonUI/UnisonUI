@@ -1,12 +1,13 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import AsyncApi from "@asyncapi/react-component";
+import { fetchSpec } from "../features/services/servicesSlice";
 
-function AsyncAPI() {
+export default function AsyncAPI() {
   const location = useLocation();
-  const id = location.pathname.substring(1);
-  const schema = { url: "/services/" + id };
-  return <AsyncApi schema={schema} />;
-}
+  const id = location.pathname.replace("/service/", "");
+  const spec = useSelector((state) => fetchSpec(state, id));
 
-export default AsyncAPI;
+  return <AsyncApi schema={spec} />;
+}

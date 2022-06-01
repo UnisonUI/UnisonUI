@@ -4,11 +4,21 @@
       "@babel/preset-env",
       {
         "targets": {
-          "browsers": ["> 1%", "last 2 versions", "Firefox ESR", "not dead"]
-        }
+          "browsers": [
+            "> 1%",
+            "last 2 versions",
+            "Firefox ESR",
+            "not dead"
+          ]
+        },
+        "useBuiltIns": "entry",
+        "corejs": "3.22"
       }
     ],
     "@babel/preset-react"
   ],
-  "plugins": ["@loadable/babel-plugin", "@babel/plugin-transform-runtime"]
+  "plugins": [
+    "@loadable/babel-plugin",
+    "@babel/plugin-transform-runtime"
+  ]
 }

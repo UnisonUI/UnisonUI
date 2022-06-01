@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import { useLocation } from "react-router-dom";
-import axios from "axios";
 import Error from "./grpc/error";
 import Layout from "./grpc/layout";
 
@@ -17,8 +16,8 @@ class Grpc extends Component {
 
   _loadSpec(id) {
     if (id) {
-      axios
-        .get(`/services/${id}`)
+      fetch(`/services/${id}`)
+        .then((res) => res.json())
         .then((res) => this.setState({ spec: res.data }))
         .catch((error) => this.setState({ error: error.response.data }));
     }

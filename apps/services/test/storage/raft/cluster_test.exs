@@ -1,7 +1,6 @@
 defmodule Services.Storage.Raft.ClusterTest do
   use ExUnit.Case
 
-  alias Services.Event
   alias Services.Storage.Raft.Cluster
 
   setup_all do

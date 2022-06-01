@@ -14,7 +14,7 @@ defimpl Jason.Encoder, for: [Services.Event.Up, Services.Event.Down, Services.Ev
     do:
       struct
       |> Map.from_struct()
-      |> Map.take([:id, :name, :use_proxy, :metadata])
+      |> Map.take([:id, :name, :use_proxy, :metadata, :content])
       |> add_type(:asyncapi)
       |> Map.put(:useProxy, use_proxy)
       |> Map.delete(:use_proxy)
@@ -23,7 +23,7 @@ defimpl Jason.Encoder, for: [Services.Event.Up, Services.Event.Down, Services.Ev
     do:
       struct
       |> Map.from_struct()
-      |> Map.take([:id, :name, :use_proxy, :metadata])
+      |> Map.take([:id, :name, :use_proxy, :metadata, :content])
       |> add_type(:openapi)
       |> Map.put(:useProxy, use_proxy)
       |> Map.delete(:use_proxy)
@@ -32,7 +32,12 @@ defimpl Jason.Encoder, for: [Services.Event.Up, Services.Event.Down, Services.Ev
     do:
       struct
       |> Map.from_struct()
-      |> Map.take([:id, :name, :metadata])
+      |> Map.take([:id, :name, :metadata, :schema, :servers])
+      |> Map.update!(:servers, fn servers ->
+        Enum.into(servers, [], fn {name, server} ->
+          %{name: name, useTls: server.use_tls}
+        end)
+      end)
       |> add_type(:grpc)
 
   defp add_event(map, type), do: map |> Map.put_new(:event, type)

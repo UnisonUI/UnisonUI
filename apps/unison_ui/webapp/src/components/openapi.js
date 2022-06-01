@@ -1,7 +1,16 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import SwaggerUI from "swagger-ui-react";
+import { useSelector } from "react-redux";
+import { fetchSpec } from "../features/services/servicesSlice";
 
+export default function OpenAPI() {
+  const location = useLocation();
+  const id = location.pathname.replace("/service/", "");
+  const spec = useSelector((state) => fetchSpec(state, id));
+  console.log(spec);
+  return <div />;
+}
+/*
 const theme = () => {
   return { syntaxHighlight: { activated: true, theme: "obsidian" } };
 };
@@ -52,13 +61,14 @@ function OpenAPI(props) {
   };
   return (
     <div>
-      <SwaggerUI
+      {/* <SwaggerUI
         url={"/services/" + id}
         requestInterceptor={requestInterceptor}
         plugins={plugins}
-      />
+      /> }
     </div>
   );
 }
 
 export default OpenAPI;
+*/

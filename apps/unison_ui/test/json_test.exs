@@ -8,7 +8,7 @@ defmodule UnisonUI.JsonTest do
 
       assert Jason.encode(%Event.Up{service: service}) ==
                {:ok,
-                "{\"event\":\"serviceUp\",\"id\":\"test\",\"metadata\":{\"file\":null,\"provider\":null},\"name\":\"test\",\"type\":\"grpc\"}"}
+                "{\"event\":\"serviceUp\",\"id\":\"test\",\"metadata\":{\"file\":null,\"provider\":null},\"name\":\"test\",\"schema\":\"test\",\"servers\":[],\"type\":\"grpc\"}"}
     end
 
     test "Up event with an asyncapi service" do
@@ -16,7 +16,7 @@ defmodule UnisonUI.JsonTest do
 
       assert Jason.encode(%Event.Up{service: service}) ==
                {:ok,
-                "{\"event\":\"serviceUp\",\"id\":\"test\",\"metadata\":{\"file\":null,\"provider\":null},\"name\":\"test\",\"type\":\"asyncapi\",\"useProxy\":false}"}
+                "{\"content\":\"test\",\"event\":\"serviceUp\",\"id\":\"test\",\"metadata\":{\"file\":null,\"provider\":null},\"name\":\"test\",\"type\":\"asyncapi\",\"useProxy\":false}"}
     end
 
     test "Up event with an openapi service" do
@@ -24,7 +24,7 @@ defmodule UnisonUI.JsonTest do
 
       assert Jason.encode(%Event.Up{service: service}) ==
                {:ok,
-                "{\"event\":\"serviceUp\",\"id\":\"test\",\"metadata\":{\"file\":null,\"provider\":null},\"name\":\"test\",\"type\":\"openapi\",\"useProxy\":false}"}
+                "{\"content\":\"test\",\"event\":\"serviceUp\",\"id\":\"test\",\"metadata\":{\"file\":null,\"provider\":null},\"name\":\"test\",\"type\":\"openapi\",\"useProxy\":false}"}
     end
 
     test "Down event" do

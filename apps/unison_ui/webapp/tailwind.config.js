@@ -3,7 +3,7 @@ module.exports = {
     removeDeprecatedGapUtilities: true,
     purgeLayersByDefault: true,
   },
-  plugins: [require("tailwindcss-neumorphism")],
+  content: ["./src/**/*.js"],
   purge: false,
   theme: {
     screens: {
