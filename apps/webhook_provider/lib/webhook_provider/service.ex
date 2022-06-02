@@ -9,7 +9,7 @@ defmodule WebhookProvider.Service do
   defp decode_asyncopenapi(service) do
     with name when not is_nil(name) <- service["name"],
          specifications when not is_nil(specifications) <- service["specification"],
-         type when type in ["asyncapi", "openapi"] <- service["type"] do
+         type when type in ["asyncapi", "openapi"] <- String.downcase(service["type"] || "") do
       service = %{
         id: id(name),
         name: name,

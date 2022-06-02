@@ -5,6 +5,7 @@ import { Config } from "@redocly/openapi-core/lib/config/config";
 /* tslint:disable-next-line:no-implicit-dependencies */
 import { convertObj } from "swagger2openapi";
 import { parseYaml } from "./yaml";
+import { groupBy } from "lodash";
 
 export async function parseOpenApi(input) {
   const config = new Config({});
@@ -39,4 +40,20 @@ export function convertSwagger2OpenAPI(spec) {
       }
     )
   );
+}
+
+export function extractOpenApiOperations(spec) {
+  const operations = Object.entries(spec.paths).flatMap(([pathName, path]) =>
+    Object.entries(path).flatMap(([method, path]) => {
+      const name =
+        path.summary ||
+        path.description ||
+        `${pathName} - ${method.toUpperCase()}`;
+      const tags = path.tags || [""];
+      return tags.map((tag) => {
+        return { tag, name, id: path.operationId || `${method}-${pathName}` };
+      });
+    })
+  );
+  return groupBy(operations, ({ tag }) => tag);
 }

@@ -170,7 +170,7 @@ h1.bm-item {
   @apply flex flex-row;
   @apply flex;
   @apply justify-start space-x-10;
-  @apply justify-between items-center py-6;
+  @apply justify-between items-center py-2;
   @apply w-full;
   @apply text-4xl lg:text-2xl;
 
@@ -187,52 +187,55 @@ h1.bm-item {
   @apply overflow-hidden h-full w-full;
 
   .menu {
+    @apply text-sm;
     @apply sticky;
-    @apply overflow-hidden;
+    @apply overflow-x-hidden overflow-y-auto;
     @apply flex flex-col;
-    @apply w-screen lg:w-80;
+    @apply w-screen lg:w-96;
     @media (min-width: 1024px) {
       height: calc(100vh - 40px);
     }
     background-color: var(--background-highlight);
 
-    .search {
-      @apply py-2;
-
-      input {
-        @apply border-b-2;
-        @apply outline-none;
-        @apply bg-transparent;
-        @apply mx-4 py-2 px-4;
-      }
+    .closed {
+      display: none;
     }
 
     .menu-item {
-      @apply text-sm;
-      @apply p-4;
+      @apply p-4 relative;
 
-      &:hover {
+      &:hover,
+      &.active {
         @apply bg-background;
       }
-      .active {
-        @apply font-semibold;
-      }
 
-      .title {
-        .name {
-          @apply mr-4;
+      .link {
+        @apply flex justify-between;
+
+        &.active,
+        .active {
+          @apply font-semibold;
         }
 
-        .type {
-          @apply rounded-full font-semibold text-xs px-2 tracking-wide inline-block capitalize;
-          &.openapi {
-            @apply bg-teal-200 text-teal-800;
+        .title {
+          .name {
+            @apply mr-4;
           }
-          &.grpc {
-            @apply bg-blue-200 text-blue-800;
-          }
-          &.asyncapi {
-            @apply bg-violet-200 text-violet-800;
+
+          .type {
+            @apply rounded-full font-semibold text-xs px-2 tracking-wide inline-block capitalize;
+
+            &.openapi {
+              @apply bg-teal-200 text-teal-800;
+            }
+
+            &.grpc {
+              @apply bg-blue-200 text-blue-800;
+            }
+
+            &.asyncapi {
+              @apply bg-violet-200 text-violet-800;
+            }
           }
         }
       }

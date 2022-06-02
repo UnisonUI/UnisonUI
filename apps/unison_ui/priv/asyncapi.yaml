@@ -9,8 +9,8 @@ info:
   version: 2.0.0
 channels:
   /ws:
-    description: Websocket endpoint for server pushing new events
     subscribe:
+      description: Websocket endpoint for server pushing new events
       message:
         title: Event
         name: Event
