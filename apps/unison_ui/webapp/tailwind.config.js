@@ -5,6 +5,7 @@ module.exports = {
   },
   content: ["./src/**/*.js"],
   purge: false,
+  plugins: [require("@tailwindcss/forms")],
   theme: {
     screens: {
       sm: "640px",
@@ -13,8 +14,8 @@ module.exports = {
       xl: "1280px",
     },
     fontFamily: {
-      body: ["Montserrat", "sans-serif"],
-      code: ["Fira Code", "sans-serif"],
+      body: ["'Poppins'", "sans-serif"],
+      code: ["'Fira Code'", "sans-serif"],
     },
     minWidth: {
       0: "0",
@@ -22,12 +23,6 @@ module.exports = {
       "1/2": "50%",
       "3/4": "75%",
       full: "100%",
-    },
-    borderWidth: {
-      default: "1px",
-      0: "0",
-      2: "2px",
-      4: "4px",
     },
     extend: {
       colors: {

@@ -31,6 +31,11 @@ defmodule WebhookProvider.Service do
     with name when not is_nil(name) <- service["name"],
          schema when not is_nil(schema) <- service["schema"],
          servers when is_map(servers) <- service["servers"],
+         servers <-
+           Enum.into(servers, %{}, fn {name, server} ->
+             server = Enum.into(server, [], fn {key, value} -> {String.to_atom(key), value} end)
+             {name, struct(Service.Grpc.Server, server)}
+           end),
          dir when not is_nil(dir) <- System.tmp_dir(),
          file <- Path.join(dir, random_file()),
          :ok <- File.write(file, schema),

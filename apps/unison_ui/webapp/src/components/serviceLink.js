@@ -1,9 +1,13 @@
 import React from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { ChevronRight } from "react-feather";
 import classNames from "classnames";
-import { capitalize } from "lodash";
-import { extractOpenApiOperations } from "../utils/openapi";
-import { ChevronDown, ChevronRight } from "react-feather";
+import {
+  extractOpenApiOperations,
+  extractAsyncAPIOperations,
+  extractGrpcOperations,
+} from "../utils";
+
 const Title = ({ name, type }) => (
   <div className="title">
     <span className="name">{name}</span>
@@ -14,53 +18,30 @@ const Title = ({ name, type }) => (
 const Operations = ({ service }) => {
   const location = useLocation();
   const isOpen = location.pathname === `/service/${service.id}`;
-  const isOperation = (id) =>
-    location.pathname === `/service/${service.id}` &&
-    location.hash === `#${id}`;
+  const isOperation = (id) => isOpen && location.hash === `#${id}`;
 
   const operations = (function () {
     switch (service.type) {
-      case "openapi": {
-        const operations = extractOpenApiOperations(service.spec);
-        return Object.entries(operations).flatMap(([tag, operations]) => {
-          const result = [];
-          if (tag !== "") result.push(capitalize(tag));
-          operations.forEach(({ name, id }) => result.push({ id, name }));
-          return result;
-        });
-      }
+      case "openapi":
+        return extractOpenApiOperations(service.spec);
+
       case "asyncapi":
-        return Object.entries(service.spec.channels).flatMap(
-          ([channelName, channel]) => {
-            const compute = (channel, type) => {
-              const name =
-                channel.summary ||
-                channel.description ||
-                `${type} - ${channelName}`;
-              return {
-                name,
-                id: channel.operationId || `${type}-${channelName}`,
-              };
-            };
-            const result = [];
-            if (channel.subscribe)
-              result.push(compute(channel.subscribe, "subscribe"));
-            if (channel.publish)
-              result.push(compute(channel.publish, "publish"));
-            return result;
-          }
-        );
+        return extractAsyncAPIOperations(service.spec);
 
       default:
-        return [];
+        return extractGrpcOperations(service.spec);
     }
   })().map(({ id, name }) => (
-    <li key={`${service.id}-${id}`} className="menu-item">
+    <li
+      key={`${service.id}-${id}`}
+      className={classNames("menu-item", { active: isOperation(id) })}
+    >
       <Link to={`/service/${service.id}#${id}`} className="link">
         <div className={classNames({ active: isOperation(id) })}>{name}</div>
       </Link>
     </li>
   ));
+
   return (
     <li className={classNames({ closed: !isOpen })}>
       <ul>{operations}</ul>
@@ -91,7 +72,7 @@ export default function ServiceLink({ services }) {
       <li
         key={service.id}
         className={classNames("menu-item", {
-          active: isNavLinkActive(service.id),
+          active: isNavLinkActive(service.id) && location.hash === "",
         })}
       >
         <NavLink to={`/service/${service.id}`} className="link">
@@ -100,11 +81,11 @@ export default function ServiceLink({ services }) {
             type={service.type}
             className={(isActive) => classNames({ active: isActive })}
           />
-          {isNavLinkActive(service.id) ? (
-            <ChevronDown className="chevron" />
-          ) : (
-            <ChevronRight className="chevron" />
-          )}
+          <ChevronRight
+            className={classNames("chevron", {
+              "rotate-90": isNavLinkActive(service.id),
+            })}
+          />
         </NavLink>
       </li>
     );

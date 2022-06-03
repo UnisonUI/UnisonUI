@@ -34,7 +34,8 @@ defmodule Services.MixProject do
       {:ok, "~> 2.3"},
       {:type_check, "~> 0.10.7"},
       {:ra, "~> 2.0.4"},
-      {:logstash_logger_formatter, "~> 1.1"}
+      {:logstash_logger_formatter, "~> 1.1"},
+      {:jason, "~> 1.3"}
     ]
   end
 end

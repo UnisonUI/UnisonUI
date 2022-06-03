@@ -1,4 +1,3 @@
-import loadable from "@loadable/component";
 import { Moon, Sun } from "react-feather";
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -7,13 +6,8 @@ import ServiceLink from "./serviceLink";
 import * as cornify from "../cornified";
 import Konami from "react-konami-code";
 import NoService from "./noService";
-import {
-  handleEvent,
-  selectAllServices,
-} from "../features/services/servicesSlice";
-const AsyncAPI = loadable(() => import("./asyncapi"));
-const OpenAPI = loadable(() => import("./openapi"));
-const GRPC = loadable(() => import("./grpc"));
+import SpecficationLayout from "./specficationLayout";
+import { handleEvent, selectAllServices } from "../features/servicesSlice";
 
 export default function UnisonUILayout() {
   const dispatch = useDispatch();
@@ -24,13 +18,16 @@ export default function UnisonUILayout() {
     .find((service) => location.pathname === `/service/${service.id}`);
 
   const [isDarkMode, setDarkMode] = useState(
-    localStorage.getItem("darkMode") === "true"
+    localStorage.theme === "dark" ||
+      (!("theme" in localStorage) &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches)
   );
 
   function _toggleTheme() {
-    const newTheme = !isDarkMode;
-    localStorage.setItem("darkMode", newTheme);
-    setDarkMode(newTheme);
+    const newIsDarkMode = !isDarkMode;
+    if (newIsDarkMode) localStorage.theme = "dark";
+    else localStorage.theme = "light";
+    setDarkMode(newIsDarkMode);
   }
 
   function _connect() {
@@ -39,9 +36,15 @@ export default function UnisonUILayout() {
         window.location.host
       }/ws`
     );
-
+    let heartbeat;
+    websocket.onopen = (_) => {
+      heartbeat = setInterval(() => websocket.send("ping"), 30 * 1000);
+    };
     websocket.onclose = (_) => {
-      setTimeout(() => _connect(), 1000);
+      setTimeout(() => {
+        if (heartbeat) clearInterval(heartbeat);
+        _connect();
+      }, 1000);
     };
 
     websocket.onmessage = (e) => {
@@ -78,16 +81,7 @@ export default function UnisonUILayout() {
   }
 
   function _loadComponent(service) {
-    switch (service.type) {
-      case "openapi":
-        return <OpenAPI useProxy={service.useProxy} />;
-      case "asyncapi":
-        return <AsyncAPI />;
-      case "grpc":
-        return <GRPC title={service.name} />;
-      default:
-        break;
-    }
+    return <SpecficationLayout id={service.id} />;
   }
 
   return (

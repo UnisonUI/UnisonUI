@@ -5,7 +5,7 @@ import { Config } from "@redocly/openapi-core/lib/config/config";
 /* tslint:disable-next-line:no-implicit-dependencies */
 import { convertObj } from "swagger2openapi";
 import { parseYaml } from "./yaml";
-import { groupBy } from "lodash";
+import capitalize from "lodash-es/capitalize";
 
 export async function parseOpenApi(input) {
   const config = new Config({});
@@ -26,13 +26,12 @@ export async function parseOpenApi(input) {
   return parsed.swagger !== undefined ? convertSwagger2OpenAPI(parsed) : parsed;
 }
 
-export function convertSwagger2OpenAPI(spec) {
+function convertSwagger2OpenAPI(spec) {
   return new Promise((resolve, reject) =>
     convertObj(
       spec,
       { patch: true, warnOnly: true, text: "{}", anchors: true },
       (err, res) => {
-        // TODO: log any warnings
         if (err) {
           return reject(err);
         }
@@ -43,17 +42,21 @@ export function convertSwagger2OpenAPI(spec) {
 }
 
 export function extractOpenApiOperations(spec) {
-  const operations = Object.entries(spec.paths).flatMap(([pathName, path]) =>
-    Object.entries(path).flatMap(([method, path]) => {
-      const name =
-        path.summary ||
-        path.description ||
-        `${pathName} - ${method.toUpperCase()}`;
-      const tags = path.tags || [""];
-      return tags.map((tag) => {
-        return { tag, name, id: path.operationId || `${method}-${pathName}` };
-      });
-    })
-  );
-  return groupBy(operations, ({ tag }) => tag);
+  const operations = Object.entries(spec.paths)
+    .flatMap(([pathName, path]) =>
+      Object.entries(path).flatMap(([method, path]) => {
+        const name = path.summary || `${pathName} - ${method.toUpperCase()}`;
+        const tags = path.tags || [""];
+        return tags.map((tag) => {
+          return { tag, name, id: path.operationId || `${method}-${pathName}` };
+        });
+      })
+    )
+    .groupBy(({ tag }) => tag);
+  return Object.entries(operations).flatMap(([tag, operations]) => {
+    const result = [];
+    if (tag !== "") result.push({ id: tag, name: capitalize(tag) });
+    operations.forEach(({ name, id }) => result.push({ id, name }));
+    return result;
+  });
 }

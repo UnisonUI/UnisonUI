@@ -1,0 +1,16 @@
+.layout {
+  @apply py-8 px-16;
+  @apply flex flex-col;
+
+  .info {
+    .title {
+      @apply text-2xl;
+    }
+    .license-contact {
+      @apply flex flex-wrap mt-2 leading-normal;
+      li {
+        @apply inline-block mt-2 mr-2;
+      }
+    }
+  }
+}

@@ -35,7 +35,7 @@ defimpl Jason.Encoder, for: [Services.Event.Up, Services.Event.Down, Services.Ev
       |> Map.take([:id, :name, :metadata, :schema, :servers])
       |> Map.update!(:servers, fn servers ->
         Enum.into(servers, [], fn {name, server} ->
-          %{name: name, useTls: server.use_tls}
+          server |> Map.from_struct() |> Map.put(:name, name)
         end)
       end)
       |> add_type(:grpc)

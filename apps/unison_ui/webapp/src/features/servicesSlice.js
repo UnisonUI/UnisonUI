@@ -1,6 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { parseOpenApi } from "../../utils/openapi";
-import { parseAsyncAPI } from "../../utils/asyncapi";
+import { normalizeGrpcSchema, parseAsyncAPI, parseOpenApi } from "../utils";
 
 export const servicesSlice = createSlice({
   name: "services",
@@ -70,7 +69,8 @@ export const handleEvent = (data) => (dispatch) => {
             })
             .catch(console.error);
           break;
-        default:
+        case "grpc":
+          data.spec = normalizeGrpcSchema(data);
           dispatch(add(data));
       }
       break;
@@ -88,7 +88,7 @@ export const fetchSpec = (state, id) => {
     .flat()
     .find((service) => service.id === id);
   if (service) return service.spec;
-  else return null;
+  return null;
 };
 
 export default servicesSlice.reducer;

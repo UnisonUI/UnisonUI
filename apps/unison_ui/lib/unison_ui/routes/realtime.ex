@@ -23,5 +23,11 @@ defmodule UnisonUI.Routes.Realtime do
   def websocket_info({:event, event}, state), do: {:reply, {:text, event}, state}
 
   @impl true
+  def websocket_handle(:ping, state), do: {:reply, :pong, state}
+
+  @impl true
+  def websocket_handle({:text, "ping"}, state), do: {:reply, :pong, state}
+
+  @impl true
   def websocket_handle(_frame, state), do: {:ok, state}
 end
