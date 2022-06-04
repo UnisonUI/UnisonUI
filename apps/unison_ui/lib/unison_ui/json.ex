@@ -7,26 +7,22 @@ defimpl Jason.Encoder, for: [Services.Event.Up, Services.Event.Down, Services.Ev
   def encode(struct = %Event.Down{}, opts),
     do: struct |> Map.from_struct() |> add_event(:serviceDown) |> Jason.Encode.value(opts)
 
-  def encode(struct = %Event.Changed{}, opts),
-    do: struct |> Map.from_struct() |> add_event(:serviceChanged) |> Jason.Encode.value(opts)
+  def encode(%Event.Changed{service: service}, opts),
+    do: service |> encode() |> add_event(:serviceChanged) |> Jason.Encode.value(opts)
 
-  defp encode(struct = %Service.AsyncApi{use_proxy: use_proxy}),
+  defp encode(struct = %Service.AsyncApi{}),
     do:
       struct
       |> Map.from_struct()
       |> Map.take([:id, :name, :use_proxy, :metadata, :content])
       |> add_type(:asyncapi)
-      |> Map.put(:useProxy, use_proxy)
-      |> Map.delete(:use_proxy)
 
-  defp encode(struct = %Service.OpenApi{use_proxy: use_proxy}),
+  defp encode(struct = %Service.OpenApi{}),
     do:
       struct
       |> Map.from_struct()
       |> Map.take([:id, :name, :use_proxy, :metadata, :content])
       |> add_type(:openapi)
-      |> Map.put(:useProxy, use_proxy)
-      |> Map.delete(:use_proxy)
 
   defp encode(struct = %Service.Grpc{}),
     do:

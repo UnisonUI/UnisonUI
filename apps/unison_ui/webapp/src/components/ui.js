@@ -10,6 +10,7 @@ import NoService from "./noService";
 import SpecficationLayout from "./specficationLayout";
 import { handleEvent, selectAllServices } from "../features";
 import classNames from "classnames";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function UnisonUILayout() {
   const dispatch = useDispatch();
@@ -38,13 +39,20 @@ export default function UnisonUILayout() {
         window.location.host
       }/ws`
     );
+    const toastId = toast.loading("Connecting", { autoClose: false });
     let heartbeat;
+
     websocket.onopen = (_) => {
+      toast.dismiss(toastId);
       heartbeat = setInterval(() => websocket.send("ping"), 30 * 1000);
     };
     websocket.onclose = (_) => {
+      toast.dismiss(toastId);
+      const errorId = toast.error("Connection lost", { autoClose: 5000 });
+
       setTimeout(() => {
         if (heartbeat) clearInterval(heartbeat);
+        toast.dismiss(errorId);
         _connect();
       }, 1000);
     };
@@ -92,6 +100,7 @@ export default function UnisonUILayout() {
       style={{ height: "100%" }}
       className={classNames({ dark: isDarkMode })}
     >
+      <ToastContainer theme={isDarkMode ? "dark" : "light"} />
       <Konami
         action={() => cornify.pizzazz()}
         timeout={15000}

@@ -18,9 +18,9 @@ defmodule Services.Event do
   end
 
   defmodule Changed do
-    @type t :: %__MODULE__{id: String.t()}
-    @enforce_keys [:id]
-    defstruct [:id]
+    @type t :: %__MODULE__{service: Services.t()}
+    @enforce_keys [:service]
+    defstruct [:service]
   end
 
   def from(input), do: Services.Event.From.from(input)

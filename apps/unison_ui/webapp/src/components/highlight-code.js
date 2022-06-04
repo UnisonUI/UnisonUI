@@ -3,7 +3,7 @@ import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import xml from "react-syntax-highlighter/dist/esm/languages/hljs/xml";
 import obsidian from "react-syntax-highlighter/dist/esm/styles/hljs/obsidian";
 import React from "react";
-import { stringify } from "./utils";
+import { stringify } from "../utils";
 SyntaxHighlighter.registerLanguage("json", json);
 SyntaxHighlighter.registerLanguage("xml", xml);
 

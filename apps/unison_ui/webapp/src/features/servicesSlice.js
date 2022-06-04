@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { normalizeGrpcSchema, parseAsyncAPI, parseOpenApi } from "../utils";
+import { toast } from "react-toastify";
 
 export const servicesSlice = createSlice({
   name: "services",
@@ -10,30 +11,22 @@ export const servicesSlice = createSlice({
         state[payload.name] = [];
       }
 
-      if (!state[payload.name].find((item) => item.id === payload.id)) {
-        state[payload.name].push({
-          id: payload.id,
-          name: payload.name,
-          metadata: payload.metadata,
-          useProxy: payload.useProxy,
-          type: payload.type,
-          spec: payload.spec,
-        });
-      } else {
+      const newService = {
+        id: payload.id,
+        name: payload.name,
+        metadata: payload.metadata,
+        useProxy: payload.useProxy,
+        type: payload.type,
+        spec: payload.spec,
+      };
+
+      if (!state[payload.name].find((item) => item.id === payload.id))
+        state[payload.name].push(newService);
+      else
         state[payload.name] = state[payload.name].map((service) => {
           if (service.id !== payload.id) return service;
-          else {
-            return {
-              id: payload.id,
-              name: payload.name,
-              metadata: payload.metadata,
-              useProxy: payload.useProxy,
-              type: payload.type,
-              spec: payload.spec,
-            };
-          }
+          return newService;
         });
-      }
     },
     remove: (state, { payload }) => {
       state = Object.entries(state).reduce((obj, [name, newServices]) => {
@@ -52,6 +45,7 @@ export const { add, remove } = servicesSlice.actions;
 export const handleEvent = (data) => (dispatch) => {
   switch (data.event) {
     case "serviceUp":
+    case "serviceChanged":
       switch (data.type) {
         case "openapi":
           parseOpenApi(data.content)
@@ -59,7 +53,9 @@ export const handleEvent = (data) => (dispatch) => {
               data.spec = spec;
               dispatch(add(data));
             })
-            .catch(console.error);
+            .catch((error) =>
+              toast.error(`${data.name}: ${error}`, { autoClose: 5000 })
+            );
           break;
         case "asyncapi":
           parseAsyncAPI(data.content)
@@ -67,7 +63,9 @@ export const handleEvent = (data) => (dispatch) => {
               data.spec = spec._json;
               dispatch(add(data));
             })
-            .catch(console.error);
+            .catch((error) =>
+              toast.error(`${data.name}: ${error}`, { autoClose: 5000 })
+            );
           break;
         case "grpc":
           data.spec = normalizeGrpcSchema(data);

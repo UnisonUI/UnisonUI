@@ -1,7 +1,0 @@
-@mixin invalid-form-element {
-  @apply nm-inset-red-600;
-  &::placeholder {
-    @apply text-red-200;
-  }
-  animation: shake 0.4s 1;
-}

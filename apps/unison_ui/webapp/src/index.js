@@ -10,6 +10,7 @@ import store from "./store";
 
 import "./css/main.scss";
 import "prismjs/themes/prism-dark.css";
+import "react-toastify/dist/ReactToastify.css";
 
 const container = document.getElementById("app");
 const root = createRoot(container);

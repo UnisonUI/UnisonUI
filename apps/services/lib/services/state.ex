@@ -26,7 +26,7 @@ defmodule Services.State do
         events =
           case {named_changed?(state, service), new_service?(state, service),
                 content_changed?(state, service)} do
-            {_, _, true} -> [%Event.Changed{id: id}]
+            {_, _, true} -> [%Event.Changed{service: service}]
             {true, _, _} -> [service_down, service_up]
             {_, true, _} -> [service_up]
             _ -> []
