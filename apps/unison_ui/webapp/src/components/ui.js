@@ -16,6 +16,7 @@ export default function UnisonUILayout() {
   const dispatch = useDispatch();
   const services = useSelector(selectAllServices);
   const location = useLocation();
+
   const service = Object.values(services)
     .flat()
     .find((service) => location.pathname === `/service/${service.id}`);
@@ -39,20 +40,28 @@ export default function UnisonUILayout() {
         window.location.host
       }/ws`
     );
-    const toastId = toast.loading("Connecting", { autoClose: false });
+
+    toast.loading("Connecting", {
+      toastId: "loading",
+      type: "info",
+      autoClose: false,
+    });
     let heartbeat;
 
     websocket.onopen = (_) => {
-      toast.dismiss(toastId);
+      toast.dismiss("loading");
+      toast.dismiss("toastErrorId");
+
       heartbeat = setInterval(() => websocket.send("ping"), 30 * 1000);
     };
     websocket.onclose = (_) => {
-      toast.dismiss(toastId);
-      const errorId = toast.error("Connection lost", { autoClose: 5000 });
+      toast.warning("Connection lost", {
+        toastId: "toastErrorId",
+        autoClose: false,
+      });
 
       setTimeout(() => {
         if (heartbeat) clearInterval(heartbeat);
-        toast.dismiss(errorId);
         _connect();
       }, 1000);
     };
@@ -100,7 +109,7 @@ export default function UnisonUILayout() {
       style={{ height: "100%" }}
       className={classNames({ dark: isDarkMode })}
     >
-      <ToastContainer theme={isDarkMode ? "dark" : "light"} />
+      <ToastContainer theme="colored" position="bottom-right" />
       <Konami
         action={() => cornify.pizzazz()}
         timeout={15000}
