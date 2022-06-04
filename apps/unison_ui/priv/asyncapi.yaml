@@ -1,4 +1,4 @@
-asyncapi: 2.2.0
+asyncapi: 2.4.0
 info:
   title: UnisonUI
   description: >
@@ -7,6 +7,12 @@ info:
     name: MIT
     url: https://raw.githubusercontent.com/UnisonUI/unisonui/master/LICENSE
   version: 2.0.0
+servers:
+  test:
+    url: test.mykafkacluster.org:8092
+    protocol: kafka-secure
+    description: Test broker
+
 channels:
   /ws:
     subscribe:

@@ -10,6 +10,9 @@ $colors: orange, green, blue, red, purple;
   @each $color in $colors {
     &.#{"" + $color} {
       @apply border-#{""+$color}-300 hover:bg-#{""+$color}-300 hover:text-#{""+$color}-600 text-#{""+$color}-500;
+      &.plain {
+        @apply bg-#{""+$color}-300 text-#{""+$color}-600;
+      }
     }
   }
 }

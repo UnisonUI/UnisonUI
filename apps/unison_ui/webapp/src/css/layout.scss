@@ -3,13 +3,37 @@
   @apply flex flex-col;
 
   .info {
+    @apply py-4;
+
     .title {
       @apply text-2xl;
     }
+
     .license-contact {
       @apply flex flex-wrap mt-2 leading-normal;
+
       li {
         @apply inline-block mt-2 mr-2;
+      }
+    }
+  }
+
+  .servers {
+    @apply py-4;
+
+    .title {
+      @apply text-2xl;
+    }
+    .selections {
+      @apply mt-4 mb-2;
+
+      input {
+        @apply mr-2 my-2;
+        outline: none;
+      }
+      input,
+      label {
+        @apply cursor-pointer;
       }
     }
   }

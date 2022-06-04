@@ -5,7 +5,6 @@ module.exports = {
   },
   content: ["./src/**/*.js"],
   purge: false,
-  plugins: [require("@tailwindcss/forms")],
   theme: {
     screens: {
       sm: "640px",

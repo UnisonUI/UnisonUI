@@ -2,12 +2,14 @@ import { Moon, Sun } from "react-feather";
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
+
 import ServiceLink from "./serviceLink";
 import * as cornify from "../cornified";
 import Konami from "react-konami-code";
 import NoService from "./noService";
 import SpecficationLayout from "./specficationLayout";
-import { handleEvent, selectAllServices } from "../features/servicesSlice";
+import { handleEvent, selectAllServices } from "../features";
+import classNames from "classnames";
 
 export default function UnisonUILayout() {
   const dispatch = useDispatch();
@@ -88,7 +90,7 @@ export default function UnisonUILayout() {
     <div
       id="outer-container"
       style={{ height: "100%" }}
-      className={isDarkMode ? "dark" : ""}
+      className={classNames({ dark: isDarkMode })}
     >
       <Konami
         action={() => cornify.pizzazz()}

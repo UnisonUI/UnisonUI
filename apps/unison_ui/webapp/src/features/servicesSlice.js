@@ -71,6 +71,7 @@ export const handleEvent = (data) => (dispatch) => {
           break;
         case "grpc":
           data.spec = normalizeGrpcSchema(data);
+          console.log(data);
           dispatch(add(data));
       }
       break;
@@ -83,11 +84,11 @@ export const handleEvent = (data) => (dispatch) => {
 
 export const selectAllServices = (state) => state.services;
 
-export const fetchSpec = (state, id) => {
+export const fetchService = (state, id) => {
   const service = Object.values(state.services)
     .flat()
     .find((service) => service.id === id);
-  if (service) return service.spec;
+  if (service) return service;
   return null;
 };
 

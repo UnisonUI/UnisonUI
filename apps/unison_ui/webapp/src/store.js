@@ -4,7 +4,7 @@ import servicesReducer from "./features/servicesSlice";
 
 export default configureStore({
   reducer: {
-    service: requestReducer,
+    request: requestReducer,
     services: servicesReducer,
   },
 });
