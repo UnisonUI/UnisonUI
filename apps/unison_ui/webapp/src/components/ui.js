@@ -10,7 +10,7 @@ import NoService from "./noService";
 import SpecficationLayout from "./specficationLayout";
 import { handleEvent, selectAllServices } from "../features";
 import classNames from "classnames";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 export default function UnisonUILayout() {
   const dispatch = useDispatch();
@@ -109,7 +109,6 @@ export default function UnisonUILayout() {
       style={{ height: "100%" }}
       className={classNames({ dark: isDarkMode })}
     >
-      <ToastContainer theme="colored" position="bottom-right" />
       <Konami
         action={() => cornify.pizzazz()}
         timeout={15000}

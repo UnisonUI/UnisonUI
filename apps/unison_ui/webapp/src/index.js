@@ -5,6 +5,7 @@ import React from "react";
 import { Provider } from "react-redux";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import UnisonUILayout from "./components/ui";
 import store from "./store";
 
@@ -19,5 +20,6 @@ root.render(
     <Router>
       <UnisonUILayout />
     </Router>
+    <ToastContainer theme="colored" position="bottom-right" />
   </Provider>
 );
