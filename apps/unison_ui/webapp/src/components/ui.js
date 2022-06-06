@@ -11,9 +11,10 @@ import { toast } from "react-toastify";
 import * as cornify from "../cornified";
 import classNames from "classnames";
 
+import { handleEvent, selectAllServices } from "../features";
+
 import ServiceLink from "./serviceLink";
 import NoService from "./noService";
-import { handleEvent, selectAllServices } from "../features";
 
 const SpecficationLayout = loadable(() =>
   import(/* webpackPrefetch: true */ "./specficationLayout")

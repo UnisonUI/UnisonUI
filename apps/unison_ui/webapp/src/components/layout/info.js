@@ -1,5 +1,8 @@
+import loadable from "@loadable/component";
 import React from "react";
-import Markdown from "../markdown";
+const Markdown = loadable(() =>
+  import(/* webpackPrefetch: true */ "../markdown")
+);
 
 export default function Info({ info }) {
   return (

@@ -18,9 +18,19 @@ module.exports = {
       automaticNameDelimiter: "-",
       chunks: "all",
       cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom|@reduxjs\/toolkit|js-yaml)[\\/]/,
-          name: "vendor",
+        react: {
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom|@reduxjs\/toolkit)[\\/]/,
+          name: "react",
+          chunks: "all",
+        },
+        asyncapi: {
+          test: /[\\/]node_modules[\\/]@asyncapi.+[\\/]/,
+          name: "asyncapi",
+          chunks: "all",
+        },
+        openapi: {
+          test: /[\\/]node_modules[\\/]@redocly.+[\\/]/,
+          name: "openapi",
           chunks: "all",
         },
       },
@@ -38,14 +48,6 @@ module.exports = {
       {
         test: /\.html$/,
         loader: "html-loader",
-      },
-      {
-        test: /\.((eot)|(woff)|(woff2)|(ttf))(\?v=\d+\.\d+\.\d+)?$/,
-        loader: "file-loader",
-        options: {
-          name: "fonts/[name].[sha512:hash:hex:10].[ext]",
-          publicPath: "/statics/",
-        },
       },
       {
         loader: "babel-loader",
