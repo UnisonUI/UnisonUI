@@ -34,7 +34,8 @@ defmodule Services.StateTest do
       result = State.reduce(state, %Event.Up{service: new_service})
 
       assert result ==
-               {%State{services: %{"test" => new_service}}, [%Event.Changed{id: "test"}]}
+               {%State{services: %{"test" => new_service}},
+                [%Event.Changed{service: new_service}]}
     end
   end
 end

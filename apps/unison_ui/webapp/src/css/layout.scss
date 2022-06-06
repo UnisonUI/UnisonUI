@@ -2,15 +2,15 @@
   @apply py-8 px-16;
   @apply flex flex-col;
 
+  .title {
+    @apply text-2xl mb-2;
+  }
+
   .info {
     @apply py-4;
 
-    .title {
-      @apply text-2xl;
-    }
-
     .license-contact {
-      @apply flex flex-wrap mt-2 leading-normal;
+      @apply flex flex-wrap leading-normal;
 
       li {
         @apply inline-block mt-2 mr-2;
@@ -18,12 +18,19 @@
     }
   }
 
+  .section {
+    .title {
+      @apply uppercase text-xl;
+    }
+
+    .section-content {
+      @apply border p-4;
+    }
+  }
+
   .servers {
     @apply py-4;
 
-    .title {
-      @apply text-2xl;
-    }
     .selections {
       @apply mt-4 mb-2;
 

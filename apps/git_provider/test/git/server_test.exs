@@ -118,7 +118,20 @@ grpc:
 
       {_, 0} = LocalGit.commit(context.local_git, "test", "test2")
 
-      assert_receive %Services.Event.Changed{id: "test:test"}, 1_000
+      assert_receive %Event.Changed{
+                       service: %Service.OpenApi{
+                         content: "test2",
+                         id: "test:test",
+                         metadata: %Service.Metadata{
+                           file: "test",
+                           provider: "local"
+                         },
+                         name: "test",
+                         use_proxy: false
+                       }
+                     },
+                     1_000
+
       stop_git(context.repo)
     end
 

@@ -20,6 +20,6 @@ root.render(
     <Router>
       <UnisonUILayout />
     </Router>
-    <ToastContainer theme="colored" position="bottom-right" />
+    <ToastContainer theme="colored" position="bottom-left" />
   </Provider>
 );

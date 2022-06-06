@@ -41,7 +41,9 @@ export const servicesSlice = createSlice({
     },
   },
 });
-export const { add, remove } = servicesSlice.actions;
+
+const { add, remove } = servicesSlice.actions;
+
 export const handleEvent = (data) => (dispatch) => {
   switch (data.event) {
     case "serviceUp":
