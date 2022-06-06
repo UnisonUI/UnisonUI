@@ -1,11 +1,16 @@
-// eslint-disable-next-line import/no-internal-modules
-import { bundle } from "@redocly/openapi-core/lib/bundle";
-// eslint-disable-next-line import/no-internal-modules
-import { Config } from "@redocly/openapi-core/lib/config/config";
+import loadable from "@loadable/component";
 /* tslint:disable-next-line:no-implicit-dependencies */
 import { convertObj } from "swagger2openapi";
 import { parseYaml } from "./yaml";
 import capitalize from "lodash-es/capitalize";
+
+const { bundle } = loadable.lib(() =>
+  import("@redocly/openapi-core/lib/bundle")
+);
+
+const { Config } = loadable.lib(() =>
+  import("@redocly/openapi-core/lib/config/config")
+);
 
 export async function parseOpenApi(input) {
   const config = new Config({});

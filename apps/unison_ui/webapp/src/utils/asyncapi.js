@@ -1,6 +1,11 @@
+import loadable from "@loadable/component";
 import { parse, registerSchemaParser } from "@asyncapi/parser";
-import avroSchemaParser from "@asyncapi/avro-schema-parser";
-import openapiSchemaParser from "@asyncapi/openapi-schema-parser";
+const avroSchemaParser = loadable.lib(() =>
+  import("@asyncapi/avro-schema-parser")
+);
+const openapiSchemaParser = loadable.lib(() =>
+  import("@asyncapi/openapi-schema-parser")
+);
 
 registerSchemaParser(openapiSchemaParser);
 registerSchemaParser(avroSchemaParser);

@@ -17,6 +17,13 @@ module.exports = {
     splitChunks: {
       automaticNameDelimiter: "-",
       chunks: "all",
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/](react|react-dom|@reduxjs\/toolkit|react-feather)[\\/]/,
+          name: "vendor",
+          chunks: "all",
+        },
+      },
     },
   },
   resolve: {

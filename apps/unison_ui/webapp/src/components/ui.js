@@ -1,3 +1,4 @@
+import loadable from "@loadable/component";
 import { Moon, Sun } from "react-feather";
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
@@ -7,10 +8,11 @@ import ServiceLink from "./serviceLink";
 import * as cornify from "../cornified";
 import Konami from "react-konami-code";
 import NoService from "./noService";
-import SpecficationLayout from "./specficationLayout";
 import { handleEvent, selectAllServices } from "../features";
 import classNames from "classnames";
 import { toast } from "react-toastify";
+
+const SpecficationLayout = loadable(() => import("./specficationLayout"));
 
 export default function UnisonUILayout() {
   const dispatch = useDispatch();

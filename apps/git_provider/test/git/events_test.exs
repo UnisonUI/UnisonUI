@@ -1,6 +1,5 @@
 defmodule GitProvider.Git.EventsTest do
   use ExUnit.Case, async: true
-  use ExUnitProperties
 
   import OK, only: [success: 1, failure: 1]
 
@@ -11,42 +10,42 @@ defmodule GitProvider.Git.EventsTest do
 
   describe "from_configuration/2" do
     test "the specifications are valid" do
-      check all(types <- uniq_list_of(one_of([constant(:openapi), constant(:grpc)]), length: 2)) do
-        specifications = %Specifications{
-          specifications:
-            Enum.into(types, %{}, fn type ->
-              specs =
-                case type do
-                  :grpc -> %Configuration.Grpc.Specification{}
-                  _ -> %Configuration.AsyncOpenApi.Specification{}
-                end
+      types = [:openapi, :grpc]
 
-              {to_string(type), {type, specs}}
-            end)
-        }
+      specifications = %Specifications{
+        specifications:
+          Enum.into(types, %{}, fn type ->
+            specs =
+              case type do
+                :grpc -> %Configuration.Grpc.Specification{}
+                _ -> %Configuration.AsyncOpenApi.Specification{}
+              end
 
-        expected =
-          Enum.map(types, fn
-            :grpc ->
-              %Events.Upsert.Grpc{
-                path: "grpc",
-                specs: %Configuration.Grpc.Specification{},
-                repository: @repo
-              }
-
-            type ->
-              %Events.Upsert.AsyncOpenApi{
-                type: type,
-                path: to_string(type),
-                specs: %Configuration.AsyncOpenApi.Specification{},
-                repository: @repo
-              }
+            {to_string(type), {type, specs}}
           end)
+      }
 
-        events = Events.from_specifications(specifications, @repo)
+      expected =
+        Enum.map(types, fn
+          :grpc ->
+            %Events.Upsert.Grpc{
+              path: "grpc",
+              specs: %Configuration.Grpc.Specification{},
+              repository: @repo
+            }
 
-        assert Enum.all?(events, fn e -> Enum.find(expected, &(&1 == e)) != nil end)
-      end
+          type ->
+            %Events.Upsert.AsyncOpenApi{
+              type: type,
+              path: to_string(type),
+              specs: %Configuration.AsyncOpenApi.Specification{},
+              repository: @repo
+            }
+        end)
+
+      events = Events.from_specifications(specifications, @repo)
+
+      assert Enum.all?(events, fn e -> Enum.find(expected, &(&1 == e)) != nil end)
     end
   end
 
