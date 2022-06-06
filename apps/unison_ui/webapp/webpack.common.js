@@ -19,7 +19,7 @@ module.exports = {
       chunks: "all",
       cacheGroups: {
         vendor: {
-          test: /[\\/]node_modules[\\/](react|react-dom|@reduxjs\/toolkit|react-feather)[\\/]/,
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom|@reduxjs\/toolkit|js-yaml)[\\/]/,
           name: "vendor",
           chunks: "all",
         },

@@ -1,5 +1,4 @@
 import * as Prism from "prismjs";
-
 import "prismjs/components/prism-bash.js";
 import "prismjs/components/prism-http.js";
 import "prismjs/components/prism-markup-templating.js"; // dep of php

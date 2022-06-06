@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { ChevronRight } from "react-feather";
+import ChevronRight from "react-feather/dist/icons/chevron-right";
 import classNames from "classnames";
 import {
   extractOpenApiOperations,

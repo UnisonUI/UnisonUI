@@ -1,18 +1,23 @@
 import loadable from "@loadable/component";
-import { Moon, Sun } from "react-feather";
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useLocation } from "react-router-dom";
-
-import ServiceLink from "./serviceLink";
-import * as cornify from "../cornified";
 import Konami from "react-konami-code";
-import NoService from "./noService";
-import { handleEvent, selectAllServices } from "../features";
-import classNames from "classnames";
+import Moon from "react-feather/dist/icons/moon";
+import Sun from "react-feather/dist/icons/sun";
+
 import { toast } from "react-toastify";
 
-const SpecficationLayout = loadable(() => import("./specficationLayout"));
+import * as cornify from "../cornified";
+import classNames from "classnames";
+
+import ServiceLink from "./serviceLink";
+import NoService from "./noService";
+import { handleEvent, selectAllServices } from "../features";
+
+const SpecficationLayout = loadable(() =>
+  import(/* webpackPrefetch: true */ "./specficationLayout")
+);
 
 export default function UnisonUILayout() {
   const dispatch = useDispatch();
