@@ -30,15 +30,16 @@ export const servicesSlice = createSlice({
         });
     },
     remove: (state, { payload }) => {
-      state = Object.entries(state).reduce((obj, [name, newServices]) => {
+      Object.entries(state).forEach(([name, newServices]) => {
         const filteredServices = newServices.filter(
           (item) => item.id !== payload.id
         );
         if (filteredServices.length) {
-          obj[name] = filteredServices;
+          state[name] = filteredServices;
+        } else {
+          delete state[name];
         }
-        return obj;
-      }, {});
+      });
     },
   },
 });
