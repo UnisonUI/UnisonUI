@@ -6,63 +6,64 @@ defmodule Services.Service do
 
   defmodule Metadata do
     use TypeCheck
-    defstruct [:provider, :file]
-    @type! t :: %__MODULE__{provider: String.t() | nil, file: String.t() | nil}
+    use TypeCheck.Defstruct
+
+    defstruct!(
+      provider: nil :: String.t() | nil,
+      file: nil :: String.t() | nil
+    )
   end
 
   defmodule OpenApi do
     use TypeCheck
+    use TypeCheck.Defstruct
     alias Services.Service.Metadata
-    defstruct [:id, :name, :content, use_proxy: false, metadata: %Metadata{}]
 
-    @type! t :: %__MODULE__{
-             id: String.t(),
-             name: String.t(),
-             content: String.t(),
-             use_proxy: boolean(),
-             metadata: Services.Service.Metadata.t()
-           }
+    defstruct!(
+      id: _ :: String.t(),
+      name: _ :: String.t(),
+      content: _ :: String.t(),
+      use_proxy: false :: boolean(),
+      metadata: %Metadata{} :: Services.Service.Metadata.t()
+    )
   end
 
   defmodule AsyncApi do
     use TypeCheck
+    use TypeCheck.Defstruct
     alias Services.Service.Metadata
 
-    defstruct [:id, :name, :content, use_proxy: false, metadata: %Metadata{}]
-
-    @type! t :: %__MODULE__{
-             id: String.t(),
-             name: String.t(),
-             content: String.t(),
-             use_proxy: boolean(),
-             metadata: Services.Service.Metadata.t()
-           }
+    defstruct!(
+      id: _ :: String.t(),
+      name: _ :: String.t(),
+      content: _ :: String.t(),
+      metadata: %Metadata{} :: Services.Service.Metadata.t()
+    )
   end
 
   defmodule Grpc do
     use TypeCheck
+    use TypeCheck.Defstruct
     alias Services.Service.Metadata
 
     defmodule Server do
       use TypeCheck
-      defstruct [:address, :port, use_tls: false]
+      use TypeCheck.Defstruct
 
-      @type! t :: %__MODULE__{
-               address: String.t(),
-               port: pos_integer(),
-               use_tls: boolean()
-             }
+      defstruct!(
+        address: _ :: String.t(),
+        port: _ :: pos_integer(),
+        use_tls: false :: boolean()
+      )
     end
 
-    defstruct [:id, :name, :schema, servers: %{}, metadata: %Metadata{}]
-
-    @type! t :: %__MODULE__{
-             id: String.t(),
-             name: String.t(),
-             schema: String.t(),
-             servers: map(),
-             metadata: Services.Service.Metadata.t()
-           }
+    defstruct!(
+      id: _ :: String.t(),
+      name: _ :: String.t(),
+      schema: _ :: String.t(),
+      servers: %{} :: map(),
+      metadata: %Metadata{} :: Services.Service.Metadata.t()
+    )
   end
 
   defimpl Services.Service.Hash,

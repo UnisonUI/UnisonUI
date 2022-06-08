@@ -7,7 +7,7 @@
   }
 
   .info {
-    @apply py-4;
+    @apply py-4 flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8;
 
     .license-contact {
       @apply flex flex-wrap leading-normal;
@@ -24,7 +24,7 @@
     }
 
     .section-content {
-      @apply border p-4;
+      @apply border p-4 flex flex-col space-y-4;
     }
   }
 
@@ -32,16 +32,7 @@
     @apply py-4;
 
     .selections {
-      @apply mt-4 mb-2;
-
-      input {
-        @apply mr-2 my-2;
-        outline: none;
-      }
-      input,
-      label {
-        @apply cursor-pointer;
-      }
+      @apply flex flex-col space-y-4;
     }
   }
 }

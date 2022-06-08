@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { server, setServerUrl, setVariables } from "../../features";
+import { setServerUrl, setVariables } from "../../features";
 
 const VariablesWrap = ({ selectId, children }) => (
   <div className="flex flex-row space-x-4 place-items-center" key={selectId}>
@@ -19,14 +19,20 @@ const Variables = ({ id, variables, component }) => {
         dispatch(setVariables(id, variables));
       };
       const selectId = `${componentId}-${name}`;
+      const label = (
+        <label htmlFor={selectId}>
+          {name}
+          {variable.description && ` (${variable.description})`}
+        </label>
+      );
       if (!variable.enum || variable.enum === 0) {
         return (
           <VariablesWrap key={selectId}>
-            <label htmlFor={selectId}>{name}</label>
+            {label}
             <input
               type="text"
               id={selectId}
-              defaultValue={variable.default}
+              value={variable.default}
               onChange={onChange}
             />
           </VariablesWrap>
@@ -42,7 +48,7 @@ const Variables = ({ id, variables, component }) => {
         );
         return (
           <VariablesWrap key={selectId}>
-            <label htmlFor={selectId}>{name}</label>
+            {label}
             <select
               id={selectId}
               onChange={onChange}
@@ -55,9 +61,7 @@ const Variables = ({ id, variables, component }) => {
       }
     }
   );
-  return (
-    <div className="border flex flex-col space-y-2">{variableComponents}</div>
-  );
+  return <div className="flex flex-col space-y-2">{variableComponents}</div>;
 };
 
 export default function Servers({ id, servers, type }) {
@@ -69,17 +73,6 @@ export default function Servers({ id, servers, type }) {
     (state) => state.request[id] && state.request[id].server.computedUrl
   );
 
-  useEffect(() => {
-    if (!selectedServer && type !== "asyncapi" && servers) {
-      const variables = {};
-      servers[0].variables &&
-        Object.entries(servers[0].variables).forEach(([name, variable]) => {
-          variables[name] = variable.default;
-        });
-      dispatch(server({ id, server: { url: servers[0].url, variables } }));
-    }
-  });
-
   const serverComponents = [];
 
   if (servers && type !== "asyncapi") {
@@ -87,33 +80,36 @@ export default function Servers({ id, servers, type }) {
       const componentId = `server-${idx}`;
 
       serverComponents.push(
-        <div key={componentId}>
-          <input
-            type="radio"
-            name="servers"
-            id={componentId}
-            value={server.url}
-            defaultChecked={
-              (selectedServer && selectedServer === server.url) || idx === 0
-            }
-          />
-          <label htmlFor={componentId}>
-            {server.url}
-            {server.description && ` - ${server.description}`}
-          </label>
+        <div
+          key={componentId}
+          className="flex flex-row space-x-8 place-items-start"
+        >
+          <div className="flex flex-row space-x-8 place-items-center">
+            <input
+              type="radio"
+              name="servers"
+              id={componentId}
+              value={server.url}
+              checked={selectedServer === server.url}
+              onChange={(event) =>
+                dispatch(setServerUrl(id, event.target.value))
+              }
+            />
+            <label htmlFor={componentId}>
+              {server.url}
+              {server.description && ` - ${server.description}`}
+            </label>
+          </div>
+          {server.variables && (
+            <Variables
+              id={id}
+              variables={server.variables}
+              key={`${componentId}-variables`}
+              component={componentId}
+            />
+          )}
         </div>
       );
-
-      if (server.variables) {
-        serverComponents.push(
-          <Variables
-            id={id}
-            variables={server.variables}
-            key={`${componentId}-variables`}
-            component={componentId}
-          />
-        );
-      }
     });
   }
 
@@ -122,15 +118,7 @@ export default function Servers({ id, servers, type }) {
       <section className="section servers">
         <h1 className="title">Servers</h1>
         <div className="section-content">
-          <div
-            className="selections"
-            onChange={(event) =>
-              event.target.type === "radio" &&
-              dispatch(setServerUrl(id, event.target.value))
-            }
-          >
-            {serverComponents}
-          </div>
+          <div className="selections">{serverComponents}</div>
           <div className="selected">SELECTED: {computedUrl}</div>
         </div>
       </section>

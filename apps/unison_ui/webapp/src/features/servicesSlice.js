@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { normalizeGrpcSchema, parseAsyncAPI, parseOpenApi } from "../utils";
 import { toast } from "react-toastify";
+import { server } from "./requestSlice";
 
 export const servicesSlice = createSlice({
   name: "services",
@@ -54,6 +55,22 @@ export const handleEvent = (data) => (dispatch) => {
             .then((spec) => {
               data.spec = spec;
               dispatch(add(data));
+
+              if (spec.servers) {
+                const variables = {};
+                spec.servers[0].variables &&
+                  Object.entries(spec.servers[0].variables).forEach(
+                    ([name, variable]) => {
+                      variables[name] = variable.default;
+                    }
+                  );
+                dispatch(
+                  server({
+                    id: data.id,
+                    server: { url: spec.servers[0].url, variables },
+                  })
+                );
+              }
             })
             .catch((error) =>
               toast.error(`${data.name}: ${error}`, { autoClose: 5000 })

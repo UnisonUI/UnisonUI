@@ -27,7 +27,6 @@ defmodule UnisonUI.SelfSpecificationServer do
             id: "unisonui:unisonui-asyncapi",
             name: "UnisonUI",
             content: @asyncapi_specification,
-            use_proxy: false,
             metadata: %Service.Metadata{provider: "unisonui", file: "asyncapi.yaml"}
           }
         },

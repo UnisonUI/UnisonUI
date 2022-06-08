@@ -20,10 +20,10 @@ defmodule ContainerProvider.Specifications do
         metadata: metadata
       }
 
-      struct =
+      {struct, fields} =
         case type do
-          :openapi -> Service.OpenApi
-          :asyncapi -> Service.AsyncApi
+          :openapi -> {Service.OpenApi, fields}
+          :asyncapi -> {Service.AsyncApi, Map.delete(fields, :use_proxy)}
         end
 
       struct!(struct, fields)

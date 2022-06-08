@@ -1,0 +1,9 @@
+input,
+select {
+  @apply border;
+  outline: none;
+}
+
+label {
+  @apply cursor-pointer;
+}

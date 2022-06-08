@@ -45,7 +45,6 @@ defmodule ContainerProvider.SpecificationTest do
                id: "test",
                name: "service",
                content: "data",
-               use_proxy: false,
                metadata: %Service.Metadata{provider: "container", file: "asyncapi.yaml"}
              }
     end

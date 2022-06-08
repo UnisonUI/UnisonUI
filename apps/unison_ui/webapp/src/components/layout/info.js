@@ -8,15 +8,18 @@ export default function Info({ info }) {
   return (
     info && (
       <section className="info">
-        <h1 className="title">
-          {info.title} <span>({info.version})</span>
-        </h1>
-        <LicenseAndContact
-          license={info.license}
-          contact={info.contact}
-          termsOfService={info.termsOfService}
-        />
-        <Description text={info.description} />
+        <Logo logo={info["x-logo"]} contact={info.contact} />
+        <section className="description">
+          <h1 className="title">
+            {info.title} <span>({info.version})</span>
+          </h1>
+          <LicenseAndContact
+            license={info.license}
+            contact={info.contact}
+            termsOfService={info.termsOfService}
+          />
+          <Description text={info.description} />
+        </section>
       </section>
     )
   );
@@ -91,4 +94,18 @@ function Description({ text }) {
       <Markdown source={text} />
     </section>
   );
+}
+
+function Logo({ logo, contact }) {
+  if (logo) {
+    const img = <img src={logo.url} alt={logo.altText} />;
+    const compoment = contact ? (
+      <a href={contact.url} target="_blank" rel="nofollow noopener noreferrer">
+        {img}
+      </a>
+    ) : (
+      img
+    );
+    return <div className="logo">{compoment}</div>;
+  }
 }

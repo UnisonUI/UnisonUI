@@ -53,6 +53,7 @@ body {
   top: 50%;
 }
 
+@import "forms.scss";
 @import "header.scss";
 @import "menu.scss";
 @import "layout.scss";
@@ -64,7 +65,6 @@ body {
   @apply relative;
   @apply overflow-hidden h-full w-full;
   .content {
-    z-index: 1;
     @apply relative w-full;
     @apply overflow-x-hidden overflow-y-auto;
     background-color: var(--background-highlight);

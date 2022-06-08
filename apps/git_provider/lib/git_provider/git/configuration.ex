@@ -1,18 +1,17 @@
 defmodule GitProvider.Git.Configuration do
   use OK.Pipe
   use TypeCheck
+  use TypeCheck.Defstruct
 
   alias GitProvider.Git.Configuration.{AsyncOpenApi, Grpc}
 
-  defstruct [:name, :openapi, :asyncapi, :grpc, :version]
-
-  @type! t :: %__MODULE__{
-           version: literal("2"),
-           name: String.t() | nil,
-           openapi: AsyncOpenApi.t() | nil,
-           asyncapi: AsyncOpenApi.t() | nil,
-           grpc: Grpc.t() | nil
-         }
+  defstruct!(
+    version: _ :: literal("2"),
+    name: nil :: String.t() | nil,
+    openapi: nil :: AsyncOpenApi.t() | nil,
+    asyncapi: nil :: AsyncOpenApi.t() | nil,
+    grpc: nil :: Grpc.t() | nil
+  )
 
   @spec from_file(path :: String.t()) :: {:ok, t()} | {:error, term()}
   def from_file(path) do
@@ -44,24 +43,23 @@ defmodule GitProvider.Git.Configuration do
   defmodule AsyncOpenApi do
     defmodule Specification do
       use TypeCheck
-      defstruct [:path, :name, use_proxy: false]
+      use TypeCheck.Defstruct
 
-      @type! t :: %__MODULE__{
-               path: String.t(),
-               name: String.t() | nil,
-               use_proxy: boolean()
-             }
+      defstruct!(
+        path: nil :: String.t(),
+        name: nil :: String.t() | nil,
+        use_proxy: false :: boolean()
+      )
     end
 
     use TypeCheck
+    use TypeCheck.Defstruct
     alias __MODULE__.Specification
 
-    defstruct [:specifications, use_proxy: false]
-
-    @type! t :: %__MODULE__{
-             specifications: [Specification.t()],
-             use_proxy: boolean()
-           }
+    defstruct!(
+      specifications: _ :: [Specification.t()],
+      use_proxy: false :: boolean()
+    )
 
     def decode(keywords) do
       fields =
@@ -106,34 +104,32 @@ defmodule GitProvider.Git.Configuration do
 
   defmodule Grpc do
     use TypeCheck
+    use TypeCheck.Defstruct
 
     # %{binary() => Services.Service.Grpc.Server.t()}
     @opaque! servers :: map()
 
     defmodule Specification do
       use TypeCheck
-      defstruct [:name, :servers]
+      use TypeCheck.Defstruct
 
-      @type! t :: %__MODULE__{
-               name: String.t() | nil,
-               servers: GitProvider.Git.Configuration.Grpc.servers()
-             }
+      defstruct!(
+        name: nil :: String.t(),
+        servers: %{} :: map()
+      )
     end
 
     alias __MODULE__.Specification
     alias Services.Service.Grpc.Server
 
-    defstruct [:files, servers: %{}]
-
-    @type! t :: %__MODULE__{
-             servers: servers(),
-             # (%{binary() => Specification.t()}
-             files: map()
-           }
+    defstruct!(
+      files: _ :: map(),
+      servers: %{} :: map()
+    )
 
     defp decode_server(keywords) do
       {server, name} =
-        Enum.reduce(keywords, {%Server{}, nil}, fn
+        Enum.reduce(keywords, {%Server{address: nil, port: nil}, nil}, fn
           {"address", address}, {acc, name} ->
             {%Server{acc | address: to_string(address)}, name}
 
