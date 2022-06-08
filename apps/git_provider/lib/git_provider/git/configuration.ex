@@ -20,21 +20,21 @@ defmodule GitProvider.Git.Configuration do
 
   defp decode(keywords) do
     fields =
-      Enum.map(keywords, fn
+      Enum.flat_map(keywords, fn
         {"asyncapi", value} when is_map(value) ->
-          {:asyncapi, AsyncOpenApi.decode(value)}
+          [{:asyncapi, AsyncOpenApi.decode(value)}]
 
         {"openapi", value} when is_map(value) ->
-          {:openapi, AsyncOpenApi.decode(value)}
-
-        {"specifications", value} when is_list(value) ->
-          {:openapi, AsyncOpenApi.decode(%{"specifications" => value})}
+          [{:openapi, AsyncOpenApi.decode(value)}]
 
         {"grpc", value} when is_map(value) ->
-          {:grpc, Grpc.decode(value)}
+          [{:grpc, Grpc.decode(value)}]
 
-        {key, value} ->
-          {String.to_atom(key), value}
+        {"version", value} ->
+          [{:version, value}]
+
+        _ ->
+          []
       end)
 
     struct(__MODULE__, fields)
