@@ -24,26 +24,32 @@ If you are using the docker image, there is **no need** to install them.
 
 ## Default configuration
 
-```ocon
-unisonui {
-  providers += "tech.unisonui.providers.GitProvider"
+```toml
+[git_provider]
+enabled = true
+pull_interval = '2h'
+repositories = []
 
-  provider.git {
-    cache-duration = "2 hours" // Interval between each clone....
-    vcs {
-      // Discover repositories through Github API
-      github {
-        api-token = "" // Github personal token.
-        api-uri = "https://api.github.com/graphql" // Github GraphQL url.
-        polling-interval = "1 hour" // Interval between each polling.
-        repositories = [] // List of repositories.
-      }
-      git {
-        repositories = [] // List of repositories
-      }
-    }
-  }
-}
+[git_provider.github]
+api_uri = 'https://api.github.com/graphql'
+api_token = ''
+polling_interval = '1h'
+patterns = []
+
+```
+
+```toml
+[[git_provider.repositories]]
+location = 'git://mygithost.com'
+branch = 'master'
+```
+
+```toml
+[git_provider.github]
+patterns = [
+    'organisation/project',
+    'organization2/.+',
+]
 ```
 
 Either you choose using **Github** discovery or plain **git** repositories,
@@ -118,27 +124,6 @@ grpc:
           port: 8080
           name: other server
           useTls: true
-```
-
-### Version 1
-
-Only file named `.restui.yaml` instead of `.unisonui.yaml` supports this version, for retro compatibility reason.
-
-```yaml
-# Service's name.
-# If this field does not provide the service name will be inferred from the repository URL
-# Example: "https://github.com/MyOrg/MyRepo" -> "MyOrg/MyOrg"
-name: "service name"
-
-# useProxy activate the proxy for the interface. Otherwise your service might needs to activate CORS
-useProxy: true
-
-# List of OpenApi spec files or directories
-# This list can be a mixed of string (path)
-# or an object:
-#   name: Name of this service
-#   useProxy: activate the proxy for the interface. Otherwise your service might needs to activate CORS
-specifications: []
 ```
 
 ## Github configuration

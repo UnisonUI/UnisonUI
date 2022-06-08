@@ -7,18 +7,17 @@
 
 import React from 'react';
 import clsx from 'clsx';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import {MDXProvider} from '@mdx-js/react';
 import Link from '@docusaurus/Link';
 import {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
 import {blogPostContainerID} from '@docusaurus/utils-common';
 import MDXComponents from '@theme/MDXComponents';
+import ChangelogAuthors from '@theme/ChangelogAuthors';
 import type {Props} from '@theme/BlogPostItem';
 
 import styles from './styles.module.css';
-import ChangelogAuthors from '@theme/ChangelogAuthors';
 
-function ChangelogItem(props: Props): JSX.Element {
+export default function ChangelogItem(props: Props): JSX.Element {
   const {withBaseUrl} = useBaseUrlUtils();
   const {
     children,
@@ -75,5 +74,3 @@ function ChangelogItem(props: Props): JSX.Element {
     </article>
   );
 }
-
-export default ChangelogItem;

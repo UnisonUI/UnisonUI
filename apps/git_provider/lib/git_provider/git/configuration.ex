@@ -30,6 +30,9 @@ defmodule GitProvider.Git.Configuration do
         {"grpc", value} when is_map(value) ->
           [{:grpc, Grpc.decode(value)}]
 
+        {"name", value} ->
+          [{:name, value}]
+
         {"version", value} ->
           [{:version, value}]
 

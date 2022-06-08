@@ -8,6 +8,7 @@
 declare module '@theme/ChangelogItem';
 declare module '@theme/ChangelogAuthors';
 declare module '@theme/ChangelogAuthor';
+declare module '@theme/ChangelogPaginator';
 declare module '@theme/IconExpand' {
   import type {ComponentProps} from 'react';
 
@@ -15,6 +16,5 @@ declare module '@theme/IconExpand' {
     expanded?: boolean;
   }
 
-  const IconExpand: (props: Props) => JSX.Element;
-  export default IconExpand;
+  export default function IconExpand(props: Props): JSX.Element;
 }

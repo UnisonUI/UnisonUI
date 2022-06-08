@@ -24,19 +24,6 @@ defmodule GitProvider.Git.Supervisor do
   def start_repositories(repositories) do
     repositories
     |> Stream.flat_map(fn
-      location_or_path when is_binary(location_or_path) ->
-        uri = URI.parse(location_or_path)
-
-        unless is_nil(uri.scheme),
-          do: [
-            %Repository{
-              service_name: String.trim(uri.path, "/"),
-              uri: location_or_path,
-              branch: "master"
-            }
-          ],
-          else: []
-
       repository when is_list(repository) ->
         with location when not is_nil(location) <- repository[:location],
              uri <- URI.parse(repository[:location]),

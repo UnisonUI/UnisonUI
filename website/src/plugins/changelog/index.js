@@ -4,13 +4,15 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-/* eslint-disable import/no-extraneous-dependencies */
 
-const path = require('path');
-const fs = require('fs-extra');
-const pluginContentBlog = require('@docusaurus/plugin-content-blog');
-const { aliasedSitePath, docuHash, normalizeUrl } = require('@docusaurus/utils');
-const syncAvatars = require('./syncAvatars');
+const path = require("path");
+const fs = require("fs-extra");
+const pluginContentBlog = require("@docusaurus/plugin-content-blog");
+const {
+  aliasedSitePath,
+  docuHash,
+  normalizeUrl,
+} = require("@docusaurus/utils");
 
 /**
  * Multiple versions may be published on the same day, causing the order to be
@@ -29,29 +31,29 @@ function processSection(section) {
   const title = section
     .match(/\n## .*/)?.[0]
     .trim()
-    .replace('## ', '');
+    .replace("## ", "");
   if (!title) {
     return null;
   }
   const content = section
-    .replace(/\n## .*/, '')
+    .replace(/\n## .*/, "")
     .trim()
-    .replace('running_woman', 'running');
+    .replace("running_woman", "running");
 
-  let authors = content.match(/## Committers: \d+.*/ms);
+  let authors = content.match(/## Committers: \d.*/s);
   if (authors) {
     authors = authors[0]
       .match(/- .*/g)
       .map(
         (line) =>
           line.match(
-            /- (?:(?<name>.*?) \()?\[@(?<alias>.*)\]\((?<url>.*?)\)\)?/,
-          ).groups,
+            /- (?:(?<name>.*?) \()?\[@(?<alias>.*)\]\((?<url>.*?)\)\)?/
+          ).groups
       )
       .map((author) => ({
         ...author,
         name: author.name ?? author.alias,
-        imageURL: `./img/${author.alias}.png`,
+        imageURL: `https://github.com/${author.alias}.png`,
       }))
       .sort((a, b) => a.url.localeCompare(b.url));
 
@@ -67,21 +69,22 @@ function processSection(section) {
   publishTimes.add(`${date}T${hour}:00`);
 
   return {
-    title: title.replace(/ \(.*\)/, ''),
+    title: title.replace(/ \(.*\)/, ""),
     content: `---
-date: ${`${date}T${hour}:00`}${authors
+date: ${`${date}T${hour}:00`}${
+      authors
         ? `
 authors:
-${authors.map((author) => `  - '${author.alias}'`).join('\n')}`
-        : ''
-      }
+${authors.map((author) => `  - '${author.alias}'`).join("\n")}`
+        : ""
+    }
 ---
 
-# ${title.replace(/ \(.*\)/, '')}
+# ${title.replace(/ \(.*\)/, "")}
 
 <!-- truncate -->
 
-${content.replace(/####/g, '##')}`,
+${content.replace(/####/g, "##")}`,
   };
 }
 
@@ -90,22 +93,22 @@ ${content.replace(/####/g, '##')}`,
  * @returns {import('@docusaurus/types').Plugin}
  */
 async function ChangelogPlugin(context, options) {
-  const generateDir = path.join(context.siteDir, 'changelog/source');
+  const generateDir = path.join(context.siteDir, "changelog/source");
   const blogPlugin = await pluginContentBlog.default(context, {
     ...options,
     path: generateDir,
-    id: 'changelog',
-    blogListComponent: '@theme/ChangelogList',
-    blogPostComponent: '@theme/ChangelogPage',
+    id: "changelog",
+    blogListComponent: "@theme/ChangelogList",
+    blogPostComponent: "@theme/ChangelogPage",
   });
-  const changelogPath = path.join(__dirname, '../../../../CHANGELOG.md');
+  const changelogPath = path.join(__dirname, "../../../../CHANGELOG.md");
   return {
     ...blogPlugin,
-    name: 'changelog-plugin',
+    name: "changelog-plugin",
     async loadContent() {
-      const fileContent = await fs.readFile(changelogPath, 'utf-8');
+      const fileContent = await fs.readFile(changelogPath, "utf-8");
       const sections = fileContent
-        .split(/(?=\n## )/ms)
+        .split(/(?=\n## )/)
         .map(processSection)
         .filter(Boolean);
       await Promise.all(
@@ -114,18 +117,19 @@ async function ChangelogPlugin(context, options) {
           .map((section) =>
             fs.outputFile(
               path.join(generateDir, `${section.title}.md`),
-              section.content,
-            ),
-          ),
+              section.content
+            )
+          )
       );
-      await syncAvatars(authorsMap, generateDir);
+      const authorsPath = path.join(generateDir, "authors.json");
+      await fs.outputFile(authorsPath, JSON.stringify(authorsMap, null, 2));
       const content = await blogPlugin.loadContent();
       content.blogPosts.forEach((post, index) => {
         const pageIndex = Math.floor(index / options.postsPerPage);
         post.metadata.listPageLink = normalizeUrl([
           context.baseUrl,
           options.routeBasePath,
-          pageIndex === 0 ? '/' : `/page/${pageIndex + 1}`,
+          pageIndex === 0 ? "/" : `/page/${pageIndex + 1}`,
         ]);
       });
       return content;
@@ -134,8 +138,8 @@ async function ChangelogPlugin(context, options) {
       const config = blogPlugin.configureWebpack(...args);
       const pluginDataDirRoot = path.join(
         context.generatedFilesDir,
-        'changelog-plugin',
-        'default',
+        "changelog-plugin",
+        "default"
       );
       // Redirect the metadata path to our folder
       config.module.rules[0].use[1].options.metadataPath = (mdxPath) => {
@@ -147,7 +151,7 @@ async function ChangelogPlugin(context, options) {
       return config;
     },
     getThemePath() {
-      return path.join(__dirname, './theme');
+      return "./theme";
     },
     getPathsToWatch() {
       // Don't watch the generated dir
