@@ -42,8 +42,9 @@ defmodule GitProvider.Github.Client do
       |> Enum.map(fn %{
                        "nameWithOwner" => name,
                        "url" => url,
-                       "defaultBranchRef" => %{"name" => branch}
+                       "defaultBranchRef" => defaultBranchRef
                      } ->
+        branch = if is_nil(defaultBranchRef), do: "master", else: defaultBranchRef["name"]
         %Project{name: name, url: url, branch: branch}
       end)
 
@@ -73,7 +74,7 @@ defmodule GitProvider.Github.Client do
                nameWithOwner
                url
                defaultBranchRef {
-               name
+                name
                }
              }
            }
@@ -95,7 +96,7 @@ defmodule GitProvider.Github.Client do
              nameWithOwner
              url
              defaultBranchRef {
-             name
+              name
              }
            }
          }

@@ -4,41 +4,32 @@ title: "Configuration"
 description: "How to configure UnisonUI"
 ---
 
-# Global configuration
-
-UnisonUI uses `HOCON` configuration files.
-
-`HOCON` is a superset of `JSON` and a mix of `JAVA` properties.
+UnisonUI uses `TOML` configuration files.
 
 ## Default configuration
 
-```hocon
-unisonui {
-  // Provide UnisonUI specification inside UnisonUI
-  self-specification = no
+```toml
+[unison_ui]
+self_spefication = true
+port = 8080
 
-  // List of enabled providers (all by default)
-  providers = [
-    "tech.unisonui.providers.GitProvider",
-    "tech.unisonui.providers.ContainerProvider",
-    "tech.unisonui.providers.WebhookProvider"
-  ]
+[clustering]
+provider = false
+hosts = []
 
-  http {
-    port = 8080 // Port of the Webserver
-    interface = "0.0.0.0" // Interface where the webserver listen to
-    statics-path="" // Path where static files (webapp) reside
-  }
+[clustering.kubernetes]
+service = 'unisonui'
 
-  // For more information about each provider configuration.
-  // Please refered to it
-  provider {
-    docker {}
-    kubernetes {}
-    git {}
-    webhook {}
-  }
-}
+[clustering.aws]
+tag_name = 'app'
+tag_value = 'unisonui'
+
+[services]
+storage_backend = 'Services.Storage.Memory'
+
+[services.raft]
+quorum = 1
+nodes = []
 ```
 
 ## Apply configuration

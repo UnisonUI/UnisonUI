@@ -10,16 +10,11 @@ This provider allows to directly upload specifications to *UnisonUI*
 
 ## Default configuration
 
-```hocon
-unisonui {
-  providers += "tech.unisonui.providers.WebhookProvider"
-
-  provider.webhook {
-    interface = "0.0.0.0" // Interface where the webhook server listen to.
-    port = 3000 // Port used by the webhook server
-    self-specification = no // Add the webhook specification to UnisonUI
-  }
-}
+```html
+[webhoo_provider]
+enabled = true
+self_spefication = true
+port = 3000
 ```
 
 ## Webhook Api specification

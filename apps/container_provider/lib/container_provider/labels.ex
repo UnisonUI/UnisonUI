@@ -11,7 +11,7 @@ defmodule ContainerProvider.Labels do
             port: pos_integer(),
             specification_path: String.t(),
             protocol: String.t(),
-            use_proxy: boolean()
+            use_proxy: nil
           ],
           grpc: [port: pos_integer(), tls: boolean()]
         }
@@ -75,13 +75,12 @@ defmodule ContainerProvider.Labels do
          {port, _} <- Integer.parse(port),
          specification_path <-
            labels[specification[:specification_path]] || "/specification.yaml",
-         protocol <- labels[specification[:protocol]] || "http",
-         use_proxy <- labels[specification[:use_proxy]] || "false" do
+         protocol <- labels[specification[:protocol]] || "http" do
       [
         port: port,
         specification_path: specification_path,
         protocol: protocol,
-        use_proxy: use_proxy == "true"
+        use_proxy: nil
       ]
     else
       _ -> nil

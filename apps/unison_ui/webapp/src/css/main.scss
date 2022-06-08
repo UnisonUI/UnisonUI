@@ -38,13 +38,15 @@ body {
   --primary-highlight: #fff;
 }
 
+@import "forms.scss";
+@import "header.scss";
+@import "menu.scss";
+@import "layout.scss";
+@import "markdown.scss";
+@import "components.scss";
+
 #app {
   @apply h-full;
-}
-
-#outer-container {
-  @apply text-primary bg-background relative;
-  @apply flex flex-col;
 }
 
 #no-service {
@@ -52,13 +54,6 @@ body {
   left: 25%;
   top: 50%;
 }
-
-@import "forms.scss";
-@import "header.scss";
-@import "menu.scss";
-@import "layout.scss";
-@import "markdown.scss";
-@import "components.scss";
 
 #page-wrap {
   @apply flex flex-col lg:flex-row;

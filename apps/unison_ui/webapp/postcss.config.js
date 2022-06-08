@@ -12,7 +12,7 @@ if (process.env.NODE_ENV === "production") {
         "src/**/*.js",
         "node_modules/react-toastify/**/*.js",
       ],
-      safelist: [/swagger-ui/, /opblock/, /opblock-summary/],
+      safelist: { deep: [/unisonui/] },
       defaultExtractor: (content) => content.match(/[A-Za-z0-9-_:/]+/g) || [],
     })
   );

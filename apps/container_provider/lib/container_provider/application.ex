@@ -39,8 +39,8 @@ defmodule ContainerProvider.Application do
     []
   end
 
-  defp kubernetes_children(nil), do: Logger.info("Kubernetes provider has been disabled")
-
-  defp kubernetes_children(polling_interval),
+  defp kubernetes_children(polling_interval) when is_integer(polling_interval),
     do: ContainerProvider.Kubernetes.Source.start_child(polling_interval)
+
+  defp kubernetes_children(_), do: Logger.info("Kubernetes provider has been disabled")
 end

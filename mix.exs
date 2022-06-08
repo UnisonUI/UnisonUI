@@ -49,7 +49,7 @@ defmodule Unisonui.MixProject do
         unisonui_container_provider: provider_release(:container_provider),
         unisonui_webhook_provider: provider_release(:webook_provider),
         unisonui: [
-          steps: [:assemble],
+          steps: [&npm_deploy/1, :assemble, :tar],
           applications: all_apps(),
           config_providers: config_providers()
         ]
@@ -71,7 +71,7 @@ defmodule Unisonui.MixProject do
     webapp = ["apps", "unison_ui", "webapp"] |> Path.join() |> Path.expand()
 
     [
-      npm_install: System.cmd("npm", ["install"], cd: webapp),
+      "npm.install": System.cmd("npm", ["install"], cd: webapp),
       watch:
         [webapp, "node_modules", ".bin", "webpack"]
         |> Path.join()
@@ -86,9 +86,10 @@ defmodule Unisonui.MixProject do
   end
 
   def npm_deploy(release) do
+    env = Mix.env() |> to_string() |> String.downcase()
     webapp = ["apps", "unison_ui", "webapp"] |> Path.join() |> Path.expand()
-    System.cmd("npm", ["install"], cd: webapp)
-    System.cmd("npm", ["run", "build:#{String.downcase(Mix.env())}"], cd: webapp)
+    System.cmd("npm", ["install"], cd: webapp) |> elem(0) |> Mix.shell().info()
+    System.cmd("npm", ["run", "build:#{env}"], cd: webapp) |> elem(0) |> Mix.shell().info()
     release
   end
 

@@ -10,38 +10,40 @@ The container provider allow *UnisonUI* to discover services through `Docker` an
 
 ## Default configuration
 
-```hocon
-unisonui {
-  providers += "tech.unisonui.providers.ContainerProvider"
-  provider.container {
-      kubernetes {
-        enabled = yes // Enable discovery through Kubernetes
-        polling-interval = "1 minute" // Interval between each Kubernetes API.
-      }
+```toml
+[container_provider]
+enabled = true
 
-      docker {
-        enabled = yes // Enable discovery through Docker
-        host =  "unix:///var/run/docker.sock" // Host of the docker daemon
-      }
+[container_provider.connection_backoff]
+start = 0
+interval = 1000
+max = 5000
 
-      // List of labels used by the provider to detect specification files
-      labels {
-        service-name = "unisonui.service-name" // Service name. This label is mandatory.
+[container_provider.kubernetes]
+enabled = true
+polling_interval = 1000
 
-        openapi {
-          port  = "unisonui.openapi.port" // HTTP port where the openapi specification file can be found.
-          protocol  = "unisonui.openapi.protocol" // Protocol to use (default to http)
-          specification-path = "unisonui.openapi.path" // URI of the openapi specification file. Default to /specification.yaml
-          use-proxy = "unisonui.openapi.use-proxy" // Should enable the proxy for this service (disabled by default)
-        }
+[container_provider.docker]
+enabled = true
+host = 'unix:///var/run/docker.sock'
 
-        grpc {
-          port = "unisonui.grpc.port" // GRPC port where the reflection server can be contacted.
-          tls = "unisonui.grpc.tls" // Disabled by default. Tell the GRPC to use a TLS connection.
-        }
-      }
-    }
-}
+[container_provider.labels]
+service_name = 'unisonui.service-name'
+
+[container_provider.labels.openapi]
+port = 'unisonui.openapi.port'
+protocol = 'unisonui.openapi.protocol'
+specification_path = 'unisonui.openapi.path'
+use_proxy = 'unisonui.openapi.use-proxy'
+
+[container_provider.labels.asyncapi]
+port = 'unisonui.asyncapi.port'
+protocol = 'unisonui.asyncapi.protocol'
+specification_path = 'unisonui.asyncapi.path'
+
+[container_provider.labels.grpc]
+port = 'unisonui.grpc.port'
+tls = 'unisonui.grpc.tls'
 ```
 
 ## GRPC specification support

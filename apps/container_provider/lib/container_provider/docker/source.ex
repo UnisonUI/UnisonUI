@@ -14,7 +14,10 @@ defmodule ContainerProvider.Docker.Source do
   defp connection_backoff_max, do: connection_backoff()[:max] || 5_000
 
   @impl true
-  def init(uri), do: {:ok, uri, {:continue, :wait_for_storage}}
+  def init(uri) do
+    Process.flag(:trap_exit, true)
+    {:ok, uri, {:continue, :wait_for_storage}}
+  end
 
   Services.wait_for_storage do
     with {:ok, _} <- EventsClient.start_link(state),
@@ -27,9 +30,12 @@ defmodule ContainerProvider.Docker.Source do
         reason = if is_exception(reason), do: Exception.message(reason), else: inspect(reason)
 
         Logger.warn("Docker source failed to start: #{reason}")
-        {:stop, :normal}
+        {:stop, :normal, state}
     end
   end
+
+  @impl true
+  def terminate(reason, _), do: reason
 
   @impl true
   def handle_info({:stream, {:status, status}}, _state) when status < 400,

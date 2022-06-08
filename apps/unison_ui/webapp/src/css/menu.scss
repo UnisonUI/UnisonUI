@@ -1,57 +1,59 @@
-.menu {
-  @apply text-sm;
-  @apply sticky;
-  @apply overflow-x-hidden overflow-y-auto;
-  @apply flex flex-col;
-  @apply w-screen lg:w-96;
-  @media (min-width: 1024px) {
-    height: calc(100vh - 40px);
-  }
-  background-color: var(--background-highlight);
+.unisonui {
+  .menu {
+    @apply text-sm;
+    @apply sticky;
+    @apply overflow-x-hidden overflow-y-auto;
+    @apply flex flex-col;
+    @apply w-screen lg:w-96;
+    @media (min-width: 1024px) {
+      height: calc(100vh - 40px);
+    }
+    background-color: var(--background-highlight);
 
-  .closed {
-    display: none;
-  }
-
-  .menu-item {
-    @apply p-4 relative;
-
-    &:hover,
-    &.active {
-      @apply bg-background;
+    .closed {
+      display: none;
     }
 
-    &.active {
-      @apply border-l-4;
-      border-color: var(--primary-shadow);
-    }
+    .menu-item {
+      @apply p-4 relative;
 
-    .link {
-      @apply flex justify-between;
-
-      &.active,
-      .active {
-        @apply font-semibold;
+      &:hover,
+      &.active {
+        @apply bg-background;
       }
 
-      .title {
-        .name {
-          @apply mr-4;
+      &.active {
+        @apply border-l-4;
+        border-color: var(--primary-shadow);
+      }
+
+      .link {
+        @apply flex justify-between;
+
+        &.active,
+        .active {
+          @apply font-semibold;
         }
 
-        .type {
-          @apply rounded-full font-semibold text-xs px-2 tracking-wide inline-block capitalize;
-
-          &.openapi {
-            @apply bg-teal-200 text-teal-800;
+        .title {
+          .name {
+            @apply mr-4;
           }
 
-          &.grpc {
-            @apply bg-blue-200 text-blue-800;
-          }
+          .type {
+            @apply rounded-full font-semibold text-xs px-2 tracking-wide inline-block capitalize;
 
-          &.asyncapi {
-            @apply bg-violet-200 text-violet-800;
+            &.openapi {
+              @apply bg-teal-200 text-teal-800;
+            }
+
+            &.grpc {
+              @apply bg-blue-200 text-blue-800;
+            }
+
+            &.asyncapi {
+              @apply bg-violet-200 text-violet-800;
+            }
           }
         }
       }

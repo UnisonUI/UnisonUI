@@ -1,15 +1,17 @@
-.header {
-  @apply mx-auto px-4 sm:px-6;
-  @apply flex flex-row;
-  @apply flex;
-  @apply justify-start space-x-10;
-  @apply justify-between items-center py-2;
-  @apply w-full;
-  @apply text-4xl lg:text-2xl;
+.unisonui {
+  .header {
+    @apply mx-auto px-4 sm:px-6;
+    @apply flex flex-row;
+    @apply flex;
+    @apply justify-start space-x-10;
+    @apply justify-between items-center py-2;
+    @apply w-full;
+    @apply text-4xl lg:text-2xl;
 
-  .themeSwitch {
-    svg {
-      @apply hover:stroke-red-700;
+    .themeSwitch {
+      svg {
+        @apply hover:stroke-red-700;
+      }
     }
   }
 }

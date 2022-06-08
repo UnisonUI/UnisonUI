@@ -115,7 +115,7 @@ export default function UnisonUILayout() {
     <div
       id="outer-container"
       style={{ height: "100%" }}
-      className={classNames({ dark: isDarkMode })}
+      className={classNames("unisonui", { dark: isDarkMode })}
     >
       <Konami
         action={() => cornify.pizzazz()}

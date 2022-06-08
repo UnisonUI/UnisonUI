@@ -1,11 +1,19 @@
 defmodule WebhookProvider.Application do
   @moduledoc false
-
+  require Logger
   use Application
 
   @impl true
   def start(_type, _args) do
-    children = [
+    opts = [strategy: :one_for_one, name: WebhookProvider.Supervisor]
+
+    Application.fetch_env!(:webhook_provider, :enabled)
+    |> child_spec()
+    |> Supervisor.start_link(opts)
+  end
+
+  defp child_spec(true),
+    do: [
       WebhookProvider.SelfSpecificationServer,
       Plug.Cowboy.child_spec(
         scheme: :http,
@@ -14,7 +22,8 @@ defmodule WebhookProvider.Application do
       )
     ]
 
-    opts = [strategy: :one_for_one, name: WebhookProvider.Supervisor]
-    Supervisor.start_link(children, opts)
+  defp child_spec(_) do
+    Logger.info("Webhook provider has been disabled")
+    []
   end
 end

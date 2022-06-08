@@ -24,7 +24,7 @@ defmodule UnisonUI.Routes do
       [] ->
         %{conn | path_info: ["statics", "index.html"]}
 
-      ["service", _] ->
+      ["service" | _] ->
         %{conn | path_info: ["statics", "index.html"]}
 
       ["favicon.ico"] ->

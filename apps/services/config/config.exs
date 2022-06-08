@@ -1,7 +1,5 @@
 import Config
 
-config :services, quorum: 1
-config :services, interval_node_down_ms: 1_000 * 60 * 60
 config :services, :storage_backend, Services.Storage.Memory
 config :services, :aggregator, Services.Aggregator
-config :services, :raft, nodes: []
+config :services, :raft, nodes: [], quorum: 1
