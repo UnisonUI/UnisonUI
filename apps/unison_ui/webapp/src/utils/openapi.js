@@ -44,7 +44,10 @@ export function extractOpenApiOperations(spec) {
   const operations = Object.entries(spec.paths)
     .flatMap(([pathName, path]) =>
       Object.entries(path).flatMap(([method, path]) => {
-        const name = path.summary || `${pathName} - ${method.toUpperCase()}`;
+        const name =
+          path.summary ||
+          path.description ||
+          `${method.toUpperCase()} ${pathName}`;
         const tags = path.tags || [""];
         return tags.map((tag) => {
           return { tag, name, id: path.operationId || `${method}-${pathName}` };
@@ -52,10 +55,18 @@ export function extractOpenApiOperations(spec) {
       })
     )
     .groupBy(({ tag }) => tag);
-  return Object.entries(operations).flatMap(([tag, operations]) => {
+  const items = Object.entries(operations).flatMap(([tag, operations]) => {
     const result = [];
-    if (tag !== "") result.push({ id: tag, name: capitalize(tag) });
+    if (tag !== "")
+      result.push({ id: tag, name: capitalize(tag), isTag: true });
     operations.forEach(({ name, id }) => result.push({ id, name }));
     return result;
   });
+  if (spec.components && spec.components.securitySchemes)
+    items.unshift({
+      id: "authentication",
+      name: "Authentication",
+      isTag: true,
+    });
+  return items;
 }

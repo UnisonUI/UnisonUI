@@ -22,6 +22,7 @@
 
 html {
   @apply h-full;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -56,6 +57,7 @@ body {
 }
 
 #page-wrap {
+  @apply text-primary;
   @apply flex flex-col lg:flex-row;
   @apply relative;
   @apply overflow-hidden h-full w-full;

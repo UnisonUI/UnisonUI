@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import ChevronRight from "react-feather/dist/icons/chevron-right";
 import classNames from "classnames";
@@ -31,12 +31,18 @@ const Operations = ({ service }) => {
       default:
         return extractGrpcOperations(service.spec);
     }
-  })().map(({ id, name }) => (
+  })().map(({ id, name, isTag }, idx) => (
     <li
-      key={`${service.id}-${id}`}
+      key={`${service.id}-${id}-${idx}`}
       className={classNames("menu-item", { active: isOperation(id) })}
     >
-      <Link to={`/service/${service.id}#${id}`} className="link">
+      <Link
+        to={`/service/${service.id}#${id}`}
+        className={classNames("link", "leading-tight", {
+          "text-xs": !isTag,
+          "font-bold": isTag,
+        })}
+      >
         <div className={classNames({ active: isOperation(id) })}>{name}</div>
       </Link>
     </li>
@@ -62,6 +68,7 @@ const getName = (service) => {
 
 export default function ServiceLink({ services }) {
   const location = useLocation();
+
   const isNavLinkActive = (id) => location.pathname === `/service/${id}`;
 
   const items = [];

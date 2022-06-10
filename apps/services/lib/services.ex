@@ -5,7 +5,13 @@ defmodule Services do
   defp storage_backend, do: Application.fetch_env!(:services, :storage_backend)
 
   @spec alive?() :: boolean
-  def alive?, do: storage_backend().alive?()
+  def alive? do
+    try do
+      storage_backend().alive?()
+    catch
+      :exit, _ -> false
+    end
+  end
 
   @spec available_services :: {:ok, [t()]} | {:error, term()}
   def available_services, do: storage_backend().available_services()

@@ -12,7 +12,8 @@ export async function parseAsyncAPI(input) {
 export function extractAsyncAPIOperations(spec) {
   return Object.entries(spec.channels).flatMap(([channelName, channel]) => {
     const getOperation = (channel, type) => {
-      const name = channel.summary || `${type} - ${channelName}`;
+      const name =
+        channel.summary || channel.description || `${type} - ${channelName}`;
       return {
         name,
         id: channel.operationId || `${type}-${channelName}`,

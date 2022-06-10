@@ -1,82 +1,9 @@
 .markdown {
-  p {
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-  h1 {
-    @apply text-2xl text-primary;
-    margin-top: 0;
-  }
-  h2 {
-    @apply text-xl text-primary;
-  }
-
-  code {
-    @apply text-primary;
-    @apply bg-gray-200 dark:bg-gray-500;
-    @apply font-code;
-    @apply border rounded dark:border-gray-500;
-    padding: 0 2px;
-    word-break: break-word;
-  }
-
-  pre {
-    color: black;
-    font-weight: normal;
-    white-space: pre-wrap;
-    background: none;
-    padding: 0;
-
-    & > code {
-      display: block;
-    }
-  }
-
-  blockquote {
-    margin: 0;
-    margin-bottom: 1em;
-    padding: 0 15px;
-    color: #777;
-    border-left: 4px solid #ddd;
-  }
-
-  img {
-    max-width: 100%;
-    box-sizing: content-box;
-  }
-
-  ul,
-  ol {
-    @apply my-4 pl-8 list-disc;
-
-    ul,
-    ol {
-      @apply my-0;
-    }
-  }
-  table {
-    display: block;
-    width: 100%;
-    overflow: auto;
-    word-break: normal;
-    word-break: keep-all;
-    border-collapse: collapse;
-    border-spacing: 0;
-    margin-top: 1.5em;
-    margin-bottom: 1.5em;
-  }
-  table tr {
-    background-color: #fff;
-    border-top: 1px solid #ccc;
-  }
-  table th,
-  table td {
-    padding: 6px 13px;
-    border: 1px solid #ddd;
-  }
-  table th {
-    text-align: left;
-    font-weight: bold;
+  @apply prose prose-stone max-w-none;
+  @apply prose-code:font-code;
+}
+.dark {
+  .markdown {
+    @apply prose-invert;
   }
 }

@@ -2,6 +2,68 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setServerUrl, setVariables } from "../../features";
 
+export function Servers({ id, servers, type }) {
+  const dispatch = useDispatch();
+  const selectedServer = useSelector(
+    (state) => state.request[id] && state.request[id].server.url
+  );
+  const computedUrl = useSelector(
+    (state) => state.request[id] && state.request[id].server.computedUrl
+  );
+
+  const serverComponents = [];
+
+  if (servers && type !== "asyncapi") {
+    servers.forEach((server, idx) => {
+      const componentId = `server-${idx}`;
+
+      serverComponents.push(
+        <div
+          key={componentId}
+          className="flex flex-row space-x-8 place-items-start"
+        >
+          <div className="flex flex-row space-x-8 place-items-center">
+            <input
+              type="radio"
+              name="servers"
+              id={componentId}
+              value={server.url}
+              checked={selectedServer === server.url}
+              onChange={(event) =>
+                dispatch(setServerUrl(id, event.target.value))
+              }
+            />
+            <label htmlFor={componentId}>
+              {server.url}
+              {server.description && ` - ${server.description}`}
+            </label>
+          </div>
+          {server.variables && (
+            <Variables
+              id={id}
+              variables={server.variables}
+              key={`${componentId}-variables`}
+              component={componentId}
+            />
+          )}
+        </div>
+      );
+    });
+  }
+
+  return (
+    serverComponents.length > 0 && (
+      <section className="section servers">
+        <h1 className="title">Servers</h1>
+        <div className="section-content">
+          <div className="selections">{serverComponents}</div>
+          <div className="selected">SELECTED: {computedUrl}</div>
+        </div>
+      </section>
+    )
+  );
+}
+
 const VariablesWrap = ({ selectId, children }) => (
   <div className="flex flex-row space-x-4 place-items-center" key={selectId}>
     {children}{" "}
@@ -63,65 +125,3 @@ const Variables = ({ id, variables, component }) => {
   );
   return <div className="flex flex-col space-y-2">{variableComponents}</div>;
 };
-
-export default function Servers({ id, servers, type }) {
-  const dispatch = useDispatch();
-  const selectedServer = useSelector(
-    (state) => state.request[id] && state.request[id].server.url
-  );
-  const computedUrl = useSelector(
-    (state) => state.request[id] && state.request[id].server.computedUrl
-  );
-
-  const serverComponents = [];
-
-  if (servers && type !== "asyncapi") {
-    servers.forEach((server, idx) => {
-      const componentId = `server-${idx}`;
-
-      serverComponents.push(
-        <div
-          key={componentId}
-          className="flex flex-row space-x-8 place-items-start"
-        >
-          <div className="flex flex-row space-x-8 place-items-center">
-            <input
-              type="radio"
-              name="servers"
-              id={componentId}
-              value={server.url}
-              checked={selectedServer === server.url}
-              onChange={(event) =>
-                dispatch(setServerUrl(id, event.target.value))
-              }
-            />
-            <label htmlFor={componentId}>
-              {server.url}
-              {server.description && ` - ${server.description}`}
-            </label>
-          </div>
-          {server.variables && (
-            <Variables
-              id={id}
-              variables={server.variables}
-              key={`${componentId}-variables`}
-              component={componentId}
-            />
-          )}
-        </div>
-      );
-    });
-  }
-
-  return (
-    serverComponents.length > 0 && (
-      <section className="section servers">
-        <h1 className="title">Servers</h1>
-        <div className="section-content">
-          <div className="selections">{serverComponents}</div>
-          <div className="selected">SELECTED: {computedUrl}</div>
-        </div>
-      </section>
-    )
-  );
-}

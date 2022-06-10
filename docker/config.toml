@@ -1,3 +1,0 @@
-[logger.console]
-level = 'warn'
-format = 'logstash'

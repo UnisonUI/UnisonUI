@@ -18,9 +18,9 @@ defmodule Clustering.Application do
     [
       strategy: ClusterEC2.Strategy.Tags,
       config: [
-        ec2_tagname: Keyword.fetch!(config, :tag_name),
-        ec2_tagvalue: Keyword.fetch!(config, :tag_value),
-        app_prefix: "unison_ui"
+        ec2_tagname: Keyword.get(config, :tag_name, "app"),
+        ec2_tagvalue: Keyword.get(config, :tag_value, "unisonui"),
+        app_prefix: Keyword.get(config, :app_prefix, "unison_ui")
       ]
     ]
   end
@@ -29,7 +29,7 @@ defmodule Clustering.Application do
     do: [
       strategy: Cluster.Strategy.GoogleComputeEngine,
       config: [
-        release_name: "unison_ui"
+        release_name: Application.get_env(:clustering, :gcp, "unison_ui")
       ]
     ]
 
@@ -46,16 +46,21 @@ defmodule Clustering.Application do
       ]
     ]
 
-  defp topologies("kubernetes"),
-    do: [
+  defp topologies("kubernetes") do
+    kw =
+      Application.get_env(:clustering, :kubernetes,
+        service: "unisonui",
+        application_name: "unison_ui"
+      )
+
+    [
       strategy: Cluster.Strategy.Kubernetes.DNS,
       config: [
-        service:
-          Application.get_env(:clustering, :kubernetes, service: "unisonui")
-          |> Keyword.get(:service),
-        application_name: "unison_ui"
+        service: kw[:service],
+        application_name: kw[:application_name]
       ]
     ]
+  end
 
   defp topologies(_), do: []
 

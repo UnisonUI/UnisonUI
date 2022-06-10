@@ -60,11 +60,11 @@ jobs:
         uses: erlef/setup-beam@v1
         with:
           elixir-version: "1.13.4"
-          otp-version: "24.3.3"
+          otp-version: "24.3.4"
       - name: Set up Node
         uses: actions/setup-node@v2
         with:
-          node-version: "17"
+          node-version: "18"
       - name: Restore dependencies cache
         uses: actions/cache@v2
         with:

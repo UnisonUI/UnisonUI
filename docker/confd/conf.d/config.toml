@@ -1,0 +1,12 @@
+[template]
+src = 'config.toml'
+dest = '/app/config.toml'
+owner = 'nobody'
+mode = '0644'
+keys = [
+    '/logger',
+    '/unisonui',
+    '/provider',
+    '/clustering',
+    '/storage',
+]

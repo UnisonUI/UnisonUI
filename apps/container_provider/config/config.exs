@@ -31,7 +31,6 @@ config :container_provider, :labels,
   asyncapi: [
     port: "unisonui.asyncapi.port",
     protocol: "unisonui.asyncapi.protocol",
-    specification_path: "unisonui.asyncapi.path",
-    use_proxy: "unisonui.asyncapi.use-proxy"
+    specification_path: "unisonui.asyncapi.path"
   ],
   grpc: [port: "unisonui.grpc.port", tls: "unisonui.grpc.tls"]

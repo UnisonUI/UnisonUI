@@ -4,6 +4,7 @@ module.exports = {
     purgeLayersByDefault: true,
   },
   content: ["./src/**/*.js"],
+  plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],
   purge: false,
   theme: {
     screens: {

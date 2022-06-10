@@ -4,7 +4,7 @@ const Markdown = loadable(() =>
   import(/* webpackPrefetch: true */ "../markdown")
 );
 
-export default function Info({ info }) {
+export function Info({ info }) {
   return (
     info && (
       <section className="info">

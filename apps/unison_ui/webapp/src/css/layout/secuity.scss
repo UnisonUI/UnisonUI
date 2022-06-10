@@ -1,0 +1,10 @@
+.unisonui {
+  .authentication {
+    .scopes {
+      .scope {
+        @apply ml-4;
+        @apply flex items-center space-x-2;
+      }
+    }
+  }
+}

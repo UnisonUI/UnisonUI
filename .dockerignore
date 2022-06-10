@@ -4,4 +4,8 @@
 /priv/
 /cover/
 /.git/
-/site/
+/website/
+node_modules/
+/_build/
+/apps/unison_ui/priv/statics/
+/mix.lock
