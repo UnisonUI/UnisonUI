@@ -9,8 +9,3 @@ config :git_provider, :github,
   api_token: "",
   polling_interval: "1h",
   patterns: []
-
-case Mix.env() do
-  :dev -> import_config "#{Mix.env()}.exs"
-  _ -> :ok
-end
