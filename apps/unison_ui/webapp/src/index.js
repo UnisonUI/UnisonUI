@@ -1,5 +1,6 @@
 import "core-js/es/array";
 import "core-js/proposals/array-grouping";
+import "core-js/features/structured-clone";
 
 import React from "react";
 import { Provider } from "react-redux";

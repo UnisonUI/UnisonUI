@@ -1,13 +1,13 @@
 import loadable from "@loadable/component";
-import React from "react";
+import React, { forwardRef } from "react";
 const Markdown = loadable(() =>
   import(/* webpackPrefetch: true */ "../markdown")
 );
 
-export function Authentication({ authentication }) {
+export const Authentication = forwardRef(({ authentication }, ref) => {
   return (
     authentication && (
-      <section className="section authentication" id="authentication">
+      <section className="section authentication" ref={ref}>
         <h1 className="title">Authentication</h1>
         <div className="section-content">
           {Object.entries(authentication).map(([name, security]) => (
@@ -21,7 +21,7 @@ export function Authentication({ authentication }) {
       </section>
     )
   );
-}
+});
 
 function Security({ name, security }) {
   const { component, type } = (() => {

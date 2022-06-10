@@ -34,3 +34,5 @@ config :container_provider, :labels,
     specification_path: "unisonui.asyncapi.path"
   ],
   grpc: [port: "unisonui.grpc.port", tls: "unisonui.grpc.tls"]
+
+if File.exists?(Path.expand("#{Mix.env()}.exs", __DIR__)), do: import_config("#{Mix.env()}.exs")

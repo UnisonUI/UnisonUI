@@ -1,5 +1,10 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { normalizeGrpcSchema, parseAsyncAPI, parseOpenApi } from "../utils";
+import {
+  normalizeGrpcSchema,
+  parseAsyncAPI,
+  parseOpenApi,
+  resolveRef,
+} from "../utils";
 import { toast } from "react-toastify";
 import { server } from "./requestSlice";
 
@@ -54,7 +59,7 @@ export const handleEvent = (data) => (dispatch) => {
         case "openapi":
           parseOpenApi(data.content)
             .then((spec) => {
-              data.spec = spec;
+              data.spec = resolveRef(spec);
               dispatch(add(data));
 
               if (spec.servers) {
@@ -80,7 +85,7 @@ export const handleEvent = (data) => (dispatch) => {
         case "asyncapi":
           parseAsyncAPI(data.content)
             .then((spec) => {
-              data.spec = spec._json;
+              data.spec = resolveRef(spec._json);
               dispatch(add(data));
             })
             .catch((error) =>

@@ -13,15 +13,7 @@ defmodule GitProvider.Git.Server do
   def init(repository) do
     Process.flag(:trap_exit, true)
     repository = Repository.create_temp_dir(repository)
-
-    hash =
-      with {:ok, hash} <- get_latest_hash(repository) do
-        hash
-      else
-        _ -> ""
-      end
-
-    {:ok, {repository, hash}, {:continue, :wait_for_storage}}
+    {:ok, {repository, ""}, {:continue, :wait_for_storage}}
   end
 
   Services.wait_for_storage do
@@ -43,8 +35,14 @@ defmodule GitProvider.Git.Server do
 
   defp schedule_pull, do: Process.send_after(self(), :pull, pull_interval())
 
-  defp clone_or_pull({%Repository{uri: uri, branch: branch, directory: directory}, ""}),
-    do: Command.clone(uri, branch, directory)
+  defp clone_or_pull({%Repository{uri: uri, branch: branch, directory: directory}, ""}) do
+    with {:ok, []} <- File.ls(directory) do
+      Command.clone(uri, branch, directory)
+    else
+      _ ->
+        :ok
+    end
+  end
 
   defp clone_or_pull({%Repository{directory: directory}, _}),
     do: Command.pull(directory)

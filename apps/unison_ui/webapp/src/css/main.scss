@@ -56,6 +56,11 @@ body {
   top: 50%;
 }
 
+#outer-container {
+  @apply h-full w-full;
+  @apply flex flex-col;
+}
+
 #page-wrap {
   @apply text-primary;
   @apply flex flex-col lg:flex-row;

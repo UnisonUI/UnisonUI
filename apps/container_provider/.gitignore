@@ -24,3 +24,5 @@ container_provider-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+config/dev.exs
