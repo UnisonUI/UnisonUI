@@ -50,14 +50,16 @@ defmodule Clustering.Application do
     kw =
       Application.get_env(:clustering, :kubernetes,
         service: "unisonui",
-        application_name: "unison_ui"
+        application_name: "unison_ui",
+        namespace: "default"
       )
 
     [
-      strategy: Cluster.Strategy.Kubernetes.DNS,
+      strategy: Cluster.Strategy.Kubernetes.DNSSRV,
       config: [
-        service: kw[:service],
-        application_name: kw[:application_name]
+        service: kw[:service] || "unisonui",
+        application_name: kw[:application_name] || "unison_ui",
+        namespace: kw[:namespace] || "default"
       ]
     ]
   end
