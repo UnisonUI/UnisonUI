@@ -13,7 +13,7 @@ defmodule GitProvider.Git.Server do
   def init(repository) do
     Process.flag(:trap_exit, true)
     repository = Repository.create_temp_dir(repository)
-    {:ok, {repository, ""}, {:continue, :wait_for_storage}}
+    Services.init_wait_for_storage({repository, ""})
   end
 
   Services.wait_for_storage do

@@ -66,8 +66,16 @@ defmodule Services.Storage.Raft.Cluster do
 
   defp quorum_formed?(nodes) do
     quorum = div(length(nodes), 2) + 1
-    connected_nodes = Node.list([:this, :visible]) |> MapSet.new()
     nodes = MapSet.new(nodes)
+
+    connected_nodes =
+      cond do
+        MapSet.member?(nodes, self()) -> [:this, :visible]
+        true -> [:visible]
+      end
+      |> Node.list()
+      |> MapSet.new()
+
     size = MapSet.difference(connected_nodes, nodes) |> MapSet.size()
     size >= quorum
   end

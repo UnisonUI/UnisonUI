@@ -10,40 +10,41 @@ description: "Up and running in under a minute"
 
 ### Docker
 
-```sh
+```shell
 docker pull unisonui/unisonui
 docker run -p 8080:8080 unisonui/unisonui
 ```
 
-More information about configuring UnisonUI can be found here.
+The configuration file can be mounted at `/app/config.toml`.
+If no configuration file is provided, one will be generated using environment
+variables.
 
-In addition to the previous configuration method you can use variable
-environments in order to configure it.
+Example:
 
-For that take the path, uppercase it and replace the `.` and `-`
-respectively by `_` and `__`.
+-----
 
-```sh
+```shell
 docker run -p 8081:8081 -e UNISONUI_HTTP_PORT=8081 unisonui/unisonui
 ```
 
-### Binary
+-----
+
+More information about configuring UnisonUI can be found [here](configuration.md).
+
+### From source
 
 -----
 
-__WARNING__: UnisonUI requires *Java 11+* in order to run.
+__WARNING__: UnisonUI requires *Elxir 13* and *Erlang 24* in order to run.
 
 -----
 
-You can download the binary here.
 
-Once downloaded unzip the package, go to the created folder and run:
-
-```sh
-curl -L https://github.com/UnisonUI/unisonui/releases/download/v1.0.0/unisonui.zip -o unisonui.zip # Download the package
-unzip unisonui.zip # Unzip the package
+```shell
+git clone https://github.com/UnisonUI/unisonui
 cd unisonui # Go to the extracted folded
-bin/unisonui # Start UnisonUI
+mix deps.get --only prod
+MIX_ENV=prod mix release unisonui
+export UNISON_UI_ROOT=/path/where/config.toml/is/
+_build/prod/rel/bin/unisonui
 ```
-
-More information about how to configure UnisonUI can be found [here](./configuration/).

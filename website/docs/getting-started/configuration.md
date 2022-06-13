@@ -6,64 +6,44 @@ description: "How to configure UnisonUI"
 
 UnisonUI uses `TOML` configuration files.
 
+The configuration **MUST** be named `config.toml` and the location of that file is defined
+be the environment variable: `UNISON_UI_ROOT`
+
+-----
+
+If your `config.toml` path is `/my/path/config.toml`.
+`UNISON_UI_ROOT` has to be set to `/my/path`
+
+-----
+
 ## Default configuration
 
 ```toml
-[unison_ui]
-self_spefication = true
-port = 8080
+# More information in the logging section
+[logger.console]
+level = 'info'
 
+[unison_ui]
+self_spefication = false # Set by UNISONUI_SPECIFICATION
+port = 8080 # Set by UNISONUI_HTTP_PORT
+
+# More information in the Clustering section
 [clustering]
 provider = false
-hosts = []
 
-[clustering.kubernetes]
-service = 'unisonui'
-
-[clustering.aws]
-tag_name = 'app'
-tag_value = 'unisonui'
-
+# More information in the Persistance section
 [services]
 storage_backend = 'Services.Storage.Memory'
 
-[services.raft]
-quorum = 1
-nodes = []
+# More information in the webhook provider section
+[webhook_provider]
+enabled = false
+
+# More information in the git provider section
+[git_provider]
+enabled = false
+
+# More information in the container provider section
+[container_provider]
+enabled = false
 ```
-
-## Apply configuration
-
-You can either pass your custom configuration as parameter
-and/or uses java properties.
-
-The order of priority for configuration value is:
-
-```
-Java property > custom configuration file > default value
-```
-
-### Using configuration file
-
-```sh
-./unisonui myconfig.conf
-```
-
-### Using java properties
-
-```sh
-./unisonui -Dunisonui.http.port=4242
-```
-
------
-To set array value you have to follow this format: `property.{index}=value`
-
-Example:
-
-```sh
-./unisonui \
-  -Dunisonui.providers.0=tech.unisonui.providers.GitProvider \
-  -Dunisonui.providers.1=tech.unisonui.providers.WebhookProvider
-```
-
------

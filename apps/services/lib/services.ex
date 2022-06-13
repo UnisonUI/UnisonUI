@@ -22,15 +22,24 @@ defmodule Services do
   @spec dispatch_events(events :: [Services.Event.t()]) :: :ok | {:error, term()}
   def dispatch_events(events), do: storage_backend().dispatch_events(events)
 
+  def init_wait_for_storage(state, counter \\ 10),
+    do: {:ok, {state, counter}, {:continue, :wait_for_storage}}
+
   defmacro wait_for_storage(do: block) do
     quote context: __CALLER__.module do
       @impl true
       def handle_continue(:wait_for_storage, var!(state)) do
+        {state, counter} = var!(state)
+
         if Services.alive?() do
           unquote(block)
         else
-          Process.sleep(1_000)
-          {:noreply, var!(state), {:continue, :wait_for_storage}}
+          if counter > 0 do
+            Process.sleep(1_000)
+            {:noreply, {state, counter - 1}, {:continue, :wait_for_storage}}
+          else
+            {:stop, :storage_not_ready, state}
+          end
         end
       end
     end

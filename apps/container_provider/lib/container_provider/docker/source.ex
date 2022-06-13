@@ -16,7 +16,7 @@ defmodule ContainerProvider.Docker.Source do
   @impl true
   def init(uri) do
     Process.flag(:trap_exit, true)
-    {:ok, uri, {:continue, :wait_for_storage}}
+    Services.init_wait_for_storage(uri)
   end
 
   Services.wait_for_storage do

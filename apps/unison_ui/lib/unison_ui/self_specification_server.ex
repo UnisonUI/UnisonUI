@@ -11,7 +11,7 @@ defmodule UnisonUI.SelfSpecificationServer do
   def start_link(_opts), do: GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
 
   @impl true
-  def init(:ok), do: {:ok, self_specifications?(), {:continue, :wait_for_storage}}
+  def init(:ok), do: Services.init_wait_for_storage(self_specifications?())
 
   Services.wait_for_storage do
     send(self(), :publish)

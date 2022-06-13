@@ -7,7 +7,7 @@ defmodule ContainerProvider.Kubernetes.Source do
   require Services
 
   @impl true
-  def init(polling_interval), do: {:ok, polling_interval, {:continue, :wait_for_storage}}
+  def init(polling_interval), do: Services.init_wait_for_storage(polling_interval)
 
   Services.wait_for_storage do
     case K8s.Conn.from_service_account() do

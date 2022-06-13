@@ -3,7 +3,7 @@ export * from "./openapi";
 export * from "./grpc";
 export * from "./highlight";
 
-const delimiter = "._.";
+const delimiter = "||";
 
 export const resolveRef = (spec) => {
   const correctedSpec = structuredClone(spec);
@@ -101,4 +101,3 @@ const findRefs = (node, edges, path) => {
     );
   }
 };
-// const resolvePath = (path,spec)=>

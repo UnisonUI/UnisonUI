@@ -4,7 +4,7 @@ level = '{{getv "/logger/level" "info"}}'
 
 [unison_ui]
 self_specification = {{getv "/unisonui/specification" "false"}}
-port = {{getv "/unisonui/port" "8080"}}
+port = {{getv "/unisonui/http/port" "8080"}}
 
 [clustering]
 {{ with getvs "/clustering/hosts/*" -}}
@@ -14,11 +14,12 @@ hosts = [{{- range .}}
 {{- end}}
 ]
 {{- else -}}
-{{ with ls "/clustering/kubernetes" -}}
+{{ if exists "/clustering/kubernetes/namespace" -}}
 provider = 'kubernetes'
 [clustering.kubernetes]
 service = '{{getv "/clustering/kubernetes/service" "unisonui"}}'
-application_name = '{{getv "/clustering/kubernetes/applcation" "unison_ui"}}'
+application_name = '{{getv "/clustering/kubernetes/application" "unison_ui"}}'
+namespace = '{{getv "/clustering/kubernetes/namespace"}}'
 {{- else -}}
 {{if exists "/clustering/gcp" -}}
 provider = 'gcp'

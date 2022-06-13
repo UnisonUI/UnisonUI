@@ -1,19 +1,25 @@
 ---
-sidebar_position: 4
+sidebar_position: 1
 title: "Logging"
 description: "How to log"
 ---
 
-## Default configuration
+## Configuration
+
+----
+Example:
 
 ```toml
 [logger.console]
-level = 'warn'
+level = 'info'
 format = 'logstash'
 ```
 
+----
+
 ## Level
 
+The logging level is set by the environment variable: `LOGGER_LEVEL`
 Available levels:
 
 * `none` - disable logging
@@ -24,13 +30,16 @@ Available levels:
 
 ## Format
 
+The logging format is set by the environment variable: `LOGGER_FORMAT`
+
 If `format` is ommited, it fallbacks to: `$date $time [$level] $metadata$message\n`
 
 ### Logstash
 
 Logs can be formatted in the `Logstash` if `format` is set to `logstash`.
 
-Exemple:
+----
+Example:
 
 ```json
 {
@@ -43,10 +52,11 @@ Exemple:
 }
 ```
 
+----
+
 ### Text format
 
 The format can be any string.
-
 
 The following variables will be replace in the output:
 
@@ -55,8 +65,11 @@ The following variables will be replace in the output:
 * `$message` - Actual message
 * `$metadata` - Extra information like the `application`, `module` and `function`
 
-Exemple:
+----
+Example:
 
 ```text
 2022-06-08 19:17:03.690 [info] application=horde mfa=Horde.RegistryImpl.init/1 Starting Horde.RegistryImpl with name Clustering.Registry
 ```
+
+----

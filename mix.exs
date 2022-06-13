@@ -49,7 +49,7 @@ defmodule Unisonui.MixProject do
         unisonui_container_provider: provider_release(:container_provider),
         unisonui_webhook_provider: provider_release(:webook_provider),
         unisonui: [
-          steps: [&npm_deploy/1, :assemble, :tar],
+          steps: [&npm_deploy/1, :assemble],
           applications: all_apps(),
           config_providers: config_providers()
         ]
