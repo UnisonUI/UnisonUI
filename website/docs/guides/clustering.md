@@ -23,8 +23,8 @@ leads to inconsistency. More information [here](storage.md)
 
 The clustering system uses the port `9999`.
 
-The format of a host is: `unisonui@HOSTNAME`.
-If `HOSTNAME` is not set, it will be resolved using `hostname -f`
+The format of a host is: `unisonui@HOSTNAME_FQDN`.
+If `HOSTNAME_FQDN` is not set, it will be resolved using `hostname -f`
 
 Regardless of the choosen mode, a *COOKIE* __MUST__ be defined.
 That *COOKIE* __MUST__ have the same value across all instances.

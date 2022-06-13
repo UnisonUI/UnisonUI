@@ -20,7 +20,7 @@ defmodule Clustering.Application do
       config: [
         ec2_tagname: Keyword.get(config, :tag_name, "app"),
         ec2_tagvalue: Keyword.get(config, :tag_value, "unisonui"),
-        app_prefix: Keyword.get(config, :app_prefix, "unison_ui")
+        app_prefix: Keyword.get(config, :application_name, "unisonui")
       ]
     ]
   end
@@ -29,7 +29,7 @@ defmodule Clustering.Application do
     do: [
       strategy: Cluster.Strategy.GoogleComputeEngine,
       config: [
-        release_name: Application.get_env(:clustering, :gcp, "unison_ui")
+        release_name: Application.get_env(:clustering, :gcp, "unisonui")
       ]
     ]
 
@@ -40,7 +40,7 @@ defmodule Clustering.Application do
         hosts:
           Application.get_env(:clustering, :hosts, [])
           |> Enum.map(fn host ->
-            host = if String.contains?(host, "@"), do: host, else: "unison_ui@#{host}"
+            host = if String.contains?(host, "@"), do: host, else: "unisonui@#{host}"
             String.to_atom(host)
           end)
       ]
@@ -50,7 +50,7 @@ defmodule Clustering.Application do
     kw =
       Application.get_env(:clustering, :kubernetes,
         service: "unisonui",
-        application_name: "unison_ui",
+        application_name: "unisonui",
         namespace: "default"
       )
 
@@ -58,7 +58,7 @@ defmodule Clustering.Application do
       strategy: Cluster.Strategy.Kubernetes.DNSSRV,
       config: [
         service: kw[:service] || "unisonui",
-        application_name: kw[:application_name] || "unison_ui",
+        application_name: kw[:application_name] || "unisonui",
         namespace: kw[:namespace] || "default"
       ]
     ]

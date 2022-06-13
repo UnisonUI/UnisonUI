@@ -18,7 +18,7 @@ hosts = [{{- range .}}
 provider = 'kubernetes'
 [clustering.kubernetes]
 service = '{{getv "/clustering/kubernetes/service" "unisonui"}}'
-application_name = '{{getv "/clustering/kubernetes/application" "unison_ui"}}'
+application_name = '{{getv "/clustering/kubernetes/application" "unisonui"}}'
 namespace = '{{getv "/clustering/kubernetes/namespace"}}'
 {{- else -}}
 {{if exists "/clustering/gcp" -}}
@@ -30,7 +30,7 @@ provider = 'aws'
 [clustering.aws]
 {{if exists "/clustering/aws/name"}}tag_name = '{{getv "/clustering/aws/name"}}'{{end}}
 {{if exists "/clustering/aws/value"}}tag_value = '{{getv "/clustering/aws/value"}}'{{end}}
-prefix = '{{getv "/clustering/aws/prefix" "unison_ui"}}'
+application_name = '{{getv "/clustering/aws/prefix" "unisonui"}}'
 {{- else -}}
 provider = false
 {{- end -}}

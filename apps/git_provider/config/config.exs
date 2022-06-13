@@ -1,5 +1,5 @@
 import Config
-config :git_provider, enabled: true
+config :git_provider, enabled: false
 config :git_provider, pull_interval: "2h"
 
 config :git_provider, :repositories, []

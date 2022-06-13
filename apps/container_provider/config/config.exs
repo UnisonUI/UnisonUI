@@ -5,7 +5,7 @@ config :k8s,
     default: %{}
   }
 
-config :container_provider, enabled: true
+config :container_provider, enabled: false
 
 config :container_provider, :connection_backoff,
   start: 0,

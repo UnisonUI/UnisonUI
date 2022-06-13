@@ -32,6 +32,7 @@ defmodule Services do
         {state, counter} = var!(state)
 
         if Services.alive?() do
+          var!(state) = state
           unquote(block)
         else
           if counter > 0 do
