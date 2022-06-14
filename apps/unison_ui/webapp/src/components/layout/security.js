@@ -1,8 +1,4 @@
-import loadable from "@loadable/component";
 import React, { forwardRef } from "react";
-const Markdown = loadable(() =>
-  import(/* webpackPrefetch: true */ "../markdown")
-);
 
 export const Authentication = forwardRef(({ authentication }, ref) => {
   return (

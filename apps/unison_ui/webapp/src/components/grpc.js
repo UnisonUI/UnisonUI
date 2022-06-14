@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { useLocation } from "react-router-dom";
 import Error from "./grpc/error";
 import Layout from "./grpc/layout";
 
@@ -10,7 +9,8 @@ class Grpc extends Component {
       error: null,
       spec: null,
     };
-    this.location = useLocation();
+    this.location = {};
+    // useLocation();
     this._loadSpec = this._loadSpec.bind(this);
   }
 
