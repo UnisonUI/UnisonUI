@@ -10,7 +10,7 @@ defmodule Services.Storage.Raft.Cluster do
 
   def running?, do: GenServer.call(__MODULE__, :running?)
   @impl true
-  @spec init(any) :: {:stop, :nodes_required} | {:ok, false, {:continue, :bootstrap}}
+  @spec init(any) :: {:ok, false, {:continue, :bootstrap}}
   def init(_) do
     :ok = :ra.start()
 

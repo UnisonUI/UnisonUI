@@ -8,7 +8,8 @@ defmodule GitProvider.Git.Server do
 
   defp pull_interval, do: Durex.ms!(Application.fetch_env!(:git_provider, :pull_interval))
 
-  @spec init(repository :: Repository.t()) :: {:ok, state(), {:continue, :wait_for_storage}}
+  @spec init(repository :: Repository.t()) ::
+          {:ok, {state(), pos_integer()}, {:continue, :wait_for_storage}}
   @impl true
   def init(repository) do
     Process.flag(:trap_exit, true)

@@ -18,9 +18,10 @@ defmodule GitProvider.Git.Repository do
 
     directory = [tmp_dir, dir] |> Path.join() |> Path.expand()
 
-    unless File.exists?(directory) do
-      _ = File.mkdir(directory)
-    end
+    _ =
+      unless File.exists?(directory) do
+        _ = File.mkdir(directory)
+      end
 
     %__MODULE__{repository | directory: directory}
   end
