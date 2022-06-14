@@ -76,11 +76,17 @@ defmodule ContainerProvider.Labels do
          specification_path <-
            labels[specification[:specification_path]] || "/specification.yaml",
          protocol <- labels[specification[:protocol]] || "http" do
+      use_proxy =
+        case specification[:use_proxy] do
+          nil -> nil
+          specification -> (labels[specification] || "false") == "true"
+        end
+
       [
         port: port,
         specification_path: specification_path,
         protocol: protocol,
-        use_proxy: nil
+        use_proxy: use_proxy
       ]
     else
       _ -> nil

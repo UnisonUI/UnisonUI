@@ -4,12 +4,15 @@ defmodule GitProvider.Git.SupervisorTest do
 
   import Mock
 
-  describe "start_repositories/0" do
-    setup do
-      Application.put_env(:git_provider, :enabled, true)
-      :ok
-    end
+  setup_all do
+    Application.put_env(:git_provider, :enabled, true)
 
+    on_exit(fn ->
+      Application.put_env(:git_provider, :enabled, false)
+    end)
+  end
+
+  describe "start_repositories/0" do
     test "start git repositories" do
       parent = self()
 
@@ -36,6 +39,10 @@ defmodule GitProvider.Git.SupervisorTest do
 
   describe "start_git/1" do
     setup do
+      on_exit(fn ->
+        [System.tmp_dir!(), "repo"] |> Path.join() |> Path.expand() |> File.rm_rf!()
+      end)
+
       [repository: %Repository{uri: "http://localhost/repo"}]
     end
 

@@ -4,7 +4,7 @@ defmodule Services.Storage.Raft.ClusterTest do
   alias Services.Storage.Raft.Cluster
 
   setup_all do
-    Application.put_env(:services, :raft, nodes: [to_string(node())])
+    Application.put_env(:services, :raft, quorum: 1)
     :ok
   end
 

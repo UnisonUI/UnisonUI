@@ -22,8 +22,11 @@ defmodule Services do
   @spec dispatch_events(events :: [Services.Event.t()]) :: :ok | {:error, term()}
   def dispatch_events(events), do: storage_backend().dispatch_events(events)
 
-  def init_wait_for_storage(state, counter \\ 10),
-    do: {:ok, {state, counter}, {:continue, :wait_for_storage}}
+  defmacro init_wait_for_storage(state, counter \\ 10) do
+    quote do
+      {:ok, {unquote(state), unquote(counter)}, {:continue, :wait_for_storage}}
+    end
+  end
 
   defmacro wait_for_storage(do: block) do
     quote context: __CALLER__.module do

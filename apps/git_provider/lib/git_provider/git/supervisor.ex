@@ -54,13 +54,16 @@ defmodule GitProvider.Git.Supervisor do
     unless provider_enabled() do
       :ignore
     else
+      name =
+        repository.uri
+        |> URI.parse()
+        |> Map.get(:path)
+        |> String.trim_leading("/")
+
       repository = %Repository{
         repository
-        | name:
-            repository.uri
-            |> URI.parse()
-            |> Map.get(:path)
-            |> String.trim_leading("/")
+        | name: name,
+          service_name: repository.service_name || name
       }
 
       GitProvider.Git.Server.start_child(repository)

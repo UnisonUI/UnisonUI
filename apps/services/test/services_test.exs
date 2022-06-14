@@ -2,7 +2,6 @@ defmodule ServicesTest do
   use ExUnit.Case
   import Services
 
-  @impl true
   wait_for_storage do
     {:ok, state}
   end
@@ -29,6 +28,6 @@ defmodule ServicesTest do
   end
 
   test "Services.wait_for_storage/1" do
-    assert handle_continue(:wait_for_storage, []) == {:ok, []}
+    assert handle_continue(:wait_for_storage, {[], 10}) == {:ok, []}
   end
 end

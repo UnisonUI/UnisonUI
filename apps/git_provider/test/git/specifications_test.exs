@@ -1,6 +1,5 @@
 defmodule GitProvider.Git.SpecificationTest do
   use ExUnit.Case, async: true
-  use ExUnitProperties
 
   alias GitProvider.Git.{Configuration, Specifications}
   alias GitProvider.Git.Configuration.{AsyncOpenApi, Grpc}
@@ -53,36 +52,30 @@ defmodule GitProvider.Git.SpecificationTest do
   end
 
   describe "intersection/2" do
-    property "difference between two specs" do
-      check all path1 <- binary(),
-                path2 <- binary(),
-                path1 != path2 do
-        specs_1 = %Specifications{specifications: %{path1 => {nil, nil}}}
+    test "difference between two specs" do
+      specs_1 = %Specifications{specifications: %{"path1" => {nil, nil}}}
 
-        specs_2 = %Specifications{
-          specifications: %{path1 => {nil, nil}, path2 => {nil, nil}}
-        }
+      specs_2 = %Specifications{
+        specifications: %{"path1" => {nil, nil}, "path2" => {nil, nil}}
+      }
 
-        assert Specifications.intersection(specs_1, specs_2) == specs_1
-      end
+      assert Specifications.intersection(specs_1, specs_2) == specs_1
     end
   end
 
   describe "merge/2" do
-    property "difference between two specs" do
-      check all path1 <- binary(),
-                path2 <- binary(),
-                path1 != path2 do
-        specs_1 = %Specifications{specifications: %{path1 => {nil, nil}}}
+    test "difference between two specs" do
+      path1 = "path1"
+      path2 = "path2"
+      specs_1 = %Specifications{specifications: %{path1 => {nil, nil}}}
 
-        specs_2 = %Specifications{
-          specifications: %{path2 => {nil, nil}}
-        }
+      specs_2 = %Specifications{
+        specifications: %{path2 => {nil, nil}}
+      }
 
-        assert Specifications.merge(specs_1, specs_2) == %Specifications{
-                 specifications: %{path1 => {nil, nil}, path2 => {nil, nil}}
-               }
-      end
+      assert Specifications.merge(specs_1, specs_2) == %Specifications{
+               specifications: %{path1 => {nil, nil}, path2 => {nil, nil}}
+             }
     end
   end
 end

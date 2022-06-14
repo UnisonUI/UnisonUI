@@ -1,5 +1,6 @@
-defmodule GRPC.Endpoint do
+defmodule TestGRPC.Endpoint do
   use GRPC.Endpoint
 
-  run(GRPC.TestGrpcServer)
+  intercept(GRPC.Logger.Server, level: :debug)
+  run(TestGRPC.TestGrpcServer)
 end

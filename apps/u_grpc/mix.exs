@@ -38,7 +38,7 @@ defmodule GRPC.MixProject do
       {:grpc, "~> 0.5.0-beta.1", only: :test},
       {:cowboy, "~> 2.9", only: :test, override: true},
       {:cowlib, "~> 2.11", only: :test, override: true},
-      {:protobuf, "~> 0.9", only: :test},
+      {:protobuf, "== 0.9.0", only: :test},
       {:ok, "~> 2.3"},
       {:gen_state_machine, "~> 3.0"},
       {:logstash_logger_formatter, "~> 1.1"}

@@ -14,17 +14,16 @@ defmodule ContainerProvider.Kubernetes.SourceTest do
 
   setup do
     bypass = Bypass.open()
-    start_supervised!(Services.Storage.Memory.Server)
+    _ = start_supervised(Services.Storage.Memory.Server)
     {:ok, bypass: bypass}
   end
 
   describe "Handle error" do
     test "Kubernetes sources couldn't start" do
       with_mock K8s.Conn, from_service_account: fn -> {:error, "some error"} end do
-        assert match?(
-                 {:error, {:normal, _}},
-                 start_supervised({ContainerProvider.Kubernetes.Source, 1})
-               )
+        {:ok, pid} = start_supervised({ContainerProvider.Kubernetes.Source, 1})
+        Process.monitor(pid)
+        assert_receive {:DOWN, _, :process, ^pid, :normal}, 1_000
       end
     end
 

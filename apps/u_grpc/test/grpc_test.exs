@@ -4,22 +4,30 @@ defmodule GRPCTest do
 
   @schema Protobuf.compile!("test/protobuf/helloworld_stream.proto")
 
+  defp free_port do
+    {:ok, listen} = :gen_tcp.listen(0, [])
+    {:ok, port} = :inet.port(listen)
+    :gen_tcp.close(listen)
+    port
+  end
+
   setup_all do
     Application.put_env(:grpc, :start_server, true)
-    start_supervised!({GRPC.Server.Supervisor, {GRPC.Endpoint, 50051}})
-    :ok
+    port = free_port()
+    start_supervised!({GRPC.Server.Supervisor, {TestGRPC.Endpoint, port}})
+    {:ok, port: port}
   end
 
   describe "connect/1" do
     test "trying to connect to a non running server" do
       assert {:error, %Mint.TransportError{reason: :econnrefused}} ==
-               GRPC.Client.new("http://localhost:4242")
+               GRPC.Client.new("http://localhost:#{free_port()}")
     end
   end
 
   describe "request/4" do
-    test "an invalid method or service" do
-      {:ok, connection} = GRPC.Client.new("http://localhost:50051")
+    test "an invalid method or service", context do
+      {:ok, connection} = GRPC.Client.new("http://localhost:#{context[:port]}")
 
       assert {:error, :not_found} ==
                GRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayByebye")
@@ -27,8 +35,8 @@ defmodule GRPCTest do
   end
 
   describe "non streaming" do
-    test "with non error" do
-      {:ok, connection} = GRPC.Client.new("http://localhost:50051")
+    test "with non error", context do
+      {:ok, connection} = GRPC.Client.new("http://localhost:#{context[:port]}")
 
       {:ok, connection} =
         GRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayHello")
@@ -40,8 +48,8 @@ defmodule GRPCTest do
   end
 
   describe "streaming" do
-    test "with non error" do
-      {:ok, connection} = GRPC.Client.new("http://localhost:50051")
+    test "with non error", context do
+      {:ok, connection} = GRPC.Client.new("http://localhost:#{context[:port]}")
 
       {:ok, connection} =
         GRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayHelloToAll")

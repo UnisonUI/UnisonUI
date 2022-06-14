@@ -8,12 +8,13 @@ defmodule ContainerProvider.Docker.SourceTest do
   setup_all do
     Application.put_env(:services, :storage_backend, Services.Storage.Memory)
     Application.put_env(:services, :aggregator, AggregatorStub)
-    :ok
+    agent = start_supervised!({Agent, fn -> [] end})
+    {:ok, agent: agent}
   end
 
   setup do
     bypass = Bypass.open()
-    start_supervised!(Services.Storage.Memory.Server)
+    _ = start_supervised(Services.Storage.Memory.Server)
     {:ok, bypass: bypass}
   end
 
@@ -43,10 +44,10 @@ defmodule ContainerProvider.Docker.SourceTest do
     end
   end
 
-  test "there is a container which is up and one down", %{bypass: bypass} do
+  test "there is a container which is up and one down", %{bypass: bypass, agent: agent} do
     labels = matching_labels(bypass.port)
 
-    setup_mock(bypass, labels, [
+    setup_mock(bypass, agent, labels, [
       %{"id" => @id, "status" => "start", "Actor" => %{"Attributes" => labels}},
       %{"id" => @id, "status" => "stop", "Actor" => %{"Attributes" => labels}}
     ])
@@ -72,10 +73,10 @@ defmodule ContainerProvider.Docker.SourceTest do
     assert_receive ^down, 1_000
   end
 
-  test "there is a mising label", %{bypass: bypass} do
+  test "there is a mising label", %{bypass: bypass, agent: agent} do
     labels = %{"unisonui.service-name" => @service_name}
 
-    setup_mock(bypass, labels, [
+    setup_mock(bypass, agent, labels, [
       %{"id" => @id, "status" => "start", "Actor" => %{"Attributes" => labels}}
     ])
 
@@ -84,8 +85,8 @@ defmodule ContainerProvider.Docker.SourceTest do
     refute_receive _, 1_000
   end
 
-  test "there is a no labels", %{bypass: bypass} do
-    setup_mock(bypass, %{}, [%{"id" => @id, "status" => "start"}])
+  test "there is a no labels", %{bypass: bypass, agent: agent} do
+    setup_mock(bypass, agent, %{}, [%{"id" => @id, "status" => "start"}])
 
     start_source("http://localhost:#{bypass.port}")
 
@@ -97,8 +98,8 @@ defmodule ContainerProvider.Docker.SourceTest do
     start_supervised!({ContainerProvider.Docker.Source, host})
   end
 
-  defp setup_mock(bypass, labels, events) do
-    agent = start_supervised!({Agent, fn -> events end})
+  defp setup_mock(bypass, agent, labels, events) do
+    Agent.update(agent, fn _ -> events end)
 
     Bypass.expect(bypass, "GET", "/events", fn conn ->
       event =
