@@ -8,7 +8,7 @@ defmodule GitProvider.Github.Connection do
     |> handle_response(options)
   end
 
-  defp url(options), do: Keyword.get(options, :url) || Config.get(:url)
+  defp url(options), do: options[:url] || Config.get(:url)
 
   defp check_url(nil), do: raise(ArgumentError, message: "you need to supply an url")
   defp check_url(url), do: url
@@ -19,7 +19,7 @@ defmodule GitProvider.Github.Connection do
       |> Keyword.merge(headers(options))
       |> Enum.map(fn {key, value} -> {to_string(key), value} end)
 
-  defp headers(options), do: Keyword.get(options, :headers, Config.get(:headers) || [])
+  defp headers(options), do: options[:headers] || (Config.get(:headers) || [])
 
   defp handle_response(response, options) do
     json_library = ConfigUtils.json_library(options)

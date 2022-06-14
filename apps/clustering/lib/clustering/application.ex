@@ -18,9 +18,9 @@ defmodule Clustering.Application do
     [
       strategy: ClusterEC2.Strategy.Tags,
       config: [
-        ec2_tagname: Keyword.get(config, :tag_name, "app"),
-        ec2_tagvalue: Keyword.get(config, :tag_value, "unisonui"),
-        app_prefix: Keyword.get(config, :application_name, "unisonui")
+        ec2_tagname: config[:tag_name] || "app",
+        ec2_tagvalue: config[:tag_value] || "unisonui",
+        app_prefix: config[:application_name] || "unisonui"
       ]
     ]
   end
@@ -47,7 +47,7 @@ defmodule Clustering.Application do
     ]
 
   defp topologies("kubernetes") do
-    kw =
+    config =
       Application.get_env(:clustering, :kubernetes,
         service: "unisonui",
         application_name: "unisonui",
@@ -57,9 +57,9 @@ defmodule Clustering.Application do
     [
       strategy: Cluster.Strategy.Kubernetes.DNSSRV,
       config: [
-        service: kw[:service] || "unisonui",
-        application_name: kw[:application_name] || "unisonui",
-        namespace: kw[:namespace] || "default"
+        service: config[:service] || "unisonui",
+        application_name: config[:application_name] || "unisonui",
+        namespace: config[:namespace] || "default"
       ]
     ]
   end

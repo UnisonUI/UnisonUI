@@ -13,11 +13,11 @@ config :container_provider, :connection_backoff,
   max: 5_000
 
 config :container_provider, :kubernetes,
-  enabled: true,
-  polling_interval: 1_000
+  enabled: false,
+  polling_interval: "1s"
 
 config :container_provider, :docker,
-  enabled: true,
+  enabled: false,
   host: "unix:///var/run/docker.sock"
 
 config :container_provider, :labels,

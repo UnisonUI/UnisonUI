@@ -39,8 +39,12 @@ defmodule ContainerProvider.Application do
     []
   end
 
-  defp kubernetes_children(polling_interval) when is_integer(polling_interval),
-    do: ContainerProvider.Kubernetes.Source.start_child(polling_interval)
+  defp kubernetes_children(polling_interval) when is_binary(polling_interval) do
+    case Durex.ms(polling_interval) do
+      {:ok, polling_interval} -> ContainerProvider.Kubernetes.Source.start_child(polling_interval)
+      _ -> Logger.info("Kubernetes provider has been disabled")
+    end
+  end
 
   defp kubernetes_children(_), do: Logger.info("Kubernetes provider has been disabled")
 end

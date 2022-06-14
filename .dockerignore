@@ -6,6 +6,7 @@
 /.git/
 /website/
 node_modules/
-/_build/
+/_build/dev/
+/_build/test/
 /apps/unison_ui/priv/statics/
 /mix.lock

@@ -39,13 +39,19 @@ provider = false
 {{end}}
 
 [services]
-{{with getvs "/storage/backend/raft/*" -}}
+{{if (or (exists "/storage/backend/raft/quorum") (gt (len (ls "/storage/backend/raft/hosts")) 0))}}
 storage_backend = 'Services.Storage.Raft'
 [services.raft]
+{{if exists "/storage/backend/raft/quorum"}}
+quorum = {{getv "/storage/backend/raft/quorum"}}
+{{else}}
+{{with getvs "/storage/backend/raft/hosts/*" -}}
 nodes = [{{- range .}}
   '{{.}}',
 {{- end}}
 ]
+{{end}}
+{{end}}
 {{- else -}}
 storage_backend = 'Services.Storage.Memory'
 {{end}}
@@ -106,7 +112,7 @@ tls = '{{getv "/provider/container/labels/grpc/tls" "unisonui.grpc.tls"}}'
 [container_provider.kubernetes]
 {{if exists "/provider/container/kubernetes" -}}
 enabled = true
-polling_interval = {{getv "/provider/container/kubernetes"}}
+polling_interval = '{{getv "/provider/container/kubernetes"}}'
 {{- else -}}
 enabled = false
 {{end}}
