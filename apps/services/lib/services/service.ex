@@ -81,9 +81,5 @@ defmodule Services.Service do
     def compute_hash(%Grpc{schema: content}) when is_binary(content) do
       :crypto.hash(:sha, content) |> Base.encode16(case: :lower)
     end
-
-    def compute_hash(%Grpc{schema: content}) do
-      :crypto.hash(:sha, Jason.encode!(content)) |> Base.encode16(case: :lower)
-    end
   end
 end

@@ -1,3 +1,13 @@
 {
-  "skip_files": ["test/support", "lib/unison_ui/application.ex"]
+  "skip_files": [
+    "test/support",
+    "lib/unison_ui/application.ex",
+    "lib/unison_ui/services/realtime/supervisor.ex",
+    "lib/unison_ui/services/realtime/consumer.ex",
+    "lib/unison_ui/routes.ex",
+    "lib/unison_ui/routes/statics.ex",
+    "lib/unison_ui/routes/realtime.ex",
+    "lib/unison_ui/services/supervisor.ex",
+    "lib/unison_ui/self_specification_server.ex"
+  ]
 }

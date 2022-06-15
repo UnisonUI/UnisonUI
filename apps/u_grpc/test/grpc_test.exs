@@ -35,7 +35,20 @@ defmodule GRPCTest do
   end
 
   describe "non streaming" do
-    test "with non error", context do
+    test "with non error and no compression", context do
+      Application.put_env(:u_grpc, :compressor_enabled, false)
+      {:ok, connection} = GRPC.Client.new("http://localhost:#{context[:port]}")
+
+      {:ok, connection} =
+        GRPC.Client.request(connection, @schema, "helloworld.Greeter", "SayHello")
+
+      GRPC.Client.send_data(connection, %{"name" => "world"})
+      assert_receive {:stream, {:ok, %{"message" => "Hello world"}}}
+      assert_receive {:stream, :done}
+    end
+
+    test "with non error and compression", context do
+      Application.put_env(:u_grpc, :compressor_enabled, true)
       {:ok, connection} = GRPC.Client.new("http://localhost:#{context[:port]}")
 
       {:ok, connection} =

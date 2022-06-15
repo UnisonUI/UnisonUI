@@ -1,3 +1,10 @@
 {
-  "skip_files": ["test/support", "lib/services/application.ex"]
+  "skip_files": [
+    "test/support",
+    "lib/services/application.ex",
+    "lib/services/aggregator.ex",
+    "lib/services/storage.ex",
+    "lib/services/service.ex",
+    "lib/services/event.ex"
+  ]
 }

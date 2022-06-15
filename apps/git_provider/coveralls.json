@@ -1,3 +1,9 @@
 {
-  "skip_files": ["test/support", "lib/git_provider/application.ex"]
+  "skip_files": [
+    "test/support",
+    "lib/git_provider/application.ex",
+    "lib/git_provider/github/data/project.ex",
+    "lib/git_provider/github/settings.ex",
+    "lib/git_provider/github/supervisor.ex"
+  ]
 }
