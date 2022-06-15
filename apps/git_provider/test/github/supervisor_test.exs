@@ -16,7 +16,6 @@ defmodule GitProvider.Github.SupervisorTest do
       settings =
         Application.get_env(:git_provider, :github)
         |> Keyword.put(:api_token, "test")
-        |> Keyword.put(:polling_interval, "1h")
 
       Application.put_env(:git_provider, :github, settings)
 
@@ -25,56 +24,17 @@ defmodule GitProvider.Github.SupervisorTest do
                 {_,
                  [
                    %{
-                     id: Finch,
-                     start: {Finch, :start_link, [[name: NeuroFinch]]},
-                     type: :supervisor
-                   },
-                   %{
-                     id: GitProvider.Github,
+                     id: {GitProvider.GraphQL, :github},
                      start:
-                       {GitProvider.Github, :start_link,
+                       {GitProvider.GraphQL, :start_link,
                         [
-                          %GitProvider.Github.Settings{
-                            api_token: "test",
-                            api_uri: "https://api.github.com/graphql",
-                            patterns: [],
-                            polling_interval: 3_600_000
-                          }
-                        ]}
-                   }
-                 ]}},
-               Supervisor.init(:ok)
-             )
-    end
-
-    test "using polling_interval as a integer" do
-      settings =
-        Application.get_env(:git_provider, :github)
-        |> Keyword.put(:api_token, "test")
-        |> Keyword.put(:polling_interval, 1_000)
-
-      Application.put_env(:git_provider, :github, settings)
-
-      assert match?(
-               {:ok,
-                {_,
-                 [
-                   %{
-                     id: Finch,
-                     start: {Finch, :start_link, [[name: NeuroFinch]]},
-                     type: :supervisor
-                   },
-                   %{
-                     id: GitProvider.Github,
-                     start:
-                       {GitProvider.Github, :start_link,
-                        [
-                          %GitProvider.Github.Settings{
-                            api_token: "test",
-                            api_uri: "https://api.github.com/graphql",
-                            patterns: [],
-                            polling_interval: 1_000
-                          }
+                          {GitProvider.Github.Client,
+                           %GitProvider.GraphQL.Settings{
+                             api_token: "test",
+                             api_uri: "https://api.github.com/graphql",
+                             patterns: [],
+                             polling_interval: 3_600_000
+                           }}
                         ]}
                    }
                  ]}},

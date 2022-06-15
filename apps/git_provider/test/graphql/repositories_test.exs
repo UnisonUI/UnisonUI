@@ -1,7 +1,7 @@
-defmodule GitProvider.Github.RepositoriesTest do
+defmodule GitProvider.GraphQL.RepositoriesTest do
   alias GitProvider.Git.Repository
-  alias GitProvider.Github.Repositories
-  alias GitProvider.Github.Data.Project
+  alias GitProvider.GraphQL.Repositories
+  alias GitProvider.GraphQL.Data.Project
   use ExUnit.Case, async: true
 
   describe "matches_new_repositories/4" do

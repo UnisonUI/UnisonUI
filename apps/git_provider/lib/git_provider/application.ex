@@ -19,9 +19,14 @@ defmodule GitProvider.Application do
   defp child_spec(_),
     do: [
       %{id: GitProvider.Git.Supervisor, start: {GitProvider.Git.Supervisor, :start_link, []}},
+      {Finch, name: NeuroFinch},
       %{
         id: GitProvider.Github.Supervisor,
         start: {GitProvider.Github.Supervisor, :start_link, []}
+      },
+      %{
+        id: GitProvider.Gitlab.Supervisor,
+        start: {GitProvider.Gitlab.Supervisor, :start_link, []}
       }
     ]
 end

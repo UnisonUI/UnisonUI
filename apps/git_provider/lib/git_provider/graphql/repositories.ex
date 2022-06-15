@@ -1,5 +1,5 @@
-defmodule GitProvider.Github.Repositories do
-  alias GitProvider.Github.Data.Project
+defmodule GitProvider.GraphQL.Repositories do
+  alias GitProvider.GraphQL.Data.Project
   alias GitProvider.Git.Repository
 
   @type t :: %__MODULE__{repositories: MapSet.t(String.t())}

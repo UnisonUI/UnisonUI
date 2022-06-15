@@ -1,7 +1,8 @@
 defmodule GitProvider.Github.ClientTest do
   use ExUnit.Case, async: true
-  alias GitProvider.Github.{Client, Connection}
-  alias GitProvider.Github.Data.Project
+  alias GitProvider.Github.Client
+  alias GitProvider.GraphQL.Connection
+  alias GitProvider.GraphQL.Data.Project
   import Mock
 
   describe "list_endpoint/2" do

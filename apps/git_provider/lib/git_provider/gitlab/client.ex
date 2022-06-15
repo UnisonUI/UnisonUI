@@ -1,9 +1,11 @@
-defmodule GitProvider.Github.Client do
+defmodule GitProvider.Gitlab.Client do
   @behaviour GitProvider.GraphQL.Client
   alias GitProvider.GraphQL.Data.Project
 
   @impl true
   def list_projects(endpoint, token) do
+    [_, token] = String.split(token, ":")
+
     Stream.unfold(nil, fn
       :end ->
         nil
@@ -18,33 +20,30 @@ defmodule GitProvider.Github.Client do
   end
 
   defp request(cursor, endpoint, token) do
-    {query, variables} = query(cursor)
-
-    Neuron.query(query, variables,
+    cursor
+    |> query()
+    |> Neuron.query(%{},
       url: endpoint,
       connection_module: GitProvider.GraphQL.Connection,
       headers: [Authorization: "bearer #{token}"]
     )
   end
 
-  defp process_response(
-         {:ok,
-          %Neuron.Response{body: %{"data" => %{"viewer" => %{"repositories" => repositories}}}}}
-       ) do
+  defp process_response({:ok, %Neuron.Response{body: %{"data" => %{"projects" => projects}}}}) do
     cursor =
-      case repositories["pageInfo"] do
+      case projects["pageInfo"] do
         %{"hasNextPage" => false} -> :end
         %{"endCursor" => cursor} -> cursor
       end
 
     nodes =
-      repositories["nodes"]
+      projects["nodes"]
       |> Enum.map(fn %{
-                       "nameWithOwner" => name,
-                       "url" => url,
-                       "defaultBranchRef" => defaultBranchRef
+                       "fullPath" => name,
+                       "webUrl" => url,
+                       "repository" => repository
                      } ->
-        branch = (defaultBranchRef && defaultBranchRef["name"]) || "master"
+        branch = (repository && repository["rootRef"]) || "master"
         %Project{name: name, url: url, branch: branch}
       end)
 
@@ -61,46 +60,40 @@ defmodule GitProvider.Github.Client do
     do: {{:error, Exception.message(error)}, :end}
 
   defp query(cursor) when is_binary(cursor),
-    do:
-      {"""
-        query($cursor: String!){
-         viewer {
-           repositories(after: $cursor, first: 100) {
-             pageInfo {
-              endCursor
-              hasNextPage
-             }
-             nodes {
-               nameWithOwner
-               url
-               defaultBranchRef {
-                name
-               }
-             }
-           }
+    do: """
+    query {
+     projects(membership: true, first: 100, after: "#{cursor}") {
+       pageInfo {
+         endCursor
+         hasNextPage
+       }
+       nodes {
+         fullPath
+         webUrl
+         repository{
+           rootRef
          }
        }
-       """, %{"cursor" => cursor}}
+     }
+    }
+    """
 
   defp query(_cursor),
-    do:
-      {"""
-       {
-       viewer {
-         repositories(first: 100) {
-           pageInfo {
-            endCursor
-            hasNextPage
-           }
-           nodes {
-             nameWithOwner
-             url
-             defaultBranchRef {
-              name
-             }
-           }
-         }
-        }
+    do: """
+    query {
+     projects(membership: true, first: 100) {
+       pageInfo {
+         endCursor
+         hasNextPage
        }
-       """, %{}}
+       nodes {
+         fullPath
+         webUrl
+         repository{
+           rootRef
+         }
+       }
+     }
+    }
+    """
 end

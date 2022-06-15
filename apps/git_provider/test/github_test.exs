@@ -1,6 +1,7 @@
 defmodule GitProvider.GithubTest do
-  alias GitProvider.Github.{Client, Settings}
-  alias GitProvider.Github.Data.Project
+  alias GitProvider.Github.Client
+  alias GitProvider.GraphQL.Settings
+  alias GitProvider.GraphQL.Data.Project
   alias GitProvider.Git.{Repository, Supervisor}
   use ExUnit.Case
   import Mock
@@ -9,6 +10,7 @@ defmodule GitProvider.GithubTest do
     [
       settings: %Settings{
         api_token: "",
+        api_uri: "https://api.github.com/graphql",
         polling_interval: 5,
         patterns: ["keep.*"]
       }
@@ -37,7 +39,7 @@ defmodule GitProvider.GithubTest do
          end
        ]}
     ] do
-      _ = start_supervised!({GitProvider.Github, context.settings})
+      _ = start_supervised!({GitProvider.GraphQL, {Client, context.settings}})
       assert_receive "keep1"
     end
   end

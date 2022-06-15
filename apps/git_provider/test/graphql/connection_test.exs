@@ -1,6 +1,6 @@
-defmodule GitProvider.Github.ConnectionTest do
+defmodule GitProvider.GraphQL.ConnectionTest do
   use ExUnit.Case
-  alias GitProvider.Github.{Connection}
+  alias GitProvider.GraphQL.{Connection}
   import Mock
 
   describe "call/2" do

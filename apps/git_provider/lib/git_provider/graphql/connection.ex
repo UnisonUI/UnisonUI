@@ -1,4 +1,4 @@
-defmodule GitProvider.Github.Connection do
+defmodule GitProvider.GraphQL.Connection do
   @behaviour Neuron.Connection
   alias Neuron.{Config, ConfigUtils, JSONParseError, Response}
   @impl true

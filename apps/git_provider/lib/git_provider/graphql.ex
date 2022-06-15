@@ -1,15 +1,15 @@
-defmodule GitProvider.Github do
+defmodule GitProvider.GraphQL do
   use Clustering.GlobalServer
   require Logger
-  alias GitProvider.Github.{Client, Settings}
-  alias GitProvider.Github.Repositories
+  alias GitProvider.GraphQL.{Repositories, Settings}
   alias GitProvider.Git.{Repository, Supervisor}
 
-  @typep state :: {GitProvider.Github.Settings.t(), GitProvider.Github.Repositories.t()}
+  @typep state ::
+           {module(), GitProvider.GraphQL.Settings.t(), GitProvider.GraphQL.Repositories.t()}
 
   @impl true
-  @spec init(settings :: GitProvider.Github.Settings.t()) :: {:ok, state()}
-  def init(settings) do
+  @spec init({module(), settings :: GitProvider.GraphQL.Settings.t()}) :: {:ok, state()}
+  def init({client, settings}) do
     send(self(), :retrieve_projects)
 
     patterns =
@@ -19,13 +19,14 @@ defmodule GitProvider.Github do
       |> Stream.filter(&match?({:ok, _}, &1))
       |> Enum.into([], &elem(&1, 1))
 
-    {:ok, {%Settings{settings | patterns: patterns}, Repositories.new()}}
+    {:ok, {client, %Settings{settings | patterns: patterns}, Repositories.new()}}
   end
 
   @impl true
   def handle_info(
         :retrieve_projects,
-        {%Settings{
+        {client,
+         %Settings{
            api_uri: api_uri,
            api_token: token,
            polling_interval: polling_interval,
@@ -33,7 +34,7 @@ defmodule GitProvider.Github do
          } = settings, current_repositories} = state
       ) do
     new_state =
-      with {:ok, projects} <- Client.list_projects(api_uri, token) do
+      with {:ok, projects} <- client.list_projects(api_uri, token) do
         matched_new_repositories =
           Repositories.match_new_repositories(
             current_repositories,
@@ -50,7 +51,7 @@ defmodule GitProvider.Github do
         new_repositories = Repositories.update(current_repositories, matched_new_repositories)
 
         schedule_polling(polling_interval)
-        {settings, new_repositories}
+        {client, settings, new_repositories}
       else
         {:error, message} ->
           Logger.warn("Error with github: #{message}")
