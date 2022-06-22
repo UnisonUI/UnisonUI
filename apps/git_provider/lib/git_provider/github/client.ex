@@ -1,6 +1,5 @@
 defmodule GitProvider.Github.Client do
-  @behaviour GitProvider.GraphQL.Client
-  alias GitProvider.GraphQL.Data.Project
+  use GitProvider.GraphQL.Client
 
   @impl true
   def list_projects(endpoint, token) do
@@ -17,26 +16,8 @@ defmodule GitProvider.Github.Client do
     end)
   end
 
-  defp request(cursor, endpoint, token) do
-    {query, variables} = query(cursor)
-
-    Neuron.query(query, variables,
-      url: endpoint,
-      connection_module: GitProvider.GraphQL.Connection,
-      headers: [Authorization: "bearer #{token}"]
-    )
-  end
-
-  defp process_response(
-         {:ok,
-          %Neuron.Response{body: %{"data" => %{"viewer" => %{"repositories" => repositories}}}}}
-       ) do
-    cursor =
-      case repositories["pageInfo"] do
-        %{"hasNextPage" => false} -> :end
-        %{"endCursor" => cursor} -> cursor
-      end
-
+  @impl true
+  def on_success(%{"viewer" => %{"repositories" => repositories}}) do
     nodes =
       repositories["nodes"]
       |> Enum.map(fn %{
@@ -48,19 +29,11 @@ defmodule GitProvider.Github.Client do
         %Project{name: name, url: url, branch: branch}
       end)
 
-    {{:ok, nodes}, cursor}
+    {nodes, extract_cursor(repositories["pageInfo"])}
   end
 
-  defp process_response({_, %Neuron.Response{body: %{"message" => error}}}),
-    do: {{:error, error}, :end}
-
-  defp process_response({_, %Neuron.Response{body: %{"errors" => errors}}}),
-    do: {{:error, errors |> Enum.map(& &1["message"]) |> Enum.join(", ")}, :end}
-
-  defp process_response({:error, error}),
-    do: {{:error, Exception.message(error)}, :end}
-
-  defp query(cursor) when is_binary(cursor),
+  @impl true
+  def query(cursor) when is_binary(cursor),
     do:
       {"""
         query($cursor: String!){
@@ -82,7 +55,7 @@ defmodule GitProvider.Github.Client do
        }
        """, %{"cursor" => cursor}}
 
-  defp query(_cursor),
+  def query(_cursor),
     do:
       {"""
        {

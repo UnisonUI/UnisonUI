@@ -19,7 +19,7 @@ module.exports = {
       chunks: "all",
       cacheGroups: {
         react: {
-          test: /[\\/]node_modules[\\/](react|react-dom|react-router-dom|@reduxjs\/toolkit)[\\/]/,
+          test: /[\\/]node_modules[\\/](preact|react-router-dom|@reduxjs\/toolkit)[\\/]/,
           name: "react",
           chunks: "all",
         },
@@ -39,6 +39,12 @@ module.exports = {
   resolve: {
     roots: [path.resolve(__dirname)],
     extensions: [".ts", ".tsx", ".js", ".mjs", ".json"],
+    alias: {
+      react: "preact/compat",
+      "react-dom/test-utils": "preact/test-utils",
+      "react-dom": "preact/compat", // Must be below test-utils
+      "react/jsx-runtime": "preact/jsx-runtime",
+    },
     fallback: {
       fs: path.resolve(__dirname, "src/empty.js"),
     },
