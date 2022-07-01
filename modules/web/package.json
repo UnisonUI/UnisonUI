@@ -77,7 +77,7 @@
     "natives": "1.1.6"
   },
   "dependencies": {
-    "@loadable/component": "^5.14.1",
+    "@loadable/component": "^5.15.2",
     "axios": "^0.21.1",
     "eventsource": "^1.1.0",
     "postcss-debug": "^0.4.2",
