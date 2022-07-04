@@ -1,11 +1,13 @@
+import capitalize from "lodash-es/capitalize";
 import React, { forwardRef } from "react";
+import Markdown from "../markdown";
 
 export const Authentication = forwardRef(({ authentication }, ref) => {
   return (
     authentication && (
       <section className="section authentication" ref={ref}>
         <h1 className="title">Authentication</h1>
-        <div className="section-content">
+        <table className="section-content">
           {Object.entries(authentication).map(([name, security]) => (
             <Security
               name={name}
@@ -13,30 +15,119 @@ export const Authentication = forwardRef(({ authentication }, ref) => {
               key={`security-${name}`}
             />
           ))}
-        </div>
+        </table>
       </section>
     )
   );
 });
-
-function Security({ name, security }) {
-  const { component, type } = (() => {
+export const securityTitle = (security, name) => {
+  const type = (() => {
     switch (security.type) {
       case "oauth2":
-        return { component: <Oauth2 security={security} />, type: "OAuth" };
+        return "OAuth";
+      case "apiKey":
+        return "Api Key";
+      case "http":
+        return "Http";
+      case "openIdConnect":
+        return "Http";
       default:
-        return { component: null, type: security.type };
+        return type;
+    }
+  })();
+  let title = `${type} (${name})`;
+  if (type === "Http") title = `Http ${capitalize(security.scheme)}`;
+  return title;
+};
+
+const Security = ({ name, security }) => {
+  const component = (() => {
+    switch (security.type) {
+      case "oauth2":
+        return <Oauth2 security={security} />;
+      case "apiKey":
+        return <ApiKey security={security} />;
+      case "http":
+        return <Http security={security} />;
+      case "openIdConnect":
+        return <OpenIdConnect security={security} />;
+      default:
+        return null;
     }
   })();
   return (
     <div>
-      <h1>
-        {type} ({name})
-      </h1>
+      <h1>{securityTitle(security, name)}</h1>
       {component}
+      <Markdown source={security.description} className="sm" />
     </div>
   );
-}
+};
+const Http = ({ security }) => {
+  switch (security.scheme) {
+    case "bearer":
+      return <HttpBearer />;
+    case "basic":
+      return <HttpBasic />;
+  }
+};
+
+const HttpBasic = () => (
+  <div>
+    <div>
+      Send <span className="font-bold">Authorization</span> in{" "}
+      <span className="font-bold">header</span> containing the word{" "}
+      <span className="font-bold">Bearer</span> followed by a space and a base64
+      encoded string of <span className="font-bold">username:password</span>.
+    </div>
+    <div>
+      <input type="text" placeholder="username" />{" "}
+      <input type="text" placeholder="password" />{" "}
+      <button className="badge blue">SET</button>
+    </div>
+  </div>
+);
+
+const HttpBearer = () => (
+  <div>
+    <div>
+      Send <span className="font-bold">Authorization</span> in{" "}
+      <span className="font-bold">header</span> containing the word{" "}
+      <span className="font-bold">Bearer</span> followed by a space and a Token
+      String.
+    </div>
+    <div>
+      <input type="text" placeholder="api-token" />{" "}
+      <button className="badge blue">SET</button>
+    </div>
+  </div>
+);
+
+const OpenIdConnect = ({ security }) => (
+  <div>
+    <div>
+      Send <span className="font-bold">{security.name}</span> in{" "}
+      <span className="font-bold">{security.in}</span>
+    </div>
+    <div>
+      <input type="text" placeholder="api-token" />{" "}
+      <button className="badge blue">SET</button>
+    </div>
+  </div>
+);
+
+const ApiKey = ({ security }) => (
+  <div>
+    <div>
+      Send <span className="font-bold">{security.name}</span> in{" "}
+      <span className="font-bold">{security.in}</span>
+    </div>
+    <div>
+      <input type="text" placeholder="api-token" />{" "}
+      <button className="badge blue">SET</button>
+    </div>
+  </div>
+);
 
 const Oauth2 = ({ security }) =>
   Object.entries(security.flows).map(([type, flow]) => (

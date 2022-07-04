@@ -1,6 +1,12 @@
 input,
 select {
-  @apply text-primary #{!important};
+  @apply text-primary rounded;
+  @apply border-blue-300 border;
+  @apply px-3 py-1;
+}
+
+button {
+  @apply text-base #{!important};
 }
 
 label {

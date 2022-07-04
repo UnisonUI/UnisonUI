@@ -39,6 +39,18 @@ function convertSwagger2OpenAPI(spec) {
     )
   );
 }
+export function openApiOperationsByTag(spec) {
+  return Object.entries(spec.paths)
+    .flatMap(([pathName, path]) =>
+      Object.entries(path).flatMap(([method, path]) => {
+        const tags = path.tags || [""];
+        return tags.map((tag) => {
+          return { tag, method, path: pathName, operation: path };
+        });
+      })
+    )
+    .groupBy(({ tag }) => tag);
+}
 
 export function extractOpenApiOperations(spec) {
   const operations = Object.entries(spec.paths)

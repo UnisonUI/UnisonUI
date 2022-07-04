@@ -1,0 +1,11 @@
+.unisonui {
+  .layout {
+    .servers {
+      @apply py-4;
+
+      .selections {
+        @apply flex flex-col space-y-4;
+      }
+    }
+  }
+}

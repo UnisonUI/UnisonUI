@@ -30,7 +30,7 @@ export default function SpecficationLayout({ id }) {
         ref={authenticationRef}
         authentication={spec.components && spec.components.securitySchemes}
       />
-      <Operations spec={spec} />
+      <Operations service={service} />
     </section>
   );
 }

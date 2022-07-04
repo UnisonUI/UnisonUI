@@ -4,7 +4,7 @@ module.exports = {
     purgeLayersByDefault: true,
   },
   content: ["./src/**/*.js"],
-  plugins: [require("@tailwindcss/forms"), require("@tailwindcss/typography")],
+  plugins: [require("@tailwindcss/typography")],
   purge: false,
   theme: {
     screens: {
@@ -29,6 +29,10 @@ module.exports = {
         cyan: "#9cdbff",
         background: "var(--background)",
         primary: "var(--primary)",
+        "background-shadow": "var(--background-shadow)",
+        "background-highlight": "var(--background-highlight)",
+        "primary-shadow": "var(--primary-shadow)",
+        "primary-highlight": "var(--primary-highlight)",
       },
       spacing: {
         96: "24rem",

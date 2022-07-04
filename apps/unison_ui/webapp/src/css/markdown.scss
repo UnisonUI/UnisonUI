@@ -1,6 +1,9 @@
 .markdown {
   @apply prose prose-stone max-w-none;
   @apply prose-code:font-code;
+  &.sm {
+    @apply prose-sm;
+  }
 }
 .dark {
   .markdown {

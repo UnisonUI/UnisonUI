@@ -1,9 +1,39 @@
-export * from "./asyncapi";
-export * from "./openapi";
-export * from "./grpc";
+import { extractAsyncAPIOperations } from "./asyncapi";
+import { extractGrpcOperations } from "./grpc";
+import { extractOpenApiOperations, openApiOperationsByTag } from "./openapi";
+
+export { parseAsyncAPI } from "./asyncapi";
+export { parseOpenApi } from "./openapi";
+export { normalizeGrpcSchema } from "./grpc";
 export * from "./highlight";
 
 const delimiter = "||";
+
+export const operationsByTag = (service) => {
+  switch (service.type) {
+    case "openapi":
+      return openApiOperationsByTag(service.spec);
+
+    case "asyncapi":
+      return extractAsyncAPIOperations(service.spec);
+
+    default:
+      return extractGrpcOperations(service.spec);
+  }
+};
+
+export const extractOperations = (service) => {
+  switch (service.type) {
+    case "openapi":
+      return extractOpenApiOperations(service.spec);
+
+    case "asyncapi":
+      return extractAsyncAPIOperations(service.spec);
+
+    default:
+      return extractGrpcOperations(service.spec);
+  }
+};
 
 export const resolveRef = (spec) => {
   const correctedSpec = structuredClone(spec);

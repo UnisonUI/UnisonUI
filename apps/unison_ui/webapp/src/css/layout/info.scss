@@ -1,0 +1,15 @@
+.unisonui {
+  .layout {
+    .info {
+      @apply flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8;
+
+      .license-contact {
+        @apply flex flex-wrap leading-normal;
+
+        li {
+          @apply inline-block mt-2 mr-2;
+        }
+      }
+    }
+  }
+}

@@ -5,13 +5,18 @@
     @apply overflow-x-hidden overflow-y-auto;
     @apply flex flex-col;
     @apply w-full h-96 lg:w-96;
+
     @media (min-width: 1024px) {
       height: calc(100vh - 40px);
     }
-    background-color: var(--background-highlight);
+    @apply bg-background-highlight;
 
-    .closed {
-      display: none;
+    .menu-operation {
+      @apply transition-all duration-300;
+      @apply max-h-screen overflow-hidden;
+      &.closed {
+        @apply max-h-0;
+      }
     }
 
     .menu-item {
@@ -23,12 +28,11 @@
       }
 
       &.active {
-        @apply border-l-4;
-        border-color: var(--primary-shadow);
+        @apply border-l-4 border-primary-shadow;
       }
 
       .link {
-        @apply flex justify-between;
+        @apply flex justify-between cursor-pointer;
 
         &.active,
         .active {

@@ -7,7 +7,7 @@ const Markdown = loadable(() =>
 export function Info({ info }) {
   return (
     info && (
-      <section className="info">
+      <section className="section info">
         <Logo logo={info["x-logo"]} contact={info.contact} />
         <section className="description">
           <h1 className="title">

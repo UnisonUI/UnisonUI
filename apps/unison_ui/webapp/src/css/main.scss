@@ -69,6 +69,6 @@ body {
   .content {
     @apply relative w-full;
     @apply overflow-x-hidden overflow-y-auto;
-    background-color: var(--background-highlight);
+    @apply bg-background-highlight;
   }
 }

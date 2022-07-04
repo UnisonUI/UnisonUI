@@ -1,0 +1,68 @@
+.unisonui {
+  .operations {
+    .section {
+      @apply flex flex-col;
+      @apply gap-y-3;
+    }
+
+    &.border-top {
+      @apply border-primary-shadow;
+    }
+
+    .border-top {
+      @apply border-primary;
+    }
+
+    &.border-top,
+    .border-top {
+      @apply border-t;
+    }
+
+    @apply py-4 mt-4;
+
+    ~ & {
+      @apply mt-0;
+    }
+
+    .tag {
+    }
+
+    .operation {
+      .title {
+        @apply normal-case;
+      }
+
+      .security {
+        @apply flex justify-end content-center place-items-center;
+
+        .schemes {
+          @apply flex;
+          @apply relative;
+
+          .scheme {
+            .summary {
+              @apply border-primary border border-l-4;
+              @apply p-1 text-sm;
+              @apply cursor-pointer;
+            }
+
+            &:hover {
+              & ~ .tooltip-text {
+                @apply block;
+              }
+            }
+          }
+        }
+
+        .tooltip-text {
+          @apply bg-background;
+          @apply hidden;
+          @apply absolute top-7 right-0;
+          @apply border-primary border;
+          @apply p-2;
+          @apply text-sm w-96;
+        }
+      }
+    }
+  }
+}

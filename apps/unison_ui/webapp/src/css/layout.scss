@@ -1,27 +1,16 @@
-@import "./layout/secuity.scss";
-
 .unisonui {
   .layout {
-    @apply py-8 px-16;
     @apply flex flex-col;
 
     .title {
       @apply text-2xl mb-2;
     }
 
-    .info {
-      @apply py-4 flex flex-col lg:flex-row space-y-8 lg:space-y-0 lg:space-x-8;
-
-      .license-contact {
-        @apply flex flex-wrap leading-normal;
-
-        li {
-          @apply inline-block mt-2 mr-2;
-        }
-      }
-    }
-
     .section {
+      @apply py-8 px-16;
+      & > .section {
+        @apply px-0;
+      }
       .title {
         @apply uppercase text-xl;
       }
@@ -30,13 +19,10 @@
         @apply border p-4 flex flex-col space-y-4;
       }
     }
-
-    .servers {
-      @apply py-4;
-
-      .selections {
-        @apply flex flex-col space-y-4;
-      }
-    }
   }
 }
+
+@import "./layout/info.scss";
+@import "./layout/servers.scss";
+@import "./layout/secuity.scss";
+@import "./layout/operations.scss";
