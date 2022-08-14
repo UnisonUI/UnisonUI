@@ -118,7 +118,7 @@ defmodule GitProvider.Git.EventsTest do
                    name: "test",
                    content: "test",
                    use_proxy: false,
-                   metadata: %Service.Metadata{provider: "local", file: "openapi.yaml"}
+                   metadata: %Service.Metadata{provider: "git", file: "openapi.yaml"}
                  }
                }
     end
@@ -140,7 +140,7 @@ defmodule GitProvider.Git.EventsTest do
                    name: "test",
                    schema: %{},
                    servers: [],
-                   metadata: %Service.Metadata{provider: "local", file: "helloworld.proto"}
+                   metadata: %Service.Metadata{provider: "git", file: "helloworld.proto"}
                  }
                }
     end

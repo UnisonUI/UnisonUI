@@ -2,7 +2,7 @@
   .menu {
     @apply text-sm;
     @apply sticky;
-    @apply overflow-x-hidden overflow-y-auto;
+    @apply lg:overflow-x-hidden lg:overflow-y-auto;
     @apply flex flex-col;
     @apply w-full h-96 lg:w-96;
 
@@ -10,6 +10,16 @@
       height: calc(100vh - 40px);
     }
     @apply bg-background-highlight;
+
+    .links {
+      @apply hidden lg:block;
+    }
+
+    .select {
+      @apply block lg:hidden;
+      @apply w-full;
+      @apply text-lg;
+    }
 
     .menu-operation {
       @apply transition-all duration-300;

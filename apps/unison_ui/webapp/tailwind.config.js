@@ -1,11 +1,9 @@
 module.exports = {
   future: {
     removeDeprecatedGapUtilities: true,
-    purgeLayersByDefault: true,
   },
   content: ["./src/**/*.js"],
   plugins: [require("@tailwindcss/typography")],
-  purge: false,
   theme: {
     screens: {
       sm: "640px",

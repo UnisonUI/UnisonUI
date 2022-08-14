@@ -9,9 +9,9 @@ defmodule Services.State do
   @spec new() :: t()
   def new, do: %__MODULE__{services: %{}}
 
-  @spec available_services(t()) :: [Services.Event.t()]
-  def available_services(state),
-    do: Enum.into(state.services, [], fn {_, service} -> %Event.Up{service: service} end)
+  @spec available_services(state :: t()) :: [Services.t()]
+  def available_services(%__MODULE__{services: services}),
+    do: Enum.into(services, [], fn {_, service} -> service end)
 
   @spec service(state :: t(), id :: String.t()) :: Services.t() | nil
   def service(%__MODULE__{services: services}, id), do: services[id]

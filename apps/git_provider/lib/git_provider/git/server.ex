@@ -100,8 +100,7 @@ defmodule GitProvider.Git.Server do
     else
       {:error, reason} ->
         Logger.warn(reason, provider: "git_provider")
-        schedule_pull()
-        {:noreply, state}
+        {:stop, :normal, state}
     end
   end
 

@@ -16,7 +16,7 @@ const Operations = ({ service, isOpen }) => {
   const isOperation = (id) => isOpen && location.hash === `#${id}`;
 
   const operations = extractOperations(service).map(
-    ({ id, name, isTag }, idx) => (
+    ({ id, name, isTag, deprecated }, idx) => (
       <li
         key={`${service.id}-${id}-${idx}`}
         className={classNames("menu-item", { active: isOperation(id) })}
@@ -28,7 +28,14 @@ const Operations = ({ service, isOpen }) => {
             "font-bold": isTag,
           })}
         >
-          <div className={classNames({ active: isOperation(id) })}>{name}</div>
+          <div
+            className={classNames({
+              active: isOperation(id),
+              "opacity-60": deprecated,
+            })}
+          >
+            {name}
+          </div>
         </Link>
       </li>
     )
@@ -52,10 +59,8 @@ const getName = (service) => {
   }
 };
 
-export default function ServiceLink({ services }) {
-  [...services].sort((a, b) => a.name.localeCompare(b.name));
-  return services.map((service) => <Menu key={service.id} service={service} />);
-}
+export const ServiceLink = ({ services }) =>
+  services.map((service) => <Menu key={service.id} service={service} />);
 
 const Menu = ({ service }) => {
   const location = useLocation();
@@ -100,3 +105,9 @@ const Menu = ({ service }) => {
     </section>
   );
 };
+export const ServiceOption = ({ services }) =>
+  services.map((service) => (
+    <option key={`option-${service.id}`} value={`/service/${service.id}`}>
+      {getName(service)}
+    </option>
+  ));

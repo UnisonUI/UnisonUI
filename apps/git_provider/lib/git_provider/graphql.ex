@@ -1,17 +1,12 @@
 defmodule GitProvider.GraphQL do
   use Clustering.GlobalServer
   require Logger
+  require Services
   alias GitProvider.GraphQL.{Repositories, Settings}
   alias GitProvider.Git.{Repository, Supervisor}
 
-  @typep state ::
-           {module(), GitProvider.GraphQL.Settings.t(), GitProvider.GraphQL.Repositories.t()}
-
   @impl true
-  @spec init({module(), settings :: GitProvider.GraphQL.Settings.t()}) :: {:ok, state()}
   def init({client, settings}) do
-    send(self(), :retrieve_projects)
-
     patterns =
       settings.patterns
       |> Stream.filter(&is_binary/1)
@@ -19,7 +14,14 @@ defmodule GitProvider.GraphQL do
       |> Stream.filter(&match?({:ok, _}, &1))
       |> Enum.into([], &elem(&1, 1))
 
-    {:ok, {client, %Settings{settings | patterns: patterns}, Repositories.new()}}
+    Services.init_wait_for_storage(
+      {client, %Settings{settings | patterns: patterns}, Repositories.new()}
+    )
+  end
+
+  Services.wait_for_storage do
+    send(self(), :retrieve_projects)
+    {:noreply, state}
   end
 
   @impl true
@@ -54,7 +56,7 @@ defmodule GitProvider.GraphQL do
         {client, settings, new_repositories}
       else
         {:error, message} ->
-          Logger.warn("Error with github: #{message}")
+          Logger.warn("Error with the GraphQL: #{message}")
           state
       end
 

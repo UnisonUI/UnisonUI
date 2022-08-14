@@ -22,6 +22,7 @@ export function extractAsyncAPIOperations(spec) {
             tag,
             name,
             id: channel.operationId || `${type}-${channelName}`,
+            deprecated: channel.deprecated,
           };
         });
       };
@@ -43,7 +44,9 @@ export function extractAsyncAPIOperations(spec) {
     const result = [];
     if (tag !== "")
       result.push({ id: tag, name: capitalize(tag), isTag: true });
-    operations.forEach(({ name, id }) => result.push({ id, name }));
+    operations.forEach(({ name, id, deprecated }) =>
+      result.push({ id, name, deprecated })
+    );
     return result;
   });
 }

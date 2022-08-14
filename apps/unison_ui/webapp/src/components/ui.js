@@ -1,7 +1,7 @@
 import loadable from "@loadable/component";
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Konami from "react-konami-code";
 import Moon from "react-feather/dist/icons/moon";
 import Sun from "react-feather/dist/icons/sun";
@@ -13,7 +13,7 @@ import classNames from "classnames";
 
 import { handleEvent, selectAllServices } from "../features";
 
-import ServiceLink from "./serviceLink";
+import { ServiceLink, ServiceOption } from "./serviceLink";
 import NoService from "./noService";
 
 const SpecficationLayout = loadable(() =>
@@ -24,6 +24,7 @@ export default function UnisonUILayout() {
   const dispatch = useDispatch();
   const services = useSelector(selectAllServices);
   const location = useLocation();
+  const nagivate = useNavigate();
 
   const service = Object.values(services)
     .flat()
@@ -91,20 +92,39 @@ export default function UnisonUILayout() {
 
   function getServices() {
     const items = [];
+    const select = [];
+
     if (Object.keys(services).length) {
       const entries = Object.entries(services);
       entries.sort((a, b) => a[0].localeCompare(b[0]));
       entries.forEach(([name, services]) => {
+        [...services].sort((a, b) => a.name.localeCompare(b.name));
         items.push(<ServiceLink services={services} key={name} />);
+        select.push(<ServiceOption services={services} />);
       });
-    } else {
-      items.push(
-        <h1 key="0" style={{ padding: "0.5em" }}>
-          No services available
-        </h1>
-      );
     }
-    return <ul>{items}</ul>;
+
+    return (
+      <div>
+        {items.length ? (
+          <ul className="links">{items}</ul>
+        ) : (
+          <h1 style={{ padding: "0.5em" }}>No services available</h1>
+        )}
+
+        {select.length ? (
+          <select
+            className="select"
+            value={window.location.pathname}
+            onChange={(e) => nagivate(e.target.value)}
+          >
+            {select}
+          </select>
+        ) : (
+          <h1 className="select">No services available</h1>
+        )}
+      </div>
+    );
   }
 
   function _loadComponent(service) {

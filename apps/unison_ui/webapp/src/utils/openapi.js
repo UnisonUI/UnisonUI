@@ -62,7 +62,12 @@ export function extractOpenApiOperations(spec) {
           `${method.toUpperCase()} ${pathName}`;
         const tags = path.tags || [""];
         return tags.map((tag) => {
-          return { tag, name, id: path.operationId || `${method}-${pathName}` };
+          return {
+            tag,
+            name,
+            id: path.operationId || `${method}-${pathName}`,
+            deprecated: path.deprecated,
+          };
         });
       })
     )
@@ -71,7 +76,9 @@ export function extractOpenApiOperations(spec) {
     const result = [];
     if (tag !== "")
       result.push({ id: tag, name: capitalize(tag), isTag: true });
-    operations.forEach(({ name, id }) => result.push({ id, name }));
+    operations.forEach(({ name, id, deprecated }) =>
+      result.push({ id, name, deprecated })
+    );
     return result;
   });
   if (spec.components && spec.components.securitySchemes)

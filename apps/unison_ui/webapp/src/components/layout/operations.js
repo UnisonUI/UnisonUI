@@ -1,10 +1,11 @@
 import React, { forwardRef, useEffect, useRef } from "react";
-import Lock from "react-feather/dist/icons/lock";
 import { operationsByTag } from "../../utils";
 import Markdown from "../markdown";
-import { Link, useLocation } from "react-router-dom";
-import { securityTitle } from "./security";
+import { useLocation } from "react-router-dom";
 import classNames from "classnames";
+import { Request } from "./operations/request";
+import { Security } from "./operations/security";
+import { Parameters } from "./operations/parameters";
 
 export const Operations = ({ service }) => {
   const location = useLocation();
@@ -67,121 +68,63 @@ const Tag = forwardRef(({ tag }, ref) => (
   </section>
 ));
 
+const operationColor = (method) => {
+  switch (method) {
+    case "get":
+      return "green";
+    case "delete":
+      return "red";
+    case "post":
+      return "blue";
+    case "put":
+      return "orange";
+    case "patch":
+      return "yellow";
+    default:
+      return "purple";
+  }
+};
+
 const Operation = forwardRef(
   ({ method, path, operation, securitySchemes }, ref) => {
-    const color = (() => {
-      switch (method) {
-        case "get":
-          return "green";
-        case "delete":
-          return "red";
-        case "post":
-          return "blue";
-        case "put":
-          return "orange";
-        default:
-          return "purple";
-      }
-    })();
     return (
-      <section className="section operation border-top" ref={ref}>
-        <Security
-          securitySchemes={securitySchemes}
-          security={operation.security}
-        />
+      <section
+        className={classNames(
+          "section",
+          "operation",
+          operationColor(method),
+          "border-top",
+          { deprecated: operation.deprecated }
+        )}
+        ref={ref}
+      >
+        <div
+          className={classNames("flex", {
+            "justify-between": operation.deprecated,
+            "justify-end": !operation.deprecated,
+          })}
+        >
+          {operation.deprecated && (
+            <div className="text-red-500">DEPRECATED</div>
+          )}
+          <Security
+            securitySchemes={securitySchemes}
+            security={operation.security}
+          />
+        </div>
         {operation.summary && <div className="title">{operation.summary}</div>}
         <div className="path">
-          {path}{" "}
-          <span className={classNames("badge", color, "plain", "uppercase")}>
-            {method}
-          </span>
+          <span className="method"> {method} </span> {path}
         </div>
         {operation.description && (
           <Markdown source={operation.description} className="sm" />
         )}
+        <div className="request">
+          <h1>REQUEST</h1>
+          <Parameters parameters={operation.parameters} />
+          <Request body={operation.requestBody} />
+        </div>
       </section>
     );
   }
 );
-const Security = ({ security, securitySchemes }) => {
-  if (Array.isArray(security) && security.length > 0) {
-    const items = [];
-    security.forEach((security) => {
-      const [[name, options]] = Object.entries(security);
-      const scheme = securitySchemes[name];
-      items.push(
-        <div className="tooltip">
-          <Link to="#authentication" className="scheme">
-            <span className="summary">{securityTitle(scheme, name)}</span>
-          </Link>
-          <div className="tooltip-text">
-            <SecurityDescription
-              name={name}
-              scheme={scheme}
-              options={options}
-            />
-          </div>
-        </div>
-      );
-      items.push(<span className="mx-1">OR</span>);
-    });
-    items.pop();
-    return (
-      <div className="security">
-        <Lock className="lock" />
-        <div className="schemes">{items}</div>
-      </div>
-    );
-  }
-};
-
-const SecurityDescription = ({ scheme, name, options }) => {
-  switch (scheme.type) {
-    case "oauth2":
-      return (
-        <div>
-          <div>
-            Need OAuth token <span className="text-blue-300">{name}</span> in{" "}
-            <span className="font-bold">Authorization header</span>
-          </div>
-          <div>
-            <span className="text-bold">Required scopes:</span>
-            <br />
-            <span className="ml-2">{options.join(" | ")}</span>
-          </div>
-        </div>
-      );
-    case "http":
-      switch (scheme.scheme) {
-        case "bearer":
-          return (
-            <div>
-              Requires Bearer Token in{" "}
-              <span className="font-bold">Authorization header</span>
-            </div>
-          );
-        case "basic":
-          return (
-            <div>
-              Requires Base 64 encoded username:password in{" "}
-              <span className="font-bold">Authorization header</span>
-            </div>
-          );
-        default:
-          return (
-            <div>
-              <span className="font-bold">Authorization header</span>
-            </div>
-          );
-      }
-    case "apiKey":
-      return (
-        <div>
-          Requires Token in <span className="font-bold">{scheme.name}</span>{" "}
-          <span className="font-bold">{scheme.in}</span>
-        </div>
-      );
-    default:
-      return <div>{scheme.type}</div>;
-  }
-};

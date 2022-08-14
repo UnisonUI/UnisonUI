@@ -1,3 +1,5 @@
+$colors: orange, green, blue, red, purple, yellow;
+
 .unisonui {
   .operations {
     .section {
@@ -24,12 +26,29 @@
       @apply mt-0;
     }
 
-    .tag {
-    }
-
     .operation {
       .title {
         @apply normal-case;
+      }
+
+      &.deprecated {
+        @apply opacity-60;
+      }
+
+      @each $color in $colors {
+        &.#{"" + $color} {
+          .method {
+            @apply font-semibold uppercase;
+            @apply text-#{""+$color}-500;
+          }
+        }
+      }
+
+      .request {
+        h1 {
+          @apply text-lg font-semibold;
+          @apply mb-3;
+        }
       }
 
       .security {

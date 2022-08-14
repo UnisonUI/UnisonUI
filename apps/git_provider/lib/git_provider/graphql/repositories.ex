@@ -2,7 +2,7 @@ defmodule GitProvider.GraphQL.Repositories do
   alias GitProvider.GraphQL.Data.Project
   alias GitProvider.Git.Repository
 
-  @type t :: %__MODULE__{repositories: MapSet.t(String.t())}
+  @type t :: %__MODULE__{repositories: MapSet.t(Repository.t())}
   defstruct repositories: MapSet.new()
 
   @spec new() :: t()
@@ -35,7 +35,7 @@ defmodule GitProvider.GraphQL.Repositories do
     end)
   end
 
-  @spec update(current :: t(), repositories :: [String.t()]) :: t()
+  @spec update(current :: t(), repositories :: [Repository.t()]) :: t()
   def update(%__MODULE__{repositories: current}, repositories),
     do: %__MODULE__{repositories: Enum.reduce(repositories, current, &MapSet.put(&2, &1))}
 end

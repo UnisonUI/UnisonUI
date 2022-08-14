@@ -27,6 +27,7 @@ defmodule GitProvider.Application do
       %{
         id: GitProvider.Gitlab.Supervisor,
         start: {GitProvider.Gitlab.Supervisor, :start_link, []}
-      }
+      },
+      {GitProvider.CleaningServer, name: GitProvider.CleaningServer}
     ]
 end

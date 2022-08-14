@@ -33,7 +33,7 @@ grpc:
         id: "test:#{id}",
         metadata: %Service.Metadata{
           file: file || id,
-          provider: "local"
+          provider: "git"
         },
         name: "test",
         use_proxy: false
@@ -66,7 +66,7 @@ grpc:
       LocalGit.clean(local_git)
     end)
 
-    start_supervised!(Memory.Server)
+    start_supervised(Memory.Server)
     [repo: repo, local_git: local_git]
   end
 
@@ -124,7 +124,7 @@ grpc:
                          id: "test:test",
                          metadata: %Service.Metadata{
                            file: "test",
-                           provider: "local"
+                           provider: "git"
                          },
                          name: "test",
                          use_proxy: false

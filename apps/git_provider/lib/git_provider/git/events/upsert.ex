@@ -23,14 +23,11 @@ defmodule GitProvider.Git.Events.Upsert do
             path: path,
             content: content,
             specs: %Specification{name: service_name, use_proxy: use_proxy},
-            repository:
-              %Repository{
-                name: name,
-                directory: directory
-              } = repo
+            repository: %Repository{
+              name: name,
+              directory: directory
+            }
           }) do
-        provider = Repository.provider(repo)
-
         filename =
           path
           |> String.replace_prefix(directory, "")
@@ -43,7 +40,7 @@ defmodule GitProvider.Git.Events.Upsert do
           name: service_name,
           content: content,
           use_proxy: use_proxy,
-          metadata: %Service.Metadata{provider: provider, file: filename}
+          metadata: %Service.Metadata{provider: "git", file: filename}
         }
 
         service =
@@ -89,14 +86,11 @@ defmodule GitProvider.Git.Events.Upsert do
             path: path,
             schema: schema,
             specs: %Specification{name: service_name, servers: servers},
-            repository:
-              %Repository{
-                name: name,
-                directory: directory
-              } = repo
+            repository: %Repository{
+              name: name,
+              directory: directory
+            }
           }) do
-        provider = Repository.provider(repo)
-
         filename =
           path
           |> String.replace_prefix(directory, "")
@@ -109,7 +103,7 @@ defmodule GitProvider.Git.Events.Upsert do
           name: service_name,
           schema: schema,
           servers: servers,
-          metadata: %Service.Metadata{provider: provider, file: filename}
+          metadata: %Service.Metadata{provider: "git", file: filename}
         }
 
         %Event.Up{service: service}

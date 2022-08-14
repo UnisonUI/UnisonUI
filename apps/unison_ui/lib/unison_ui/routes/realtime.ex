@@ -11,7 +11,8 @@ defmodule UnisonUI.Routes.Realtime do
     _ = Consumers.subscribe(self())
 
     case Services.available_services() do
-      {:ok, events} ->
+      {:ok, services} ->
+        events = Enum.into(services, [], &%Services.Event.Up{service: &1})
         {:reply, {:text, Jason.encode!(%{events: events})}, state}
 
       _ ->
