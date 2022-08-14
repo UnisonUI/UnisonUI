@@ -1,6 +1,6 @@
 defmodule GitProvider.GraphQL.Client do
   @callback list_projects(endpoint :: String.t(), token :: String.t()) ::
-              {:ok, [GitProvider.Github.Data.Project.t()]} | {:error, term()}
+              {:ok, [GitProvider.GraphQL.Data.Project.t()]} | {:error, term()}
 
   @callback query(cursor :: String.t() | :end) :: {String.t(), map()}
   @callback on_success(data :: map()) ::
