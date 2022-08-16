@@ -19,13 +19,16 @@ export const Parameters = ({ parameters }) => {
   return (
     <div>
       {paramsType.map(
-        (type) =>
+        (type, i) =>
           parametersByType[type] && (
             <div className="section">
               <h1 className="title">{getType(type)}</h1>
               <div className="section-content">
-                {parametersByType[type].map((parameter) => (
-                  <Parameter parameter={parameter} />
+                {parametersByType[type].map((parameter, j) => (
+                  <Parameter
+                    parameter={parameter}
+                    key={`parameter-${type}-${i}-${j}`}
+                  />
                 ))}
               </div>
             </div>
