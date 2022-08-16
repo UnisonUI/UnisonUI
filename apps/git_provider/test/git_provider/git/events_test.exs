@@ -54,7 +54,7 @@ defmodule GitProvider.Git.EventsTest do
       event =
         Events.load_content(%Events.Upsert.AsyncOpenApi{
           type: :openapi,
-          path: "test/git/specifications/openapi.yaml",
+          path: "test/git_provider/git/specifications/openapi.yaml",
           specs: %Configuration.AsyncOpenApi.Specification{},
           repository: @repo
         })
@@ -62,7 +62,7 @@ defmodule GitProvider.Git.EventsTest do
       assert event ==
                success(%Events.Upsert.AsyncOpenApi{
                  type: :openapi,
-                 path: "test/git/specifications/openapi.yaml",
+                 path: "test/git_provider/git/specifications/openapi.yaml",
                  specs: %Configuration.AsyncOpenApi.Specification{},
                  content: ~s/openapi: "3.1.0"\n/,
                  repository: @repo

@@ -58,7 +58,7 @@ defmodule Clustering.GlobalServer do
 
   defmacro via(name) do
     quote do
-      {:via, Horde.Registry, {Clustering.Registry, {__MODULE__, unquote(name)}}}
+      {:via, Horde.Registry, {Clustering.Registry, unquote(name)}}
     end
   end
 end

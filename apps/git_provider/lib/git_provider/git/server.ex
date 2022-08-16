@@ -25,7 +25,7 @@ defmodule GitProvider.Git.Server do
   def child_spec(%Repository{name: name} = repository),
     do: %{
       id: {Git, name},
-      start: {__MODULE__, :start_link, [[data: repository, name: String.to_atom(name)]]},
+      start: {__MODULE__, :start_link, [[data: repository, name: {Git, name}]]},
       restart: :transient
     }
 

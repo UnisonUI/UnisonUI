@@ -17,8 +17,8 @@ defmodule GitProvider.CleaningServer do
     running_processes =
       Horde.DynamicSupervisor.which_children(GitProvider.Git.DynamicSupervisor)
       |> Enum.flat_map(fn {_, pid, _, _} ->
-        with [{GitProvider.Git.Server, name}] <- Horde.Registry.keys(Clustering.Registry, pid) do
-          [to_string(name)]
+        with [{Git, name}] <- Horde.Registry.keys(Clustering.Registry, pid) do
+          [name]
         else
           _ -> []
         end
@@ -29,9 +29,7 @@ defmodule GitProvider.CleaningServer do
       {current, ids} =
         services
         |> Enum.flat_map(fn
-          %Services.Event.Up{
-            service: %{metadata: %Services.Service.Metadata{provider: "git"}, id: id}
-          } ->
+          %{metadata: %Services.Service.Metadata{provider: "git"}, id: id} ->
             [name | _] = String.split(id, ":")
             [{name, id}]
 

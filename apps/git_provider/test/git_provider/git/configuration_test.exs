@@ -5,7 +5,7 @@ defmodule GitProvider.Git.ConfigurationTest do
   use ExUnit.Case
 
   test "parse valid v2" do
-    {_, struct} = Configuration.from_file("test/git/configurations/valid_v2.yaml")
+    {_, struct} = Configuration.from_file("test/git_provider/git/configurations/valid_v2.yaml")
 
     assert(
       struct == %Configuration{
@@ -58,7 +58,7 @@ defmodule GitProvider.Git.ConfigurationTest do
   end
 
   test "cannot parse v1 anymore" do
-    result = Configuration.from_file("test/git/configurations/valid_v1.yaml")
+    result = Configuration.from_file("test/git_provider/git/configurations/valid_v1.yaml")
     assert(match?({:error, %TypeCheck.TypeError{}}, result))
   end
 end
