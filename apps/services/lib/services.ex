@@ -1,4 +1,6 @@
 defmodule Services do
+  require OK
+
   @type t ::
           Services.Service.AsyncApi.t() | Services.Service.OpenApi.t() | Services.Service.Grpc.t()
 
@@ -15,6 +17,26 @@ defmodule Services do
 
   @spec available_services :: {:ok, [t()]} | {:error, term()}
   def available_services, do: storage_backend().available_services()
+
+  @spec available_services_by_provider(provider :: String.t()) :: {:ok, [t()]} | {:error, term()}
+  def available_services_by_provider(provider) do
+    OK.for do
+      services <- available_services()
+      filtered_services = filter_services_by_provider(services, provider)
+    after
+      filtered_services
+    end
+  end
+
+  defp filter_services_by_provider(services, provider) do
+    Enum.filter(services, fn
+      %{metadata: %Services.Service.Metadata{provider: ^provider}} ->
+        true
+
+      _ ->
+        false
+    end)
+  end
 
   @spec service(id :: String.t()) :: {:ok, t()} | {:error, term()}
   def service(id), do: storage_backend().service(id)

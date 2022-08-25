@@ -25,11 +25,11 @@ defmodule GitProvider.CleaningServer do
       end)
       |> MapSet.new()
 
-    with {:ok, services} <- Services.available_services() do
+    with {:ok, services} <- Services.available_services_by_provider("git") do
       {current, ids} =
         services
         |> Enum.flat_map(fn
-          %{metadata: %Services.Service.Metadata{provider: "git"}, id: id} ->
+          %{id: id} ->
             [name | _] = String.split(id, ":")
             [{name, id}]
 

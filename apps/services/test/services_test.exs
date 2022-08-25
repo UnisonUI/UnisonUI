@@ -1,6 +1,7 @@
 defmodule ServicesTest do
   use ExUnit.Case
   import Services
+  alias Services.Service.{OpenApi, Metadata}
 
   wait_for_storage do
     {:ok, state}
@@ -16,7 +17,37 @@ defmodule ServicesTest do
   end
 
   test "Services.available_services/0" do
-    assert Services.available_services() == {:ok, []}
+    assert Services.available_services() ==
+             {:ok,
+              [
+                %OpenApi{
+                  id: "test",
+                  name: "test",
+                  content: "",
+                  use_proxy: false,
+                  metadata: %Metadata{provider: "test", file: "test"}
+                }
+              ]}
+  end
+
+  describe "Services.available_services_by_provider/1" do
+    test "With an existing provider" do
+      assert Services.available_services_by_provider("test") ==
+               {:ok,
+                [
+                  %OpenApi{
+                    id: "test",
+                    name: "test",
+                    content: "",
+                    use_proxy: false,
+                    metadata: %Metadata{provider: "test", file: "test"}
+                  }
+                ]}
+    end
+
+    test "With a non existing provider" do
+      assert Services.available_services_by_provider("non_existing") == {:ok, []}
+    end
   end
 
   test "Services.service/1" do
