@@ -11,7 +11,12 @@ defmodule Unisonui.MixProject do
     ]
 
   defp providers,
-    do: [git_provider: :permanent, container_provider: :permanent, webhook_provider: :permanent]
+    do: [
+      git_provider: :permanent,
+      container_provider: :permanent,
+      consul_provider: :permanent,
+      webhook_provider: :permanent
+    ]
 
   defp providers_apps(:all), do: common_apps() ++ providers()
   defp providers_apps(provider), do: [{provider, :permanent} | common_apps()]
@@ -48,6 +53,7 @@ defmodule Unisonui.MixProject do
         unisonui_git_provider: provider_release(:git_provider),
         unisonui_container_provider: provider_release(:container_provider),
         unisonui_webhook_provider: provider_release(:webook_provider),
+        unisonui_consul_provider: provider_release(:consul_provider),
         unisonui: [
           steps: [&npm_deploy/1, :assemble],
           applications: all_apps(),
