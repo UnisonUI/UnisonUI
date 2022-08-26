@@ -75,7 +75,7 @@ defmodule ContainerProvider.Kubernetes.SourceTest do
           id: @id1,
           metadata: %Service.Metadata{
             file: "openapi.yaml",
-            provider: "container"
+            provider: "kubernetes"
           },
           name: "test",
           use_proxy: false
@@ -90,7 +90,7 @@ defmodule ContainerProvider.Kubernetes.SourceTest do
           id: @id2,
           metadata: %Service.Metadata{
             file: "openapi.yaml",
-            provider: "container"
+            provider: "kubernetes"
           },
           name: "test",
           use_proxy: false

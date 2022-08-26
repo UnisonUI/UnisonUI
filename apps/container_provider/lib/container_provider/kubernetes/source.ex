@@ -56,14 +56,16 @@ defmodule ContainerProvider.Kubernetes.Source do
                   Specifications.retrieve_specification(
                     id,
                     service_name,
+                    "kubernetes",
                     openapi && Keyword.put(openapi, :type, :openapi)
                   ),
                   Specifications.retrieve_specification(
                     id,
                     service_name,
+                    "kubernetes",
                     asyncapi && Keyword.put(asyncapi, :type, :asyncapi)
                   ),
-                  Specifications.retrieve_specification(id, service_name, grpc)
+                  Specifications.retrieve_specification(id, service_name, grpc, "kubernetes")
                 ]
                 |> Enum.reject(&is_nil/1)
                 |> Enum.map(&%Event.Up{service: &1})

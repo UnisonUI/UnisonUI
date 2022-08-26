@@ -7,7 +7,7 @@ defmodule ContainerProvider.SpecificationTest do
 
   describe "retrieve_specification/3 from OpenAPI or AsyncAPI" do
     test_with_mock "couldn't retrieve data", HttpClient, download_file: fn _endpoint -> nil end do
-      assert Specifications.retrieve_specification("test", "service",
+      assert Specifications.retrieve_specification("test", "service", "container",
                type: :openapi,
                endpoint: "http://localhost/openapi.yaml",
                use_proxy: false
@@ -17,7 +17,7 @@ defmodule ContainerProvider.SpecificationTest do
     test_with_mock "retrieving openapi data", HttpClient,
       download_file: fn _endpoint -> "data" end do
       result =
-        Specifications.retrieve_specification("test", "service",
+        Specifications.retrieve_specification("test", "service", "container",
           type: :openapi,
           endpoint: "http://localhost/openapi.yaml",
           use_proxy: false
@@ -35,7 +35,7 @@ defmodule ContainerProvider.SpecificationTest do
     test_with_mock "retrieving asyncapi data", HttpClient,
       download_file: fn _endpoint -> "data" end do
       result =
-        Specifications.retrieve_specification("test", "service",
+        Specifications.retrieve_specification("test", "service", "container",
           type: :asyncapi,
           endpoint: "http://localhost/asyncapi.yaml",
           use_proxy: false
@@ -53,7 +53,7 @@ defmodule ContainerProvider.SpecificationTest do
   describe "retrieve_specification/3 from GRPC" do
     test_with_mock "couldn't retrieve data", GRPC.Reflection,
       load_schema: fn _endpoint -> {:error, GRPC.Error.new(2, "error")} end do
-      assert Specifications.retrieve_specification("test", "service",
+      assert Specifications.retrieve_specification("test", "service", "container",
                address: "localhost",
                port: 80,
                use_tls: false
@@ -63,7 +63,7 @@ defmodule ContainerProvider.SpecificationTest do
     test_with_mock "retrieving data", GRPC.Reflection,
       load_schema: fn _endpoint -> {:ok, "data"} end do
       result =
-        Specifications.retrieve_specification("test", "service",
+        Specifications.retrieve_specification("test", "service", "container",
           address: "localhost",
           port: 80,
           use_tls: false

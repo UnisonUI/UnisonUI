@@ -60,7 +60,7 @@ defmodule ContainerProvider.Docker.SourceTest do
         id: @id,
         metadata: %Service.Metadata{
           file: "openapi.yaml",
-          provider: "container"
+          provider: "docker"
         },
         name: @service_name,
         use_proxy: false

@@ -20,7 +20,8 @@ defmodule ContainerProvider.Docker.Source do
   end
 
   Services.wait_for_storage do
-    with {:ok, _} <- EventsClient.start_link(state),
+    with _ <- clean_old_services(),
+         {:ok, _} <- EventsClient.start_link(state),
          {:ok, _} <- GetClient.start_link(state) do
       _ = watch_events()
       Logger.debug("Docker source started")
@@ -36,6 +37,14 @@ defmodule ContainerProvider.Docker.Source do
 
   @impl true
   def terminate(reason, _), do: reason
+
+  defp clean_old_services do
+    with {:ok, services} <- Services.available_services_by_provider("docker") do
+      services
+      |> Enum.into([], fn %{id: id} -> %Event.Down{id: id} end)
+      |> Services.dispatch_events()
+    end
+  end
 
   @impl true
   def handle_info({:stream, {:status, status}}, _state) when status < 400,
@@ -87,14 +96,16 @@ defmodule ContainerProvider.Docker.Source do
         Specifications.retrieve_specification(
           id,
           service_name,
+          "docker",
           openapi && Keyword.put(openapi, :type, :openapi)
         ),
         Specifications.retrieve_specification(
           id,
           service_name,
+          "docker",
           asyncapi && Keyword.put(asyncapi, :type, :asyncapi)
         ),
-        Specifications.retrieve_specification(id, service_name, grpc)
+        Specifications.retrieve_specification(id, service_name, grpc, "docker")
       ]
       |> Enum.reject(&is_nil/1)
       |> Enum.map(&%Event.Up{service: &1})
