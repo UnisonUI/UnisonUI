@@ -10,15 +10,23 @@ defmodule ContainerProvider.Kubernetes.Source do
   def init(polling_interval), do: Services.init_wait_for_storage(polling_interval)
 
   Services.wait_for_storage do
-    case K8s.Conn.from_service_account() do
-      {:ok, conn} ->
-        send(self(), :list_services)
-        {:noreply, {conn, MapSet.new(), state}}
-
+    with {:ok, conn} <- K8s.Conn.from_service_account(),
+         _ <- clean_old_services() do
+      send(self(), :list_services)
+      {:noreply, {conn, MapSet.new(), state}}
+    else
       {:error, reason} ->
         reason = if is_exception(reason), do: Exception.message(reason), else: inspect(reason)
         Logger.warn("Kubernetes source failed to start: #{reason}")
         {:stop, :normal, state}
+    end
+  end
+
+  defp clean_old_services do
+    with {:ok, services} <- Services.available_services_by_provider("kubernetes") do
+      services
+      |> Enum.into([], &%Event.Down{id: &1.id})
+      |> Services.dispatch_events()
     end
   end
 

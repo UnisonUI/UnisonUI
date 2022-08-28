@@ -41,7 +41,7 @@ defmodule ContainerProvider.Docker.Source do
   defp clean_old_services do
     with {:ok, services} <- Services.available_services_by_provider("docker") do
       services
-      |> Enum.into([], fn %{id: id} -> %Event.Down{id: id} end)
+      |> Enum.into([], &%Event.Down{id: &1.id})
       |> Services.dispatch_events()
     end
   end
