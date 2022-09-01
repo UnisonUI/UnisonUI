@@ -61,7 +61,7 @@
     "postcss-nested": "^4.2.3",
     "postcss-preset-env": "^6.3.0",
     "postcss-url": "^8.0.0",
-    "react-burger-menu": "^3.0.3",
+    "react-burger-menu": "^3.0.8",
     "react-feather": "^2.0.9",
     "react-syntax-highlighter": "^15.4.3",
     "rimraf": "^3.0.1",
