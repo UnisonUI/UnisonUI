@@ -72,6 +72,7 @@ grpc:
 
   test "there is a failure with a git command", context do
     repo = %Repository{context.repo | branch: "i-do-not-exist"}
+    IO.inspect(repo)
     _ = start_git(repo)
     refute_receive _, 1_000
     stop_git(repo)
