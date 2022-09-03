@@ -63,7 +63,6 @@ defmodule Unisonui.MixProject do
         flags: [
           "-Wunmatched_returns",
           "-Werror_handling",
-          "-Wrace_conditions",
           "-Wno_opaque",
           "-Wunderspecs"
         ]
