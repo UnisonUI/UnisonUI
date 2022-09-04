@@ -14,17 +14,6 @@ openapi:
   specifications:
     - test2
 /
-  @grpc_specs ~s/version: "2"
-openapi:
-  specifications:
-    - test
-grpc:
-  servers:
-    - address: 127.0.0.1
-      port: 8080
-  protobufs:
-    "helloworld.proto": {}
-/
 
   defp expected_event_up(id, file \\ nil),
     do: %Event.Up{
@@ -74,14 +63,12 @@ grpc:
     repo = %Repository{context.repo | branch: "i-do-not-exist"}
     _ = start_git(repo)
     refute_receive _, 1_000
-    stop_git(repo)
   end
 
   describe "retrieving files from git" do
     test "there is no matching files", context do
       _ = start_git(context.repo)
       refute_receive _, 1_000
-      stop_git(context.repo)
     end
   end
 
@@ -131,8 +118,6 @@ grpc:
                        }
                      },
                      1_000
-
-      stop_git(context.repo)
     end
 
     test "a file has been deleted", context do
@@ -144,7 +129,6 @@ grpc:
 
       {_, 0} = LocalGit.rm(context.local_git, "test")
       assert_receive @event_down, 1_000
-      stop_git(context.repo)
     end
   end
 
@@ -152,6 +136,4 @@ grpc:
     start_supervised!({AggregatorStub, self()})
     start_supervised!({Server, repo})
   end
-
-  defp stop_git(repo), do: stop_supervised!({Git, repo.name})
 end
