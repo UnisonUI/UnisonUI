@@ -2,7 +2,7 @@ name: Docusaurus
 on:
   push:
     branches: ["master"]
-    paths: ["website/**"]
+    paths: ["docsite/**"]
   workflow_dispatch:
 jobs:
   publish:
@@ -16,7 +16,7 @@ jobs:
           node-version: "18"
       - name: Build Docusaurus website
         run: |
-          cd website
+          cd docsite
           npm install
           npm run build
       - name: Deploy to GitHub Pages
@@ -25,7 +25,7 @@ jobs:
         with:
           target_branch: master
           repo: UnisonUI/unisonui.github.io
-          build_dir: website/build
+          build_dir: docsite/build
           fqdn: unisonui.tech
         env:
           GH_PAT: ${{ secrets.TOKEN }}

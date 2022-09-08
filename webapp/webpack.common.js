@@ -10,7 +10,7 @@ module.exports = {
     main: path.join(__dirname, "src", "index.js"),
   },
   output: {
-    path: path.join(__dirname, "..", "priv", "statics"),
+    path: path.join(__dirname, "..", "apps", "unison_ui", "priv", "statics"),
     publicPath: "/statics/",
   },
   optimization: {

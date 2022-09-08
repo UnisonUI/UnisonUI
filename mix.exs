@@ -71,7 +71,7 @@ defmodule Unisonui.MixProject do
   end
 
   def alias() do
-    webapp = ["apps", "unison_ui", "webapp"] |> Path.join() |> Path.expand()
+    webapp = Path.expand("webapp")
 
     [
       "npm.install": System.cmd("npm", ["install"], cd: webapp),
@@ -90,7 +90,7 @@ defmodule Unisonui.MixProject do
 
   def npm_deploy(release) do
     env = Mix.env() |> to_string() |> String.downcase()
-    webapp = ["apps", "unison_ui", "webapp"] |> Path.join() |> Path.expand()
+    webapp = Path.expand("webapp")
     System.cmd("npm", ["install"], cd: webapp) |> elem(0) |> Mix.shell().info()
     System.cmd("npm", ["run", "build:#{env}"], cd: webapp) |> elem(0) |> Mix.shell().info()
     release
