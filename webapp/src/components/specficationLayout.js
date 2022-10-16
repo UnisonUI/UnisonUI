@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { fetchService } from "../features";
+import { resolveRef } from "../utils";
 import { Authentication, Info, Operations, Servers } from "./layout";
 
 export default function SpecficationLayout({ id }) {
@@ -21,7 +22,9 @@ export default function SpecficationLayout({ id }) {
     }
   });
   const spec = service.spec;
-
+  console.log(spec);
+  const a = resolveRef(spec);
+  console.log(a);
   return (
     <section className="layout" ref={layoutRef}>
       <Info info={spec.info} />

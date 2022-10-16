@@ -33,7 +33,7 @@ export const Operations = ({ service }) => {
   }, [location.hash]);
 
   const spec = service.spec;
-  console.log(spec);
+
   const getTag = (tag) =>
     (spec.tags && spec.tags.find(({ name }) => name === tag)) || {
       name: tag,

@@ -14,8 +14,8 @@ export const Parameters = ({ parameters }) => {
       );
     })
     .groupBy((param) => param.in);
-  console.log(parametersByType);
-  console.log(paramsType);
+  // console.log(parametersByType);
+  // console.log(paramsType);
   return (
     <div>
       {paramsType.map(
