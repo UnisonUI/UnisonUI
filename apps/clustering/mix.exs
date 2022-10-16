@@ -28,7 +28,7 @@ defmodule Clustering.MixProject do
   defp deps do
     [
       {:libcluster, "~> 3.3.1"},
-      {:horde, "~> 0.8.6"},
+      {:horde, "~> 0.8.7"},
       {:libcluster_gce_strategy, "~> 0.1", only: :prod},
       {:libcluster_ec2, "~> 0.1",
        only: :prod, github: "UnisonUI/libcluster_ec2", branch: "master", only: :prod}

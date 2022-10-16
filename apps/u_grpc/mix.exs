@@ -31,9 +31,9 @@ defmodule GRPC.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:jason, "~> 1.3"},
+      {:jason, "~> 1.4"},
       {:castore, "~> 0.1.15"},
-      {:protox, "~> 1.6.10"},
+      {:protox, "~> 1.7.1", github: "MaethorNaur/protox", branch: "master"},
       {:mint, "~> 1.4", override: true},
       {:grpc, "~> 0.5.0-beta.1", only: :test},
       {:cowboy, "~> 2.9", only: :test, override: true},

@@ -12,7 +12,7 @@ defmodule GitProvider.Git.Events.Upsert do
           }
     defstruct [:type, :path, :content, :specs, :repository]
 
-    defimpl Services.Event.From, for: __MODULE__ do
+    defimpl Services.Event.From, for: GitProvider.Git.Events.Upsert.AsyncOpenApi do
       alias GitProvider.Git.Events.Upsert
       alias GitProvider.Git.Repository
       alias GitProvider.Git.Configuration.AsyncOpenApi.Specification
@@ -53,7 +53,7 @@ defmodule GitProvider.Git.Events.Upsert do
       end
     end
 
-    defimpl GitProvider.Git.Events.ContentLoader, for: __MODULE__ do
+    defimpl GitProvider.Git.Events.ContentLoader, for: GitProvider.Git.Events.Upsert.AsyncOpenApi do
       alias GitProvider.Git.Events.Upsert
       require OK
 
@@ -76,7 +76,7 @@ defmodule GitProvider.Git.Events.Upsert do
           }
     defstruct [:path, :schema, :specs, :repository]
 
-    defimpl Services.Event.From, for: __MODULE__ do
+    defimpl Services.Event.From, for: GitProvider.Git.Events.Upsert.Grpc do
       alias GitProvider.Git.Events.Upsert
       alias GitProvider.Git.Repository
       alias GitProvider.Git.Configuration.Grpc.Specification
@@ -110,7 +110,7 @@ defmodule GitProvider.Git.Events.Upsert do
       end
     end
 
-    defimpl GitProvider.Git.Events.ContentLoader, for: __MODULE__ do
+    defimpl GitProvider.Git.Events.ContentLoader, for: GitProvider.Git.Events.Upsert.Grpc do
       alias GitProvider.Git.Events.Upsert
       require OK
 

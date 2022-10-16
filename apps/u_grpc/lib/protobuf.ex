@@ -9,8 +9,8 @@ defmodule GRPC.Protobuf do
       _ <- File.stat(path)
       protoset <- run_protoc(path)
 
-      %GRPC.Protobuf.FileDescriptorSet{file: files} <-
-        GRPC.Protobuf.FileDescriptorSet.decode(protoset)
+      %Protox.Google.Protobuf.FileDescriptorSet{file: files} <-
+        Protox.Google.Protobuf.FileDescriptorSet.decode(protoset)
 
       schema = to_schema(files)
     after
@@ -21,7 +21,7 @@ defmodule GRPC.Protobuf do
   def from_file_descriptors(file_descriptors) do
     files =
       Enum.reduce_while(file_descriptors, {:ok, []}, fn bytes, {_, files} ->
-        case GRPC.Protobuf.FileDescriptorProto.decode(bytes) do
+        case Protox.Google.Protobuf.FileDescriptorProto.decode(bytes) do
           {:ok, file_descriptor} -> {:cont, {:ok, [file_descriptor | files]}}
           error -> {:halt, error}
         end
@@ -113,7 +113,7 @@ defmodule GRPC.Protobuf do
   defp decode_descriptors([], _package, result), do: result
 
   defp decode_descriptors(
-         [%GRPC.Protobuf.ServiceDescriptorProto{method: method, name: name} | tail],
+         [%Protox.Google.Protobuf.ServiceDescriptorProto{method: method, name: name} | tail],
          package,
          result
        ) do
@@ -144,7 +144,7 @@ defmodule GRPC.Protobuf do
   end
 
   defp decode_descriptors(
-         [%GRPC.Protobuf.EnumDescriptorProto{value: values, name: name} | tail],
+         [%Protox.Google.Protobuf.EnumDescriptorProto{value: values, name: name} | tail],
          package,
          result
        ) do
@@ -160,7 +160,7 @@ defmodule GRPC.Protobuf do
 
   defp decode_descriptors(
          [
-           %GRPC.Protobuf.DescriptorProto{
+           %Protox.Google.Protobuf.DescriptorProto{
              field: fields,
              name: name,
              options: options,

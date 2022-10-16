@@ -2,7 +2,7 @@ defmodule GitProvider.Git.Events.Delete do
   @type t :: %__MODULE__{path: String.t(), repository: GitProvider.Git.Repository.t()}
   defstruct [:path, :repository]
 
-  defimpl Services.Event.From, for: __MODULE__ do
+  defimpl Services.Event.From, for: GitProvider.Git.Events.Delete do
     alias GitProvider.Git.Events.Delete
     alias GitProvider.Git.Repository
     alias Services.Event
@@ -13,7 +13,7 @@ defmodule GitProvider.Git.Events.Delete do
     end
   end
 
-  defimpl GitProvider.Git.Events.ContentLoader, for: __MODULE__ do
+  defimpl GitProvider.Git.Events.ContentLoader, for: GitProvider.Git.Events.Delete do
     def load_content(event), do: {:ok, event}
   end
 end

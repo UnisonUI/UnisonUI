@@ -30,12 +30,12 @@ defmodule Services.MixProject do
 
   defp deps do
     [
-      {:gen_stage, "~> 1.0"},
+      {:gen_stage, "~> 1.1"},
       {:ok, "~> 2.3"},
-      {:type_check, "~> 0.12.1", github: "MaethorNaur/elixir-type_check", branch: "master"},
-      {:ra, "~> 2.0.4"},
+      {:type_check, "~> 0.12.4", github: "MaethorNaur/elixir-type_check", branch: "master"},
+      {:ra, "~> 2.3"},
       {:logstash_logger_formatter, "~> 1.1"},
-      {:jason, "~> 1.3"}
+      {:jason, "~> 1.4"}
     ]
   end
 end
