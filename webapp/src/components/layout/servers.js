@@ -1,16 +1,6 @@
 import React from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { setServerUrl, setVariables } from "../../features";
 
 export function Servers({ id, servers, type }) {
-  const dispatch = useDispatch();
-  const selectedServer = useSelector(
-    (state) => state.request[id] && state.request[id].server.url
-  );
-  const computedUrl = useSelector(
-    (state) => state.request[id] && state.request[id].server.computedUrl
-  );
-
   const serverComponents = [];
 
   if (servers && type !== "asyncapi") {
@@ -28,10 +18,6 @@ export function Servers({ id, servers, type }) {
               name="servers"
               id={componentId}
               value={server.url}
-              checked={selectedServer === server.url}
-              onChange={(event) =>
-                dispatch(setServerUrl(id, event.target.value))
-              }
             />
             <label htmlFor={componentId}>
               {server.url}
@@ -57,7 +43,6 @@ export function Servers({ id, servers, type }) {
         <h1 className="title">Servers</h1>
         <div className="section-content">
           <div className="selections">{serverComponents}</div>
-          <div className="selected">SELECTED: {computedUrl}</div>
         </div>
       </section>
     )
@@ -71,15 +56,9 @@ const VariablesWrap = ({ selectId, children }) => (
 );
 
 const Variables = ({ id, variables, component }) => {
-  const dispatch = useDispatch();
   const componentId = `${component}-variables`;
   const variableComponents = Object.entries(variables).map(
     ([name, variable]) => {
-      const onChange = (event) => {
-        const variables = {};
-        variables[name] = event.target.value;
-        dispatch(setVariables(id, variables));
-      };
       const selectId = `${componentId}-${name}`;
       const label = (
         <label htmlFor={selectId}>
@@ -91,12 +70,7 @@ const Variables = ({ id, variables, component }) => {
         return (
           <VariablesWrap key={selectId}>
             {label}
-            <input
-              type="text"
-              id={selectId}
-              value={variable.default}
-              onChange={onChange}
-            />
+            <input type="text" id={selectId} value={variable.default} />
           </VariablesWrap>
         );
       } else {
@@ -111,11 +85,7 @@ const Variables = ({ id, variables, component }) => {
         return (
           <VariablesWrap key={selectId}>
             {label}
-            <select
-              id={selectId}
-              onChange={onChange}
-              defaultValue={variable.default}
-            >
+            <select id={selectId} defaultValue={variable.default}>
               {items}
             </select>
           </VariablesWrap>

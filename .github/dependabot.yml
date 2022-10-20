@@ -3,12 +3,12 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
   - package-ecosystem: "mix"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
   - package-ecosystem: "npm"
-    directory: "/apps/unison_ui/webapp"
+    directory: "/webapp"
     schedule:
-      interval: "monthly"
+      interval: "weekly"

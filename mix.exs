@@ -101,9 +101,9 @@ defmodule Unisonui.MixProject do
       {:toml, "~> 0.6.2"},
       {:version_tasks, "~> 0.12.0", only: [:dev], runtime: false},
       {:credo, "~> 1.6", only: [:dev], runtime: false},
-      {:dialyxir, "~> 1.1.0", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.26", only: [:dev], runtime: false},
-      {:excoveralls, "~> 0.14", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.2.0", only: [:dev], runtime: false},
+      {:ex_doc, "~> 0.29", only: [:dev], runtime: false},
+      {:excoveralls, "~> 0.15", only: [:dev, :test], runtime: false},
       {:inch_ex, "~> 2.1.0-rc.1", only: [:dev, :test], runtime: false}
     ]
   end

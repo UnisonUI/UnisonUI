@@ -80,11 +80,6 @@ const HttpBasic = () => (
       <span className="font-bold">Bearer</span> followed by a space and a base64
       encoded string of <span className="font-bold">username:password</span>.
     </div>
-    <div>
-      <input type="text" placeholder="username" />{" "}
-      <input type="text" placeholder="password" />{" "}
-      <button className="badge blue">SET</button>
-    </div>
   </div>
 );
 
@@ -96,10 +91,6 @@ const HttpBearer = () => (
       <span className="font-bold">Bearer</span> followed by a space and a Token
       String.
     </div>
-    <div>
-      <input type="text" placeholder="api-token" />{" "}
-      <button className="badge blue">SET</button>
-    </div>
   </div>
 );
 
@@ -109,10 +100,6 @@ const OpenIdConnect = ({ security }) => (
       Send <span className="font-bold">{security.name}</span> in{" "}
       <span className="font-bold">{security.in}</span>
     </div>
-    <div>
-      <input type="text" placeholder="api-token" />{" "}
-      <button className="badge blue">SET</button>
-    </div>
   </div>
 );
 
@@ -121,10 +108,6 @@ const ApiKey = ({ security }) => (
     <div>
       Send <span className="font-bold">{security.name}</span> in{" "}
       <span className="font-bold">{security.in}</span>
-    </div>
-    <div>
-      <input type="text" placeholder="api-token" />{" "}
-      <button className="badge blue">SET</button>
     </div>
   </div>
 );
@@ -167,11 +150,12 @@ const Url = ({ url, name }) =>
 const Scopes = ({ scopes }) => (
   <div className="scopes">
     <h1>Scopes</h1>
-    {Object.entries(scopes).map(([scope, name]) => (
-      <label className="scope" key={scope} htmlFor={scope}>
-        <input type="checkbox" role="switch" id={scope} />
-        <span>{name}</span>
-      </label>
-    ))}
+    <ul>
+      {Object.entries(scopes).map(([scope, name]) => (
+        <li className="scope" key={scope}>
+          <span className="text-red-500">{scope}</span> <span>{name}</span>
+        </li>
+      ))}
+    </ul>
   </div>
 );

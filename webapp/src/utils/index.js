@@ -78,7 +78,7 @@ const resolveComponents = (components) => {
 
       for (const path in refs) {
         const ref = refs[path].replace(`#/components/${name}/`, "");
-        const cycled = isCycle(ref);
+        const cycled = false; //isCycle(ref);
         updateObject(
           correctedComponents[name][key],
           path,
