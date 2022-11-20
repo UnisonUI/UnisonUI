@@ -33,7 +33,7 @@ defmodule Services.MixProject do
       {:gen_stage, "~> 1.1"},
       {:ok, "~> 2.3"},
       {:type_check, "~> 0.12.4", github: "MaethorNaur/elixir-type_check", branch: "master"},
-      {:ra, "~> 2.3"},
+      {:ra, "~> 2.4"},
       {:logstash_logger_formatter, "~> 1.1"},
       {:jason, "~> 1.4"}
     ]
