@@ -26,7 +26,7 @@ defmodule Configuration.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:toml, "~> 0.6"},
+      {:toml, "~> 0.7"},
       {:logstash_logger_formatter, "~> 1.1"}
     ]
   end
