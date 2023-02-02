@@ -32,10 +32,10 @@ defmodule GRPC.MixProject do
   defp deps do
     [
       {:jason, "~> 1.4"},
-      {:castore, "~> 0.1.15"},
+      {:castore, "~> 0.1"},
       {:protox, "~> 1.7.1", github: "MaethorNaur/protox", branch: "master"},
       {:mint, "~> 1.4", override: true},
-      {:grpc, "~> 0.5.0-beta.1", only: :test},
+      {:grpc, "~> 0.5", only: :test},
       {:cowboy, "~> 2.9", only: :test, override: true},
       {:cowlib, "~> 2.11", only: :test, override: true},
       {:protobuf, "== 0.9.0", only: :test},

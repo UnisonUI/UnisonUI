@@ -27,8 +27,8 @@ defmodule Clustering.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:libcluster, "~> 3.3.1"},
-      {:horde, "~> 0.8.7"},
+      {:libcluster, "~> 3.3"},
+      {:horde, "~> 0.8"},
       {:libcluster_gce_strategy, "~> 0.1", only: :prod},
       {:libcluster_ec2, "~> 0.1",
        only: :prod, github: "UnisonUI/libcluster_ec2", branch: "master", only: :prod}

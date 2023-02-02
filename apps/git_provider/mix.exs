@@ -35,7 +35,7 @@ defmodule GitProvider.MixProject do
       {:clustering, in_umbrella: true},
       {:services, in_umbrella: true},
       {:logstash_logger_formatter, "~> 1.1"},
-      {:finch, "~> 0.14.0"},
+      {:finch, "~> 0.14"},
       {:jason, "~> 1.4"},
       {:horde, "~> 0.8.7"},
       {:type_check, "~> 0.12.4", github: "MaethorNaur/elixir-type_check", branch: "master"},
@@ -43,7 +43,7 @@ defmodule GitProvider.MixProject do
       {:ok, "~> 2.3"},
       {:neuron, "~> 5.0"},
       {:yaml_elixir, "~> 2.9"},
-      {:mock, "~> 0.3.6", only: :test}
+      {:mock, "~> 0.3", only: :test}
     ]
   end
 end
