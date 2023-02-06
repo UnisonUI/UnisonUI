@@ -2,12 +2,12 @@ defmodule GRPC.Protobuf do
   require OK
   alias GRPC.Protobuf.Structs.{Schema, MessageSchema, EnumSchema, Field, Service, Method}
 
-  def compile(path) do
-    path = Path.expand(path)
+  def compile(file) do
+    file = Path.expand(file)
 
     OK.for do
-      _ <- File.stat(path)
-      protoset <- run_protoc(path)
+      _ <- File.stat(file)
+      protoset <- run_protoc(file)
 
       %Protox.Google.Protobuf.FileDescriptorSet{file: files} <-
         Protox.Google.Protobuf.FileDescriptorSet.decode(protoset)
@@ -33,8 +33,8 @@ defmodule GRPC.Protobuf do
     end
   end
 
-  def compile!(path) do
-    case compile(path) do
+  def compile!(file) do
+    case compile(file) do
       {:ok, schema} -> schema
       {:error, ex} -> raise ex
     end
@@ -53,19 +53,25 @@ defmodule GRPC.Protobuf do
 
     cmd_args = ["--include_imports", "-o", outfile_path, "-I", include_path, proto_file]
 
-    ret =
-      case System.cmd("protoc", cmd_args, stderr_to_stdout: true) do
-        {_, 0} ->
-          {:ok, File.read!(outfile_path)}
+    try do
+      System.cmd("protoc", cmd_args, stderr_to_stdout: true)
+    catch
+      :error, :enoent ->
+        msg =
+          "protoc executable is missing. Please make sure Protocol Buffers " <>
+            "is installed and available system wide"
 
-        {msg, _} ->
-          msg = String.trim(msg)
-          {:error, GRPC.Protobuf.ProtocError.exception(msg)}
-      end
+        {:error, GRPC.Protobuf.ProtocError.exception(msg)}
+    else
+      {_, 0} ->
+        file_content = File.read!(outfile_path)
+        _ = File.rm(outfile_path)
+        {:ok, file_content}
 
-    _ = File.rm(outfile_path)
-
-    ret
+      {msg, _} ->
+        msg = String.trim(msg)
+        {:error, GRPC.Protobuf.ProtocError.exception(msg)}
+    end
   end
 
   @spec decode(
@@ -130,8 +136,8 @@ defmodule GRPC.Protobuf do
                      } ->
         %Method{
           name: name,
-          input_type: input_type |> String.trim_leading("."),
-          output_type: output_type |> String.trim_leading("."),
+          input_type: String.trim_leading(input_type, "."),
+          output_type: String.trim_leading(output_type, "."),
           server_streaming?: server_streaming,
           client_streaming?: client_streaming
         }
