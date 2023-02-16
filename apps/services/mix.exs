@@ -30,7 +30,7 @@ defmodule Services.MixProject do
 
   defp deps do
     [
-      {:gen_stage, "~> 1.1"},
+      {:gen_stage, "~> 1.2"},
       {:ok, "~> 2.3"},
       {:type_check, "~> 0.12.4", github: "MaethorNaur/elixir-type_check", branch: "master"},
       {:ra, "~> 2.4"},
