@@ -37,11 +37,11 @@ defmodule GitProvider.MixProject do
       {:logstash_logger_formatter, "~> 1.1"},
       {:finch, "~> 0.14"},
       {:jason, "~> 1.4"},
-      {:horde, "~> 0.8.7"},
+      {:horde, "~> 0.8"},
       {:type_check, "~> 0.12.4", github: "MaethorNaur/elixir-type_check", branch: "master"},
       {:durex, "~> 0.3"},
       {:ok, "~> 2.3"},
-      {:neuron, "~> 5.0"},
+      {:neuron, "~> 5.1"},
       {:yaml_elixir, "~> 2.9"},
       {:mock, "~> 0.3", only: :test}
     ]

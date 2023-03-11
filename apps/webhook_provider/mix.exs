@@ -30,10 +30,10 @@ defmodule WebhookProvider.MixProject do
       {:u_grpc, in_umbrella: true},
       {:logstash_logger_formatter, "~> 1.1"},
       {:jason, "~> 1.4"},
-      {:plug, "~> 1.13"},
-      {:plug_cowboy, "~> 2.5"},
+      {:plug, "~> 1.14"},
+      {:plug_cowboy, "~> 2.6"},
       {:cowboy, "~> 2.9", override: true},
-      {:cowlib, "~> 2.11", override: true}
+      {:cowlib, "~> 2.12", override: true}
     ]
   end
 end
