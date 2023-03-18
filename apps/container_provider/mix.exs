@@ -39,7 +39,7 @@ defmodule ContainerProvider.MixProject do
       {:durex, "~> 0.3"},
       {:ok, "~> 2.3"},
       {:mox, "~> 1.0", only: :test},
-      {:mock, "~> 0.3.7", only: :test},
+      {:mock, "~> 0.3", only: :test},
       {:bypass, "~> 2.1", only: :test},
       {:plug_cowboy, "~> 2.5", only: :test, override: true},
       {:cowboy, "~> 2.9", only: :test, override: true},
