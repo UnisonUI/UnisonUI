@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Set up Elixir
@@ -22,7 +22,7 @@ jobs:
           elixir-version: "1.14.3"
           otp-version: "25.3"
       - name: Restore dependencies cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             deps
@@ -33,7 +33,7 @@ jobs:
             ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-
             ${{ runner.os }}-mix-
       - name: Restore dependencies dialyzer
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: priv/plts
           key: ${{ runner.os }}-dialyzer-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-${{ hashFiles('priv/plts/dialyzer.plt') }}

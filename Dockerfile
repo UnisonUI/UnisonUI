@@ -1,6 +1,13 @@
-FROM alpine:3.16.0
+FROM alpine:3.17.2
+
+LABEL org.opencontainers.image.source=https://github.com/UnisonUI/UnisonUI
+LABEL org.opencontainers.image.description="UnisonUI"
+LABEL org.opencontainers.image.licenses=MIT
+
 ARG CONFD_VERSION=0.16.0
+
 RUN mkdir /app && chown -R nobody: /app
+
 WORKDIR /app
 ENV UNISON_UI_ROOT=/app
 
