@@ -100,7 +100,7 @@ defmodule Unisonui.MixProject do
     [
       {:toml, "~> 0.7"},
       {:version_tasks, "~> 0.12.0", only: [:dev], runtime: false},
-      {:credo, "~> 1.6", only: [:dev], runtime: false},
+      {:credo, "~> 1.7", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.2", only: [:dev], runtime: false},
       {:excoveralls, "~> 0.16", only: [:dev, :test], runtime: false}
     ]
