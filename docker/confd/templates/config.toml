@@ -14,44 +14,44 @@ hosts = [{{- range .}}
 {{- end}}
 ]
 {{- else -}}
-{{ if exists "/clustering/kubernetes/namespace" -}}
+  {{ if exists "/clustering/kubernetes/namespace" -}}
 provider = 'kubernetes'
 [clustering.kubernetes]
 service = '{{getv "/clustering/kubernetes/service" "unisonui"}}'
 application_name = '{{getv "/clustering/kubernetes/application" "unisonui"}}'
 namespace = '{{getv "/clustering/kubernetes/namespace"}}'
-{{- else -}}
-{{if exists "/clustering/gcp" -}}
+  {{- else -}}
+    {{if exists "/clustering/gcp" -}}
 provider = 'gcp'
 gcp = '{{getv "/clustering/gcp"}}'
-{{- else -}}
-{{ with ls "/clustering/aws" -}}
+    {{- else -}}
+      {{ with ls "/clustering/aws" -}}
 provider = 'aws'
 [clustering.aws]
 {{if exists "/clustering/aws/name"}}tag_name = '{{getv "/clustering/aws/name"}}'{{end}}
 {{if exists "/clustering/aws/value"}}tag_value = '{{getv "/clustering/aws/value"}}'{{end}}
 application_name = '{{getv "/clustering/aws/prefix" "unisonui"}}'
-{{- else -}}
+      {{- else -}}
 provider = false
-{{- end -}}
-{{- end -}}
-{{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
 {{end}}
 
 [services]
 {{if (or (exists "/storage/backend/raft/quorum") (gt (len (ls "/storage/backend/raft/hosts")) 0))}}
 storage_backend = 'Services.Storage.Raft'
 [services.raft]
-{{if exists "/storage/backend/raft/quorum"}}
+  {{if exists "/storage/backend/raft/quorum"}}
 quorum = {{getv "/storage/backend/raft/quorum"}}
-{{else}}
-{{with getvs "/storage/backend/raft/hosts/*" -}}
+  {{else}}
+    {{with getvs "/storage/backend/raft/hosts/*" -}}
 nodes = [{{- range .}}
   '{{.}}',
 {{- end}}
 ]
-{{end}}
-{{end}}
+    {{end}}
+  {{end}}
 {{- else -}}
 storage_backend = 'Services.Storage.Memory'
 {{end}}
@@ -69,18 +69,18 @@ enabled = false
 {{with ls "/provider/git" -}}
 enabled = true
 pull_interval = '{{getv "/provider/git/interval" "2h"}}'
-{{with ls "/provider/git/github" -}}
+  {{with ls "/provider/git/github" -}}
 [git_provider.github]
 api_uri = '{{getv "/provider/git/github/uri" "https://api.github.com/graphql"}}'
 api_token = '{{getv "/provider/git/github/token" ""}}'
 polling_interval = '{{getv "/provider/git/github/interval" "1h"}}'
-{{ with getvs "/provider/git/github/patterns/*" -}}
+    {{ with getvs "/provider/git/github/patterns/*" -}}
 patterns = [{{- range .}}
   '{{.}}',
 {{- end}}
 ]
-{{end}}
-{{end}}
+    {{end}}
+  {{end}}
 {{- else -}}
 enabled = false
 {{end}}
@@ -89,7 +89,7 @@ enabled = false
 {{with ls "/provider/container" -}}
 enabled = true
 
-{{with ls "/provider/container/labels" -}}
+  {{with ls "/provider/container/labels" -}}
 [container_provider.labels]
 service_name = '{{getv "/provider/container/labels/name" "unisonui.service-name"}}'
 
@@ -107,23 +107,23 @@ specification_path = '{{getv "/provider/container/labels/asyncapi/path" "unisonu
 [container_provider.labels.grpc]
 port = '{{getv "/provider/container/labels/grpc/port" "unisonui.grpc.port"}}'
 tls = '{{getv "/provider/container/labels/grpc/tls" "unisonui.grpc.tls"}}'
-{{end}}
+  {{end}}
 
 [container_provider.kubernetes]
-{{if exists "/provider/container/kubernetes" -}}
+  {{if exists "/provider/container/kubernetes" -}}
 enabled = true
 polling_interval = '{{getv "/provider/container/kubernetes"}}'
-{{- else -}}
+  {{- else -}}
 enabled = false
-{{end}}
+  {{end}}
 
 [container_provider.docker]
-{{if exists "/provider/container/docker" -}}
+  {{if exists "/provider/container/docker" -}}
 enabled = true
 host = '{{getv "/provider/container/docker"}}'
-{{- else -}}
+  {{- else -}}
 enabled = false
-{{end}}
+  {{end}}
 {{- else -}}
-enabled = false
+  enabled = false
 {{end}}
