@@ -81,7 +81,7 @@
     "axios": "^0.21.1",
     "eventsource": "^1.1.0",
     "postcss-debug": "^0.4.2",
-    "react": "^16.14.0",
+    "react": "^18.2.0",
     "react-dom": "^16.14.0",
     "react-konami-code": "^2.2.1",
     "react-router-dom": "^5.2.0",
