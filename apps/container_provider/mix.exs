@@ -45,7 +45,7 @@ defmodule ContainerProvider.MixProject do
       {:cowboy, "~> 2.9", only: :test, override: true},
       {:cowlib, "~> 2.11", only: :test, override: true},
       {:mint, "~> 1.5"},
-      {:k8s, "~> 2.1"},
+      {:k8s, "~> 2.2"},
       {:jason, "~> 1.4"}
     ]
   end
