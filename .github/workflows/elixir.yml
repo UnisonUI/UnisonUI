@@ -19,7 +19,8 @@ jobs:
         id: setup-beam
         uses: erlef/setup-beam@v1
         with:
-          hexpm-mirrors: https://cdn.jsdelivr.net/hex
+          hexpm-mirrors: |
+            https://cdn.jsdelivr.net/hex
           elixir-version: "1.14.4"
           otp-version: "26.0"
       - name: Restore dependencies cache
