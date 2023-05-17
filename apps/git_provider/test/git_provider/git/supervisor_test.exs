@@ -46,14 +46,6 @@ defmodule GitProvider.Git.SupervisorTest do
       [repository: %Repository{uri: "http://localhost/repo"}]
     end
 
-    test "provider disabled", context do
-      _ = start_supervisor()
-
-      Application.put_env(:git_provider, :enabled, false)
-      result = Supervisor.start_git(context.repository)
-      assert result == :ignore
-    end
-
     test "provider enabled", context do
       parent = self()
 
@@ -64,7 +56,6 @@ defmodule GitProvider.Git.SupervisorTest do
           send(parent, :event)
           :ok
         end do
-        Application.put_env(:git_provider, :enabled, true)
         result = Supervisor.start_git(context.repository)
         refute_receive :event
         assert match?({:ok, _}, result)

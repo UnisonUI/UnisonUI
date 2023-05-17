@@ -102,7 +102,8 @@ defmodule Unisonui.MixProject do
       {:version_tasks, "~> 0.12.0", only: [:dev], runtime: false},
       {:credo, "~> 1.7", only: [:dev], runtime: false},
       {:dialyxir, "~> 1.3", only: [:dev], runtime: false},
-      {:excoveralls, "~> 0.16", only: [:dev, :test], runtime: false}
+      {:excoveralls, "~> 0.16", only: [:dev, :test], runtime: false},
+      {:gradient, github: "esl/gradient", only: [:dev], runtime: false}
     ]
   end
 end

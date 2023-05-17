@@ -129,7 +129,7 @@ defmodule GRPC.Protobuf.Serde do
       end)
 
     [
-      Protox.Encode.make_key(number, :packed),
+      Protox.Encode.make_key_bytes(number, :packed),
       Protox.Encode.encode_uint32(len),
       value
     ]
@@ -144,7 +144,7 @@ defmodule GRPC.Protobuf.Serde do
         {:ok, data} ->
           [
             protobuf_binary,
-            Protox.Encode.make_key(number, wire_type),
+            Protox.Encode.make_key_bytes(number, wire_type),
             data
           ]
           |> :binary.list_to_bin()
@@ -199,10 +199,10 @@ defmodule GRPC.Protobuf.Serde do
             Protox.Encode.encode_bool(value)
 
           :string ->
-            Protox.Encode.encode_string(value) |> :binary.list_to_bin()
+            Protox.Encode.encode_string(value)
 
           :bytes ->
-            value |> Base.decode64!() |> Protox.Encode.encode_bytes() |> :binary.list_to_bin()
+            value |> Base.decode64!() |> Protox.Encode.encode_bytes()
 
           :enum ->
             value =

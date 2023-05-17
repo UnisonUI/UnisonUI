@@ -51,24 +51,18 @@ defmodule GitProvider.Git.Supervisor do
   @spec start_git(repository :: GitProvider.Git.Repository.t()) ::
           Supervisor.on_start_child()
   def start_git(repository) do
-    unless provider_enabled() do
-      :ignore
-    else
-      name =
-        repository.uri
-        |> URI.parse()
-        |> Map.get(:path)
-        |> String.trim_leading("/")
+    name =
+      repository.uri
+      |> URI.parse()
+      |> Map.get(:path)
+      |> String.trim_leading("/")
 
-      repository = %Repository{
-        repository
-        | name: name,
-          service_name: repository.service_name || name
-      }
+    repository = %Repository{
+      repository
+      | name: name,
+        service_name: repository.service_name || name
+    }
 
-      GitProvider.Git.Server.start_child(repository)
-    end
+    GitProvider.Git.Server.start_child(repository)
   end
-
-  defp provider_enabled, do: Application.fetch_env!(:git_provider, :enabled)
 end
