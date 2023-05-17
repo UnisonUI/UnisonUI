@@ -97,15 +97,16 @@ defmodule GRPC.Protobuf do
              message_type: message_type,
              package: package,
              enum_type: enum_type,
-             service: services
+             service: services,
+             syntax: syntax
            }
            | tail
          ],
          %Schema{messages: current_messages, enums: current_enums, services: current_services}
        ) do
-    {messages, enums} = decode_descriptors(message_type, package, {%{}, %{}})
-    enums = Map.merge(enums, decode_descriptors(enum_type, package, %{}))
-    services = decode_descriptors(services, package, %{})
+    {messages, enums} = decode_descriptors(message_type, package, syntax, {%{}, %{}})
+    enums = Map.merge(enums, decode_descriptors(enum_type, package, syntax, %{}))
+    services = decode_descriptors(services, package, syntax, %{})
 
     schema = %Schema{
       messages: Map.merge(current_messages, messages),
@@ -116,11 +117,26 @@ defmodule GRPC.Protobuf do
     to_schema(tail, schema)
   end
 
-  defp decode_descriptors([], _package, result), do: result
+  defp scalar_packed(:double, "proto3"), do: true
+  defp scalar_packed(:float, "proto3"), do: true
+  defp scalar_packed(:int64, "proto3"), do: true
+  defp scalar_packed(:uint64, "proto3"), do: true
+  defp scalar_packed(:int32, "proto3"), do: true
+  defp scalar_packed(:fixed64, "proto3"), do: true
+  defp scalar_packed(:fixed32, "proto3"), do: true
+  defp scalar_packed(:uint32, "proto3"), do: true
+  defp scalar_packed(:sfixed32, "proto3"), do: true
+  defp scalar_packed(:sfixed64, "proto3"), do: true
+  defp scalar_packed(:sint32, "proto3"), do: true
+  defp scalar_packed(:sint64, "proto3"), do: true
+  defp scalar_packed(_, _), do: false
+
+  defp decode_descriptors([], _package, _syntax, result), do: result
 
   defp decode_descriptors(
          [%Protox.Google.Protobuf.ServiceDescriptorProto{method: method, name: name} | tail],
          package,
+         syntax,
          result
        ) do
     full_name = full_name(package, name)
@@ -146,12 +162,13 @@ defmodule GRPC.Protobuf do
     result =
       Map.put(result, full_name, %Service{name: name, full_name: full_name, methods: method})
 
-    decode_descriptors(tail, package, result)
+    decode_descriptors(tail, package, syntax, result)
   end
 
   defp decode_descriptors(
          [%Protox.Google.Protobuf.EnumDescriptorProto{value: values, name: name} | tail],
          package,
+         syntax,
          result
        ) do
     full_name = full_name(package, name)
@@ -161,7 +178,7 @@ defmodule GRPC.Protobuf do
 
     enum = %EnumSchema{name: full_name, values: values}
     result = Map.put(result, full_name, enum)
-    decode_descriptors(tail, package, result)
+    decode_descriptors(tail, package, syntax, result)
   end
 
   defp decode_descriptors(
@@ -176,6 +193,7 @@ defmodule GRPC.Protobuf do
            | tail
          ],
          package,
+         syntax,
          {schemas, enums}
        ) do
     one_ofs =
@@ -220,7 +238,7 @@ defmodule GRPC.Protobuf do
           name: name,
           label: label,
           type: type,
-          packed: (options || %{}) |> Map.get(:packed, false),
+          packed: (options || %{}) |> Map.get(:packed, scalar_packed(type, syntax)),
           default: default_value,
           schema: type_name && String.trim_leading(type_name, "."),
           options: decode_options(options)
@@ -252,18 +270,19 @@ defmodule GRPC.Protobuf do
         one_ofs: oneofs
       })
 
-    {schemas, enums} = decode_descriptors(nested_type, full_name, {schemas, enums})
+    {schemas, enums} = decode_descriptors(nested_type, full_name, syntax, {schemas, enums})
 
     decode_descriptors(
       tail,
       package,
-      {schemas, Map.merge(enums, decode_descriptors(enum_type, package, %{}))}
+      syntax,
+      {schemas, Map.merge(enums, decode_descriptors(enum_type, package, syntax, %{}))}
     )
   end
 
   defp full_name("", name), do: name
   defp full_name(package, name), do: "#{package}.#{name}"
-  defp decode_options(nil), do: nil
+  defp decode_options(nil), do: %{}
 
   defp decode_options(struct),
     do:

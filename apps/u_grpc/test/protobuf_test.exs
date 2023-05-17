@@ -43,8 +43,8 @@ defmodule ProtobufTest do
       assert result == {:ok, <<10, 4, 116, 101, 115, 116, 16, 2>>}
     end
 
-    test "with a complex type" do
-      {:ok, schema} = Protobuf.compile("test/protobuf/complex.proto")
+    test "with a complex type using proto2" do
+      {:ok, schema} = Protobuf.compile("test/protobuf/complex_proto2.proto")
 
       result =
         Protobuf.encode(schema, "helloworld.Complex", %{
@@ -65,8 +65,31 @@ defmodule ProtobufTest do
                   1, 18, 2, 8, 2, 24, 1>>}
     end
 
+    test "with a complex type using proto3" do
+      {:ok, schema} = Protobuf.compile("test/protobuf/complex_proto3.proto")
+
+      result =
+        Protobuf.encode(schema, "helloworld.Complex", %{
+          "myEnum" => ["VALUE1", "VALUE2"],
+          "myMap" => %{"k" => "val", "o" => "a"},
+          "myBytes" => "dGVzdAo=",
+          "name" => "test",
+          "tree" => %{
+            "root" => true,
+            "children" => [%{"value" => 1, "children" => []}, %{"value" => 2, "children" => []}]
+          },
+          "myIntArray" => [1, 2, 3]
+        })
+
+      assert result ==
+               {:ok,
+                <<50, 5, 116, 101, 115, 116, 10, 18, 0, 18, 1, 58, 3, 1, 2, 3, 26, 8, 10, 1, 107,
+                  18, 3, 118, 97, 108, 26, 6, 10, 1, 111, 18, 1, 97, 10, 4, 116, 101, 115, 116,
+                  34, 10, 18, 2, 8, 1, 18, 2, 8, 2, 24, 1>>}
+    end
+
     test "missing required field" do
-      {:ok, schema} = Protobuf.compile("test/protobuf/complex.proto")
+      {:ok, schema} = Protobuf.compile("test/protobuf/complex_proto2.proto")
 
       result = Protobuf.encode(schema, "helloworld.Complex", %{"myInt" => 1})
       assert result == {:error, Protobuf.RequiredFieldError.exception("name")}
@@ -104,8 +127,8 @@ defmodule ProtobufTest do
                 }}
     end
 
-    test "with a complex type" do
-      {:ok, schema} = Protobuf.compile("test/protobuf/complex.proto")
+    test "with a complex type with proto2" do
+      {:ok, schema} = Protobuf.compile("test/protobuf/complex_proto2.proto")
 
       result =
         Protobuf.decode(
@@ -132,6 +155,38 @@ defmodule ProtobufTest do
                       %{"value" => 2, "children" => [], "root" => false}
                     ]
                   }
+                }}
+    end
+
+    test "with a complex type with proto3" do
+      {:ok, schema} = Protobuf.compile("test/protobuf/complex_proto3.proto")
+
+      result =
+        Protobuf.decode(
+          schema,
+          "helloworld.Complex",
+          <<50, 5, 116, 101, 115, 116, 10, 18, 0, 18, 1, 58, 3, 1, 2, 3, 26, 8, 10, 1, 107, 18, 3,
+            118, 97, 108, 26, 6, 10, 1, 111, 18, 1, 97, 10, 4, 116, 101, 115, 116, 34, 10, 18, 2,
+            8, 1, 18, 2, 8, 2, 24, 1>>
+        )
+
+      assert result ==
+               {:ok,
+                %{
+                  "myEnum" => ["VALUE1", "VALUE2"],
+                  "myMap" => %{"k" => "val", "o" => "a"},
+                  "myBytes" => "dGVzdAo=",
+                  "myInt" => 0,
+                  "name" => "test",
+                  "tree" => %{
+                    "root" => true,
+                    "value" => 0,
+                    "children" => [
+                      %{"value" => 1, "children" => [], "root" => false},
+                      %{"value" => 2, "children" => [], "root" => false}
+                    ]
+                  },
+                  "myIntArray" => [1, 2, 3]
                 }}
     end
 

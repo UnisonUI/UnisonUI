@@ -115,31 +115,30 @@ defmodule GRPC.Protobuf.Serde do
     [protobuf_binary, encoded] |> :binary.list_to_bin()
   end
 
-  defp find_wire_type(:message), do: :packed
-  defp find_wire_type(:enum), do: :packed
+  defp find_wire_type(:message), do: {:message, :packed}
+  defp find_wire_type(:enum), do: {:message, :packed}
   defp find_wire_type(type), do: type
 
   defp encode_packed_list(schema, type_name, number, type, value) do
     {value, len} =
-      Enum.reduce(value, {<<>>, 0}, fn value, {protobuf_binary, len} ->
+      Enum.reduce(value, {[], 0}, fn value, {protobuf_binary, len} ->
         case encode(type, value, schema, type_name) do
-          {:ok, data} -> {[protobuf_binary, data] |> :binary.list_to_bin(), len + 1}
+          {:ok, data} -> {[protobuf_binary, data], len + 1}
           _ -> {protobuf_binary, len}
         end
       end)
 
     [
-      Protox.Encode.make_key_bytes(number, :packed),
+      Protox.Encode.make_key_bytes(number, {:message, :packed}),
       Protox.Encode.encode_uint32(len),
       value
     ]
-    |> :binary.list_to_bin()
   end
 
   defp encode_list(schema, type_name, number, type, value) do
     wire_type = find_wire_type(type)
 
-    Enum.reduce(value, <<>>, fn value, protobuf_binary ->
+    Enum.reduce(value, [], fn value, protobuf_binary ->
       case encode(type, value, schema, type_name) do
         {:ok, data} ->
           [
@@ -147,7 +146,6 @@ defmodule GRPC.Protobuf.Serde do
             Protox.Encode.make_key_bytes(number, wire_type),
             data
           ]
-          |> :binary.list_to_bin()
 
         _ ->
           protobuf_binary
@@ -222,7 +220,7 @@ defmodule GRPC.Protobuf.Serde do
               end
 
             {:ok, value} = encode(schema, type_name, value)
-            [Protox.Varint.encode(byte_size(value)), value] |> :binary.list_to_bin()
+            [Protox.Varint.encode(byte_size(value)), value]
         end
 
       {:ok, data}
@@ -381,7 +379,11 @@ defmodule GRPC.Protobuf.Serde do
   defp list_to_map(value, _schema, nil), do: value
 
   defp list_to_map(value, schema, type_name) do
-    map? = Map.get(schema.messages[type_name].options || %{}, "map_entry")
+    map? =
+      schema.messages
+      |> Map.get(type_name, %{})
+      |> Map.get(:options, %{})
+      |> Map.get("map_entry")
 
     if map? do
       Enum.into(value, %{}, fn %{"key" => key, "value" => value} -> {key, value} end)
