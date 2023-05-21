@@ -22,7 +22,7 @@ $colors: orange, green, blue, red, purple, yellow;
 
     @apply py-4 mt-4;
 
-    ~ & {
+    & ~ & {
       @apply mt-0;
     }
 
@@ -39,7 +39,7 @@ $colors: orange, green, blue, red, purple, yellow;
         &.#{"" + $color} {
           .method {
             @apply font-semibold uppercase;
-            @apply text-#{""+$color}-500;
+            @apply text-#{"" + $color}-500;
           }
         }
       }
@@ -53,6 +53,15 @@ $colors: orange, green, blue, red, purple, yellow;
 
       .security {
         @apply flex justify-end content-center place-items-center;
+
+        .tooltip-text {
+          @apply bg-background;
+          @apply hidden;
+          @apply absolute top-7 right-0;
+          @apply border-primary border;
+          @apply p-2;
+          @apply text-sm w-96;
+        }
 
         .schemes {
           @apply flex;
@@ -71,15 +80,6 @@ $colors: orange, green, blue, red, purple, yellow;
               }
             }
           }
-        }
-
-        .tooltip-text {
-          @apply bg-background;
-          @apply hidden;
-          @apply absolute top-7 right-0;
-          @apply border-primary border;
-          @apply p-2;
-          @apply text-sm w-96;
         }
       }
     }

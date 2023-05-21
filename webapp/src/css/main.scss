@@ -1,50 +1,31 @@
-// @import "mixins";
-
-:root {
-  --background: #edf2f7;
-  --background-shadow: #99b5d2;
-  --background-highlight: #fff;
-  --primary: #1a202c;
-  --primary-shadow: #12161f;
-  --primary-highlight: #212837;
-}
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import "dark_mode";
+@import "forms";
+@import "header";
+@import "menu";
+@import "layout";
+@import "markdown";
+@import "components";
 
 *,
-*:after,
-*:before {
-  -webkit-box-sizing: border-box;
+*::after,
+*::before {
   box-sizing: border-box;
 }
 
 html {
   @apply h-full;
+
   scroll-behavior: smooth;
 }
 
 body {
   @apply font-body w-full h-full;
+
   margin: inherit;
 }
-
-.dark {
-  --background: #1a202c;
-  --background-shadow: #12161f;
-  --background-highlight: #212837;
-  --primary: #edf2f7;
-  --primary-shadow: #99b5d2;
-  --primary-highlight: #fff;
-}
-
-@import "forms.scss";
-@import "header.scss";
-@import "menu.scss";
-@import "layout.scss";
-@import "markdown.scss";
-@import "components.scss";
 
 #app {
   @apply h-full;
@@ -52,6 +33,7 @@ body {
 
 #no-service {
   @apply absolute text-6xl font-black;
+
   left: 25%;
   top: 50%;
 }
@@ -66,6 +48,7 @@ body {
   @apply flex flex-col lg:flex-row;
   @apply relative;
   @apply overflow-hidden h-full w-full;
+
   .content {
     @apply relative w-full;
     @apply overflow-x-hidden overflow-y-auto;

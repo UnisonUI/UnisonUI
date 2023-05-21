@@ -8,7 +8,7 @@
     @apply w-full;
     @apply text-4xl lg:text-2xl;
 
-    .themeSwitch {
+    .theme-switch {
       svg {
         @apply hover:stroke-red-700;
       }

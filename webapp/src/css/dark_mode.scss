@@ -1,0 +1,17 @@
+:root {
+  --background: #edf2f7;
+  --background-shadow: #99b5d2;
+  --background-highlight: #fff;
+  --primary: #1a202c;
+  --primary-shadow: #12161f;
+  --primary-highlight: #212837;
+}
+
+.dark {
+  --background: #1a202c;
+  --background-shadow: #12161f;
+  --background-highlight: #212837;
+  --primary: #edf2f7;
+  --primary-shadow: #99b5d2;
+  --primary-highlight: #fff;
+}

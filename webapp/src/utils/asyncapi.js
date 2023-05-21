@@ -1,13 +1,15 @@
-import { parse, registerSchemaParser } from "@asyncapi/parser";
-import avroSchemaParser from "@asyncapi/avro-schema-parser";
-import openapiSchemaParser from "@asyncapi/openapi-schema-parser";
+import { Parser } from "@asyncapi/parser";
+import { AvroSchemaParser } from "@asyncapi/avro-schema-parser";
+import { OpenAPISchemaParser } from "@asyncapi/openapi-schema-parser";
 import capitalize from "lodash-es/capitalize";
 
-registerSchemaParser(openapiSchemaParser);
-registerSchemaParser(avroSchemaParser);
+const parser = new Parser();
+parser.registerSchemaParser(OpenAPISchemaParser());
+parser.registerSchemaParser(AvroSchemaParser());
 
 export async function parseAsyncAPI(input) {
-  return parse(input);
+  const { document } = await parser.parse(input);
+  return document.json();
 }
 
 export function extractAsyncAPIOperations(spec) {

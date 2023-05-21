@@ -6,9 +6,10 @@
     @apply flex flex-col;
     @apply w-full h-96 lg:w-96;
 
-    @media (min-width: 1024px) {
+    @screen lg {
       height: calc(100vh - 40px);
     }
+
     @apply bg-background-highlight;
 
     .links {
@@ -24,6 +25,7 @@
     .menu-operation {
       @apply transition-all duration-300;
       @apply max-h-screen overflow-hidden;
+
       &.closed {
         @apply max-h-0;
       }

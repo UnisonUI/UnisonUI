@@ -1,28 +1,5 @@
-.unisonui {
-  .layout {
-    @apply flex flex-col;
-
-    .title {
-      @apply text-2xl mb-2;
-    }
-
-    .section {
-      @apply py-8 px-16;
-      & > .section {
-        @apply px-0;
-      }
-      .title {
-        @apply uppercase text-xl;
-      }
-
-      .section-content {
-        @apply border p-4 flex flex-col space-y-4;
-      }
-    }
-  }
-}
-
-@import "./layout/info.scss";
-@import "./layout/servers.scss";
-@import "./layout/secuity.scss";
-@import "./layout/operations.scss";
+@import "./layout/default";
+@import "./layout/info";
+@import "./layout/servers";
+@import "./layout/secuity";
+@import "./layout/operations";

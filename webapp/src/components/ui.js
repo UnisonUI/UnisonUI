@@ -144,7 +144,7 @@ export default function UnisonUILayout() {
       />
       <header className="header">
         <div className="logo">UnisonUI</div>
-        <button className="themeSwitch" onClick={_toggleTheme}>
+        <button className="theme-switch" onClick={_toggleTheme}>
           {isDarkMode ? <Sun size={42} /> : <Moon size={42} />}
         </button>
       </header>

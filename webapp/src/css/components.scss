@@ -7,11 +7,13 @@ $colors: orange, green, blue, red, purple, yellow;
 .badge {
   @apply font-bold no-underline text-xs uppercase rounded px-3 py-1;
   @apply border border-solid;
+
   @each $color in $colors {
     &.#{"" + $color} {
-      @apply border-#{""+$color}-300 hover:bg-#{""+$color}-300 hover:text-#{""+$color}-600 text-#{""+$color}-500;
+      @apply border-#{"" + $color}-300 hover:bg-#{"" + $color}-300 hover:text-#{"" + $color}-600 text-#{"" + $color}-500;
+
       &.plain {
-        @apply bg-#{""+$color}-300 text-#{""+$color}-600;
+        @apply bg-#{"" + $color}-300 text-#{"" + $color}-600;
       }
     }
   }

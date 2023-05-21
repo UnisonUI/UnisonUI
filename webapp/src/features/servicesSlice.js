@@ -74,7 +74,7 @@ export const handleEvent = (data) => (dispatch) => {
         case "asyncapi":
           parseAsyncAPI(data.content)
             .then((spec) => {
-              data.spec = spec._json;
+              data.spec = spec;
               dispatch(add(data));
             })
             .catch((error) =>

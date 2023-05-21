@@ -13,29 +13,7 @@ module.exports = {
     path: path.join(__dirname, "..", "apps", "unison_ui", "priv", "statics"),
     publicPath: "/statics/",
   },
-  optimization: {
-    splitChunks: {
-      automaticNameDelimiter: "-",
-      chunks: "all",
-      cacheGroups: {
-        react: {
-          test: /[\\/]node_modules[\\/](preact|react-router-dom|@reduxjs\/toolkit)[\\/]/,
-          name: "react",
-          chunks: "all",
-        },
-        asyncapi: {
-          test: /[\\/]node_modules[\\/]@asyncapi.+[\\/]/,
-          name: "asyncapi",
-          chunks: "all",
-        },
-        openapi: {
-          test: /[\\/]node_modules[\\/]@redocly.+[\\/]/,
-          name: "openapi",
-          chunks: "all",
-        },
-      },
-    },
-  },
+  optimization: {},
   resolve: {
     roots: [path.resolve(__dirname)],
     extensions: [".ts", ".tsx", ".js", ".mjs", ".json"],
@@ -46,7 +24,10 @@ module.exports = {
       "react/jsx-runtime": "preact/jsx-runtime",
     },
     fallback: {
-      fs: path.resolve(__dirname, "src/empty.js"),
+      fs: false,
+      path: false,
+      util: false,
+      buffer: require.resolve("buffer/"),
     },
   },
   module: {
@@ -58,6 +39,7 @@ module.exports = {
       {
         loader: "babel-loader",
         test: /\.jsx?$/,
+        exclude: /node_modules/,
         options: {
           retainLines: true,
           cacheDirectory: true,
