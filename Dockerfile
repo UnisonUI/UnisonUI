@@ -1,4 +1,4 @@
-FROM alpine:3.18.0
+FROM alpine:3.18.2
 
 LABEL org.opencontainers.image.source=https://github.com/UnisonUI/UnisonUI
 LABEL org.opencontainers.image.description="UnisonUI"
