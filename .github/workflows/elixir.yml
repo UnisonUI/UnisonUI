@@ -1,0 +1,55 @@
+name: Elixir CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Elixir
+        id: setup-beam
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.15.2"
+          otp-version: "26.0.2"
+      - name: Restore dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-
+            ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-
+            ${{ runner.os }}-mix-
+      - name: Restore dependencies dialyzer
+        uses: actions/cache@v3
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-dialyzer-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-${{ hashFiles('priv/plts/dialyzer.plt') }}
+          restore-keys: |
+            ${{ runner.os }}-dialyzer-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-
+            ${{ runner.os }}-dialyzer-${{ steps.setup-beam.outputs.otp-version }}-
+            ${{ runner.os }}-dialyzer-
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          version: "3.x"
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Run dialyzer
+        run: mix dialyzer
+      - name: Run tests
+        run: mix coveralls.json -u
+      - name: Codecov
+        uses: codecov/codecov-action@v1.0.13

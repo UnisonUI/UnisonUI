@@ -1,4 +1,0 @@
-googleAnalytics = "G-E765F5MQF7"
-
-[build]
-  writeStats = true

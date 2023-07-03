@@ -1,0 +1,23 @@
+syntax = "proto3";
+package helloworld;
+
+message Complex {
+  string name = 1;
+  repeated Enum myEnum = 2;
+  map<string, string> myMap = 3;
+  Node tree = 4;
+  int32 myInt = 5;
+  bytes myBytes = 6;
+  repeated int32 myIntArray = 7 [ packed = true ];
+}
+
+message Node {
+  int32 value = 1;
+  repeated Node children = 2;
+  bool root = 3;
+}
+
+enum Enum {
+  VALUE1 = 0;
+  VALUE2 = 1;
+}

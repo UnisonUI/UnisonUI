@@ -1,0 +1,49 @@
+asyncapi: 2.4.0
+info:
+  title: UnisonUI
+  description: >
+    UnisonUI is a webapp which gather all your OpenApi, AsyncAPI and gRPC specifications in one place
+  license:
+    name: MIT
+    url: https://raw.githubusercontent.com/UnisonUI/unisonui/master/LICENSE
+  version: 2.0.0
+channels:
+  /ws:
+    subscribe:
+      description: Websocket endpoint for server pushing new events
+      message:
+        title: Event
+        name: Event
+        payload:
+          type: object
+          required:
+            - id
+            - event
+            - type
+            - name
+            - metadata
+          properties:
+            id:
+              type: string
+              description: Service's id
+            name:
+              type: string
+              description: Service's name
+            metadata:
+              type: object
+              description: Service's metadata
+            event:
+              type: string
+              enum: [serviceUp, serviceDown, serviceChanged]
+              description: Event's type
+            type:
+              type: string
+              enum: [asyncapi, openapi, grpc]
+              description: Type of the service
+            useProxy:
+              type: boolean
+              description: Should use UnisonUI as proxy
+        bindings:
+          ws:
+            type: request
+            method: GET

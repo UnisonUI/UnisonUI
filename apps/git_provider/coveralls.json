@@ -1,0 +1,10 @@
+{
+  "skip_files": [
+    "test/support",
+    "lib/git_provider/application.ex",
+    "lib/git_provider/graphql/client.ex",
+    "lib/git_provider/graphql/settings.ex",
+    "lib/git_provider/graphql/data/project.ex",
+    "lib/git_provider/github/supervisor.ex"
+  ]
+}

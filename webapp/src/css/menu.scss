@@ -1,0 +1,78 @@
+.unisonui {
+  .menu {
+    @apply text-sm;
+    @apply sticky;
+    @apply lg:overflow-x-hidden lg:overflow-y-auto;
+    @apply flex flex-col;
+    @apply w-full h-96 lg:w-96;
+
+    @screen lg {
+      height: calc(100vh - 40px);
+    }
+
+    @apply bg-background-highlight;
+
+    .links {
+      @apply hidden lg:block;
+    }
+
+    .select {
+      @apply block lg:hidden;
+      @apply w-full;
+      @apply text-lg;
+    }
+
+    .menu-operation {
+      @apply transition-all duration-300;
+      @apply max-h-screen overflow-hidden;
+
+      &.closed {
+        @apply max-h-0;
+      }
+    }
+
+    .menu-item {
+      @apply p-4 relative;
+
+      &:hover,
+      &.active {
+        @apply bg-background;
+      }
+
+      &.active {
+        @apply border-l-4 border-primary-shadow;
+      }
+
+      .link {
+        @apply flex justify-between cursor-pointer;
+
+        &.active,
+        .active {
+          @apply font-semibold;
+        }
+
+        .title {
+          .name {
+            @apply mr-4;
+          }
+
+          .type {
+            @apply rounded-full font-semibold text-xs px-2 tracking-wide inline-block capitalize;
+
+            &.openapi {
+              @apply bg-teal-200 text-teal-800;
+            }
+
+            &.grpc {
+              @apply bg-blue-200 text-blue-800;
+            }
+
+            &.asyncapi {
+              @apply bg-violet-200 text-violet-800;
+            }
+          }
+        }
+      }
+    }
+  }
+}

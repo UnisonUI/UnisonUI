@@ -1,0 +1,87 @@
+$colors: orange, green, blue, red, purple, yellow;
+
+.unisonui {
+  .operations {
+    .section {
+      @apply flex flex-col;
+      @apply gap-y-3;
+    }
+
+    &.border-top {
+      @apply border-primary-shadow;
+    }
+
+    .border-top {
+      @apply border-primary;
+    }
+
+    &.border-top,
+    .border-top {
+      @apply border-t;
+    }
+
+    @apply py-4 mt-4;
+
+    & ~ & {
+      @apply mt-0;
+    }
+
+    .operation {
+      .title {
+        @apply normal-case;
+      }
+
+      &.deprecated {
+        @apply opacity-60;
+      }
+
+      @each $color in $colors {
+        &.#{"" + $color} {
+          .method {
+            @apply font-semibold uppercase;
+            @apply text-#{"" + $color}-500;
+          }
+        }
+      }
+
+      .request {
+        h1 {
+          @apply text-lg font-semibold;
+          @apply mb-3;
+        }
+      }
+
+      .security {
+        @apply flex justify-end content-center place-items-center;
+
+        .tooltip-text {
+          @apply bg-background;
+          @apply hidden;
+          @apply absolute top-7 right-0;
+          @apply border-primary border;
+          @apply p-2;
+          @apply text-sm w-96;
+        }
+
+        .schemes {
+          @apply flex;
+          @apply relative;
+
+          .scheme {
+            .summary {
+              @apply border-primary border border-l-4;
+              @apply p-1 text-sm;
+              @apply cursor-pointer;
+            }
+
+            &:hover {
+              & ~ .tooltip-text {
+                @apply block;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -2,29 +2,30 @@ name: Docusaurus
 on:
   push:
     branches: ["master"]
-    paths: ["website/**"]
+    paths: ["docsite/**"]
   workflow_dispatch:
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set up Node
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: "14"
+          node-version: "20"
       - name: Build Docusaurus website
         run: |
-          cd website
-          npm install 
+          cd docsite
+          npm install
           npm run build
       - name: Deploy to GitHub Pages
         if: success()
-        uses: crazy-max/ghaction-github-pages@v2
+        uses: crazy-max/ghaction-github-pages@v3
         with:
           target_branch: master
           repo: UnisonUI/unisonui.github.io
-          build_dir: website/build
+          build_dir: docsite/build
+          fqdn: unisonui.tech
         env:
           GH_PAT: ${{ secrets.TOKEN }}

@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import "dark_mode";
+@import "forms";
+@import "header";
+@import "menu";
+@import "layout";
+@import "markdown";
+@import "components";
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+
+html {
+  @apply h-full;
+
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply font-body w-full h-full;
+
+  margin: inherit;
+}
+
+#app {
+  @apply h-full;
+}
+
+#no-service {
+  @apply absolute text-6xl font-black;
+
+  left: 25%;
+  top: 50%;
+}
+
+#outer-container {
+  @apply h-full w-full;
+  @apply flex flex-col;
+}
+
+#page-wrap {
+  @apply text-primary;
+  @apply flex flex-col lg:flex-row;
+  @apply relative;
+  @apply overflow-hidden h-full w-full;
+
+  .content {
+    @apply relative w-full;
+    @apply overflow-x-hidden overflow-y-auto;
+    @apply bg-background-highlight;
+  }
+}

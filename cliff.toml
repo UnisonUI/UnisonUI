@@ -1,0 +1,102 @@
+[changelog]
+header = '''
+# Changelog
+
+'''
+body = '''
+{% if version %}## {{ version | trim_start_matches(pat="v") }} ({{ timestamp | date(format="%Y-%m-%d") }})
+{% else %}## [unreleased]
+{% endif %}{% for group, commits in commits | group_by(attribute="group") %}
+    ### {{ group | upper_first }}
+    {% for commit in commits
+    | filter(attribute="scope")
+    | sort(attribute="scope") %}
+        - *({{commit.scope}})* {{ commit.message | upper_first }}
+        {%- if commit.breaking %}
+        {% raw %}  {% endraw %}- **BREAKING**: {{commit.breaking_description}}
+        {%- endif -%}
+    {%- endfor -%}
+    {%- for commit in commits %}
+        {%- if commit.scope -%}
+        {% else -%}
+            - {{ commit.message | upper_first }}
+            {% if commit.breaking -%}
+            {% raw %}  {% endraw %}- **BREAKING**: {{commit.breaking_description}}
+            {% endif -%}
+        {% endif -%}
+    {% endfor -%}
+    {% raw %}
+{% endraw %}{% endfor %}
+
+'''
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = false
+filter_commits = false
+tag_pattern = 'v[0-9]*'
+skip_tags = 'v0.1.0-beta.1'
+ignore_tags = ''
+date_order = false
+sort_commits = 'oldest'
+
+[[git.link_parsers]]
+pattern = '#(\d+)'
+href = 'https://github.com/UnisonUI/UnisonUI/issues/$1'
+
+[[git.commit_parsers]]
+message = '^feat'
+group = ':sparkles: Features'
+
+[[git.commit_parsers]]
+message = '^fix'
+group = ':beetle: Bug Fixes'
+
+[[git.commit_parsers]]
+message = '^build'
+group = ':wrench: Build'
+
+[[git.commit_parsers]]
+message = '^doc'
+group = ':memo: Documentation'
+
+[[git.commit_parsers]]
+message = '^perf'
+group = ':racehorse: Performance Improvements'
+
+[[git.commit_parsers]]
+message = '^revert'
+group = ':arrow_backward: Reverts'
+
+[[git.commit_parsers]]
+message = '^refactor'
+group = ':ghost: Code Refactoring'
+
+[[git.commit_parsers]]
+message = '^style'
+group = ':art: Style Changes'
+
+[[git.commit_parsers]]
+message = '^test'
+group = ':heavy_check_mark: Tests'
+
+[[git.commit_parsers]]
+message = '^ci'
+group = ':rocket: Continuous Integration'
+
+[[git.commit_parsers]]
+message = '^chore\(release\): prepare for'
+skip = true
+
+[[git.commit_parsers]]
+message = '^chore'
+group = ':green_apple: Chore'
+
+[[git.commit_parsers]]
+message = '^BREAKING CHANGE'
+group = ':warning: BREAKING CHANGES'
+
+[[git.commit_parsers]]
+body = '.*security'
+group = 'Security'

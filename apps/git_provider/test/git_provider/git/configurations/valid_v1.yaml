@@ -1,0 +1,6 @@
+name: "test"
+useProxy: true
+specifications:
+  - "file.yaml"
+  - name: "another service"
+    path: "other.yaml"

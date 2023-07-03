@@ -1,0 +1,6 @@
+{
+  "skip_files": [
+    "lib/clustering/global_server.ex",
+    "lib/clustering/application.ex"
+  ]
+}

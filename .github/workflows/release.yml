@@ -2,79 +2,98 @@ name: Release
 
 on:
   push:
-    tags: ['v*']
+    tags: ["v*"]
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 jobs:
-  release:
+  changelog:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Get release version
-      id: vars
-      run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
-    - name: Set up JDK 11
-      uses: actions/setup-java@v1
-      with:
-        java-version: 11
-    - name: Use Node.js
-      uses: actions/setup-node@v1
-      with:
-        node-version: 14.x
-    - uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
-    - name: Login to GitHub Packages Docker Registry
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Restore coursier cache
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/coursier/v1
-        key: ${{ runner.os }}-coursier-${{ hashFiles('**/build.sbt') }}-${{ hashFiles('project/Dependencies.scala') }}
-        restore-keys: ${{ runner.os }}-coursier-
-    - name: Restore m2 cache
-      uses: actions/cache@v2
-      with:
-        path: ~/.m2
-        key: ${{ runner.os }}-m2-${{ hashFiles('**/build.sbt') }}-${{ hashFiles('project/Dependencies.scala') }}
-        restore-keys: ${{ runner.os }}-m2-
-    - name: Restore node cache
-      uses: actions/cache@v2
-      with:
-        path: rest-ui/node_modules
-        key: ${{ runner.os }}-node-${{ hashFiles('rest-ui/package.*') }}
-        restore-keys: ${{ runner.os }}-node-
-    - name: Install and run Kokai
-      env:
-        RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
-      run: |
-        cargo install kokai
-        kokai release --ref $RELEASE_VERSION  --git-url https://github.com/UnisonUI/UnisonUI --add-links github:commits,issues > release.md
-        echo "\`docker pull unisonui/unisonui:${RELEASE_VERSION}\`" >> release.md
-    - name: build
-      run: sbt "project unison-ui; npmInstall; webpackProdTask; universal:packageBin; dockerBuildAndPush"
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body_path: release.md
-        draft: false
-        prerelease: false
-    - name: Upload Release
-      id: upload_release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-        asset_path: modules/unison-ui/target/universal/unisonui.zip
-        asset_name: unisonui.zip
-        asset_content_type: application/zip
-
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get release version
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+      - name: Install and run Kokai
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+        run: |
+          cargo install kokai
+          kokai release --ref $RELEASE_VERSION  --git-url https://github.com/UnisonUI/UnisonUI --add-links github:commits,issues > release.md
+          echo "\`docker pull ${REGISTRY}/${IMAGE_NAME}:${RELEASE_VERSION}\`" >> release.md
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ github.ref }}
+          body_path: release.md
+          draft: false
+          prerelease: false
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app:
+          - unisonui
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get release version
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: Login to GitHub Packages Docker Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Elixir
+        id: setup-beam
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.15.2"
+          otp-version: "26.0.2"
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+      - name: Restore dependencies cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-${{ steps.setup-beam.outputs.elixir-version }}-
+            ${{ runner.os }}-mix-${{ steps.setup-beam.outputs.otp-version }}-
+            ${{ runner.os }}-mix-
+      - name: Install Protoc
+        uses: arduino/setup-protoc@v1
+        with:
+          version: "3.x"
+      - name: Install dependencies
+        run: mix deps.get --only prod
+      - name: Create release
+        id: mix_release
+        env:
+          MIX_ENV: prod
+        run: mix release ${{matrix.app}}
+      - name: Build and push
+        id: docker_build
+        uses: docker/build-push-action@v4
+        env:
+          RELEASE_VERSION: ${{ steps.vars.outputs.tag }}
+        with:
+          push: true
+          build-args: RELEASE=${{matrix.app}}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.tag }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest

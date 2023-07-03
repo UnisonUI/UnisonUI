@@ -1,0 +1,12 @@
+/.elixir_ls/
+/deps/
+/docs/
+/priv/
+/cover/
+/.git/
+/website/
+node_modules/
+/_build/dev/
+/_build/test/
+/apps/unison_ui/priv/statics/
+/mix.lock

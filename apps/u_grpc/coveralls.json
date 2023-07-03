@@ -1,0 +1,14 @@
+{
+  "skip_files": [
+    "test/support",
+    "lib/u_grpc/application.ex",
+    "lib/u_grpc/status.ex",
+    "lib/u_grpc/error.ex",
+    "lib/u_grpc/reflection.ex",
+    "lib/u_grpc/reflection/supervisor.ex",
+    "lib/u_grpc/reflection/worker.ex",
+    "lib/u_grpc/client/connection.ex",
+    "lib/u_grpc/protobuf/descriptor.ex",
+    "lib/u_grpc/protobuf/structs.ex"
+  ]
+}

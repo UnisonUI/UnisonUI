@@ -1,9 +1,0 @@
-[template]
-src = "logback.xml"
-dest = "/app/logback.xml"
-uid = 0
-gid = 0
-mode = "0644"
-keys = [
-  "/log",
-]

@@ -1,0 +1,104 @@
+openapi: 3.0.3
+info:
+  title: UnisonUI webhook
+  description: >
+    UnisonUI webhook is a service intends to give the ability to UnisonUI to add/remove services through webhook calls
+  license:
+    name: MIT
+    url: https://raw.githubusercontent.com/UnisonUI/unisonui/master/LICENSE
+  version: 1.0.0
+paths:
+  /webhook/services:
+    post:
+      summary: Create or update a service
+      requestBody:
+        description: Service to be inserted or update
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AsyncOpenApi"
+                - $ref: "#/components/schemas/Grpc"
+      responses:
+        204:
+          description: Service successfully inserted or updated
+        500:
+          description: Something bad happened
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /webhook/services/{serviceName}:
+    delete:
+      summary: Delete a service
+      parameters:
+        - name: serviceName
+          in: path
+          description: Service's name to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Service successfully deleted
+        500:
+          description: Something bad happened
+          content:
+            text/plain:
+              schema:
+                type: string
+components:
+  schemas:
+    AsyncOpenApi:
+      type: object
+      required:
+        - type
+        - name
+        - specification
+      properties:
+        type:
+          type: string
+          description: Specify if the specification is an AsyncApi or OpenApi one
+          enum: [asyncapi, openapi]
+        name:
+          type: string
+          description: Service's name
+        specification:
+          type: string
+          description: Specification file data
+        metadata:
+          type: object
+          description: Optional metadata linked to the service
+    Grpc:
+      type: object
+      required:
+        - name
+        - specification
+      properties:
+        name:
+          type: string
+          description: Service's name
+        specification:
+          type: string
+          description: Specification file data
+        servers:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/Server"
+        metadata:
+          type: object
+          description: Optional metadata linked to the service
+    Server:
+      type: object
+      required:
+        - address
+        - port
+        - useTls
+      properties:
+        address:
+          type: string
+        port:
+          type: integer
+        useTls:
+          type: boolean
