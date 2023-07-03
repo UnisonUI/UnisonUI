@@ -58,8 +58,8 @@ jobs:
         id: setup-beam
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: "1.15.0"
-          otp-version: "26.0.1"
+          elixir-version: "1.15.2"
+          otp-version: "26.0.2"
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
