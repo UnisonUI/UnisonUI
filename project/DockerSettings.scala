@@ -16,7 +16,7 @@ object DockerSettings {
         new File(baseDirectory.value, "../../docker/confd")
       val targetDir = "/app"
       new Dockerfile {
-        from("alpine:3.12.0")
+        from("alpine:3.18.0")
         run("apk",
             "add",
             "--no-cache",

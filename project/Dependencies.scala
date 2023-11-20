@@ -24,7 +24,7 @@ object Dependencies {
     private val generic = "io.circe" %% "circe-generic"     % version
     private val yaml    = "io.circe" %% "circe-yaml"        % "0.13.1"
     val parser          = "io.circe" %% "circe-parser"      % version
-    val schema          = "io.circe" %% "circe-json-schema" % "0.1.0"
+    val schema          = "io.circe" %% "circe-json-schema" % "0.2.0"
     val all             = Seq(core, generic, yaml)
   }
 
